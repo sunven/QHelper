@@ -1,6 +1,7 @@
 $(".q-list li").click(function () {
+    var $this=$(this);
     chrome.tabs.create({
-        url: "../../template/json/index.html",
+        url: $this.attr("data-url"),
         active: true
     })
 });
