@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html lang=zh-CN>
+
+<head>
+    <title>字符串编解码工具</title>
+    <meta charset=UTF-8>
+    <link rel=stylesheet href="../../static/css/semantic.min.css">
+    <script src="../../static/js/jquery.js"></script>
+    <script src="js/endecode.js"></script>
+</head>
+
+<body>
+    <h1 class="ui center aligned header"></h1>
+    <h1 class="ui center aligned header">字符串编解码</h1>
+    <h4 class="ui center aligned header">源自：<a href="https://www.baidufe.com/fehelper/endecode.html">https://www.baidufe.com/fehelper/endecode.html</a></h4>
+    <div class="ui container">
+        <div class="ui segments">
+            <div class="ui segment">
+                <div class="ui form">
+                    <div class="field">
+                        <label>Text</label>
+                        <textarea id="srcText" placeholder="粘贴需要进行编解码的字符串"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="ui segment">
+                <div class="ui buttons">
+                    <button id="uniEncode" class="ui button">Unicode编码</button>
+                    <button id="utf8Encode" class="ui button">UTF8(URL)编码</button>
+                    <button id="base64Encode" class="ui button">base64编码</button>
+                    <button id="md5Encode" class="ui button">md5编码</button>
+                    <button id="html2js" class="ui button">html2js</button>
+                </div>
+            </div>
+            <div class="ui segment">
+                <div class="ui buttons">
+                    <button id="uniDecode" class="ui button">Unicode解码</button>
+                    <button id="utf8Decode" class="ui button">UTF8(URL)解码</button>
+                    <button id="base64Decode" class="ui button">base64解码</button>
+                </div>
+            </div>
+            <div class="ui segment">
+                <div class="ui form">
+                    <div class="field">
+                        <label>结果</label>
+                        <textarea id="rstCode"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
