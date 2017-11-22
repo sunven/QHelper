@@ -686,6 +686,12 @@ function binl2b64(d) {
 baidu.namespace.register("baidu.ed");
 baidu.ed = (function() {
     var d = function() {
+        jQuery("#htmlEscape").click(function(){
+            jQuery("#rstCode").val(_.escape(jQuery("#srcText").val()));
+        });
+        jQuery("#htmlUnescape").click(function(){
+            jQuery("#rstCode").val(_.unescape(jQuery("#srcText").val()));
+        });
         jQuery("#uniEncode").click(function(){
             jQuery("#rstCode").val(baidu.endecode.uniEncode(jQuery("#srcText").val()));
         });

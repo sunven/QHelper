@@ -6,6 +6,7 @@
     <meta charset=UTF-8>
     <link rel=stylesheet href="../../static/css/semantic.min.css">
     <script src="../../static/js/jquery.js"></script>
+    <script src="../../static/js/underscore-min.js"></script>
     <script src="js/endecode.js"></script>
 </head>
 
@@ -25,6 +26,7 @@
             </div>
             <div class="ui segment">
                 <div class="ui buttons">
+                    <button id="htmlEscape" class="ui button">HTML转义(escape)</button>
                     <button id="uniEncode" class="ui button">Unicode编码</button>
                     <button id="utf8Encode" class="ui button">UTF8(URL)编码</button>
                     <button id="base64Encode" class="ui button">base64编码</button>
@@ -34,6 +36,7 @@
             </div>
             <div class="ui segment">
                 <div class="ui buttons">
+                    <button id="htmlUnescape" class="ui button">HTML反转义(unescape)</button>
                     <button id="uniDecode" class="ui button">Unicode解码</button>
                     <button id="utf8Decode" class="ui button">UTF8(URL)解码</button>
                     <button id="base64Decode" class="ui button">base64解码</button>
