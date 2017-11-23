@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html lang=zh-CN>
+
+<head>
+    <title>图片Base64编码工具（DataURI数据）</title>
+    <meta charset=UTF-8>
+    <link rel=stylesheet href="../../static/css/semantic.min.css">
+    <style>
+        .segment-h {
+            min-height: 400px;
+        }
+    </style>
+    <script src="../../static/js/jquery.js"></script>
+    <script src="js/imagebase64.js"></script>
+</head>
+
+<body>
+    <h1 class="ui center aligned header"></h1>
+    <h1 class="ui center aligned header">图片Base64编码工具（DataURI数据）</h1>
+    <div class="ui two column stackable grid container">
+        <div class="column">
+            <div class="ui segment segment-h">
+                <img id="preview">
+                <button id="upload" class="ui primary button">选择图片</button>
+                或者选择一张图片拖拽图片到这里来
+            </div>
+        </div>
+        <div class="column">
+            <div class="ui segment segment-h">
+                <div class="ui form">
+                    <div class="field">
+                        <label>DataURI</label>
+                        <textarea id="result"></textarea>
+                    </div>
+                    <ul class="list">
+                        <li>原始图片大小：
+                            <span id=sizeOri></span>
+                        </li>
+                        <li>DataURI &nbsp;&nbsp;大小：
+                            <span id=sizeBase></span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui column stackable grid container">
+        <div class="column">
+            <div class="ui info message">
+                <div class="header">提示</div>
+                <p>1、支持屏幕截图后直接Ctrl + V</p>
+                <p>2、复制文件在此处粘贴，只能得到文件icon</p>
+            </div>
+            <input style="display: none;" type=file id=file accept=".jpg,.jpeg,.gif,.png,.bmp">
+        </div>
+    </div>
+    <script>
+        $(function () {
+            var $preview = $("#preview");
+            $preview.width($preview.parent().width());
+        });
+    </script>
+</body>
+
+</html>
