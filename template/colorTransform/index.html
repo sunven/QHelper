@@ -1,0 +1,65 @@
+<!DOCTYPE HTML>
+<html lang=zh-CN>
+
+<head>
+    <title>颜色转换</title>
+    <meta charset=UTF-8>
+    <link rel=stylesheet href="../../static/css/semantic.min.css">
+    <script src="../../static/js/jquery.js"></script>
+    <script src="js/index.js"></script>
+</head>
+
+<body>
+    <h1 class="ui center aligned header"></h1>
+    <h1 class="ui center aligned header">颜色转换</h1>
+    <div class="ui container">
+        <div class="ui segments">
+            <div class="ui segment">
+                <div class="ui form">
+                    <h4 class="ui dividing header">【RGB】 → 【HEX】</h4>
+                    <div class=" fields">
+                        <div class="two wide field">
+                            <input id="txtSrcRgb0" type="text" />
+                        </div>
+                        <div class="two wide field">
+                            <input id="txtSrcRgb1" type="text" />
+                        </div>
+                        <div class="two wide field">
+                            <input id="txtSrcRgb2" type="text" />
+                        </div>
+                        <div class="four one field">
+                            <button id="btnRgb2Sixteen" class="ui primary button">
+                                转换
+                            </button>
+                        </div>
+                        <div class="four wide field">
+                            <input id="txtDesHex" type="text" disabled />
+                        </div>
+                    </div>
+                    <h4 class="ui dividing header">【HEX】 → 【RGB】</h4>
+                    <div class=" fields">
+                        <div class="four wide field">
+                            <input id="txtSrcHex" type="text" />
+                        </div>
+                        <div class="four one field">
+                            <button id="btnSixteen2Rgb" class="ui primary button">
+                                转换
+                            </button>
+                        </div>
+                        <div class="two wide field">
+                            <input id="txtDesRgb0" type="text" />
+                        </div>
+                        <div class="two wide field">
+                            <input id="txtDesRgb1" type="text" />
+                        </div>
+                        <div class="two wide field">
+                            <input id="txtDesRgb2" type="text" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
