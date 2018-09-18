@@ -14,5 +14,5 @@ function updateIcon() {
     current = min;
 }
 
-chrome.browserAction.onClicked.addListener(updateIcon);
-updateIcon();
+//chrome.browserAction.onClicked.addListener(updateIcon);
+//updateIcon();
