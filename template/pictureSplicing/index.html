@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>图片拼接</title>
+    <style>
+      body {
+        position: relative;
+      }
+      .label-upload {
+        font-size: 20px;
+        border: 2px solid #333;
+        cursor: pointer;
+        margin: 20px;
+        padding: 10px 20px;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
+      .label-upload:hover {
+        background-color: aquamarine;
+      }
+    </style>
+  </head>
+
+  <body>
+    <input id="uploadInput" type="file" accept="image/*" multiple="multiple" style="display: none" />
+    <label for="uploadInput" class="label-upload"> 点击选择图片 </label>
+    <img id="img" src="" alt="" />
+    <script src="./index.js"></script>
+  </body>
+</html>
