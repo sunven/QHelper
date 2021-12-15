@@ -7,7 +7,7 @@
     "scripts": ["background.js"]
   },
   "browser_action": {
-    "default_title": "QHelper", 
+    "default_title": "QHelper",
     "default_popup": "template/qhelper_popup.html"
   },
   "icons": {
@@ -15,10 +15,13 @@
     "16": "static/img/q-16.png",
     "48": "static/img/q-48.png"
   },
-  "permissions": [
-    "cookies",
-    "<all_urls>",
-    "tabs"
+  "content_scripts": [
+    {
+      "matches": ["*://github.com/*"],
+      "js": ["content/openinvscode.js"],
+      "run_at": "document_end"
+    }
   ],
+  "permissions": ["cookies", "<all_urls>", "tabs"],
   "manifest_version": 2
 }
