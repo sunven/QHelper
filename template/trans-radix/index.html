@@ -8,66 +8,55 @@
     <link rel="stylesheet" href="../../static/css/element-plus.css" />
     <script src="../../static/js/vue.js"></script>
     <script src="../../static/js/element-plus.js"></script>
+    <script src="../../static/js/element-plus-icons-vue.js"></script>
+    <style>
+      #app {
+        width: 400px;
+        margin: 0 auto;
+      }
+    </style>
   </head>
   <body>
     <div id="app">
-      <el-form :model="form" size="large" label-width="120px">
-        <el-from-item>
-          <el-radio-group v-model="form.radixRadio1">
+      <el-row>
+        <el-col
+          ><el-radio-group v-model="radixRadio1">
             <el-radio v-for="item in radixRadioGroupList" :key="item" :label="item">{{item}}</el-radio>
-          </el-radio-group>
-          <el-select v-model="form.radixSelect1">
-            <el-option v-for="item in 35" :key="item" :label="item+1" :value="item+1" />
-          </el-select>
-        </el-from-item>
-        <el-form-item label="原始数字">
-          <el-input @change="trans" v-model="form.value1" />
-        </el-form-item>
-        <!-- -- -->
-        <el-from-item>
-          <el-radio-group v-model="form.radixRadio2">
+          </el-radio-group></el-col
+        >
+      </el-row>
+      <el-row>
+        <el-col :span="4"
+          ><el-select v-model="radixSelect1" clearable> <el-option v-for="item in 35" :key="item" :label="item+1" :value="item+1" /> </el-select
+        ></el-col>
+        <el-col :span="20">
+          <el-input v-model="value1" />
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col style="margin: 16px 0; text-align: center">
+          <el-button @click="value1Change" size="large" type="primary" :icon="Bottom" circle></el-button>
+          <el-button @click="value2Change" size="large" type="info" :icon="Top" circle></el-button>
+          <Edit />
+        </el-col>
+      </el-row>
+      <el-row>
+        <el-col
+          ><el-radio-group v-model="radixRadio2">
             <el-radio v-for="item in radixRadioGroupList" :key="item" :label="item">{{item}}</el-radio>
-          </el-radio-group>
-          <el-select v-model="form.radixSelect2">
-            <el-option v-for="item in 35" :key="item" :label="item+1" :value="item+1" />
-          </el-select>
-        </el-from-item>
-        <el-form-item label="结果">
-          <el-input v-model="form.value2" />
-        </el-form-item>
-      </el-form>
-
-      <el-button></el-button>
+          </el-radio-group></el-col
+        >
+      </el-row>
+      <el-row>
+        <el-col :span="4"
+          ><el-select v-model="radixSelect2" clearable> <el-option v-for="item in 35" :key="item" :label="item+1" :value="item+1" /> </el-select
+        ></el-col>
+        <el-col :span="20">
+          <el-input v-model="value2" />
+        </el-col>
+      </el-row>
     </div>
-
-    <script>
-      let radixConvert = (num, fromRadix, toRadix) => parseInt(num, fromRadix).toString(toRadix)
-      const { createApp } = Vue
-
-      app = createApp({
-        data() {
-          return {
-            form: {
-              radixRadio1: 0,
-              radixSelect1: 0,
-              value1: '',
-              radixRadio2: 0,
-              radixSelect2: 0,
-              value2: '',
-            },
-            radixRadioGroupList: [2, 10, 16],
-          }
-        },
-        methods: {
-          trans(num, fromRadix, toRadix) {
-            // parseInt(num, fromRadix).toString(toRadix)
-            // debugger
-            this.form.value2 = radixConvert(this.form.value1, this.form.radixRadio1, this.form.radixRadio2)
-          },
-        },
-      })
-        .use(ElementPlus)
-        .mount('#app')
-    </script>
+    <script src="./index.js"></script>
+    <script></script>
   </body>
 </html>
