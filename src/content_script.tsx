@@ -11,8 +11,11 @@ function isFileTr(tr: Element) {
 function isExtension(tr: Element, extension: string | string[]) {
   const fileNameNode = tr.childNodes[1]
   const { textContent } = fileNameNode
+  if (!textContent) {
+    return false
+  }
   if (typeof extension === 'string') {
-    return textContent?.lastIndexOf(extension) !== -1
+    return textContent?.lastIndexOf(extension) === textContent.length - extension.length
   }
   return extension.some(c => textContent?.lastIndexOf(c) !== -1)
 }
@@ -64,8 +67,21 @@ function insertAction(tr: Element) {
 }
 async function main() {
   console.log('main')
-  const trList = document.querySelectorAll('table tbody tr')
-  trList.forEach(insertAction)
+  const aTag = document.querySelector('a[href="' + location.pathname.replace('/browse', '') + '"]')
+  if (aTag) {
+    const insertTag = document.createElement('a')
+    insertTag.innerHTML = 'copy url'
+    insertTag.href = 'javascript:void(0)'
+    insertTag.onclick = e => {
+      e.stopPropagation()
+      navigator.clipboard.writeText(location.href.replace('/browse', ''))
+    }
+    insertTag.className = aTag.className
+    aTag.parentElement?.insertBefore(insertTag, aTag)
+  } else {
+    const trList = document.querySelectorAll('table tbody tr')
+    trList.forEach(insertAction)
+  }
 }
 
 main()
