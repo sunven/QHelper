@@ -8,16 +8,14 @@ function isFileTr(tr: Element) {
   return textContent !== '' && textContent !== '-'
 }
 
-function isExtension(tr: Element, extension: string | string[]) {
-  const fileNameNode = tr.childNodes[1]
-  const { textContent } = fileNameNode
-  if (!textContent) {
+function isExtension(path: string | undefined | null, extension: string | string[]) {
+  if (!path) {
     return false
   }
   if (typeof extension === 'string') {
-    return textContent?.lastIndexOf(extension) === textContent.length - extension.length
+    return path?.lastIndexOf(extension) === path.length - extension.length
   }
-  return extension.some(c => textContent?.lastIndexOf(c) !== -1)
+  return extension.some(c => path?.lastIndexOf(c) !== -1)
 }
 
 function createImg(src: string, title: string, clickFun: (this: GlobalEventHandlers, ev: MouseEvent) => any) {
@@ -29,12 +27,18 @@ function createImg(src: string, title: string, clickFun: (this: GlobalEventHandl
   return imgElement
 }
 
-function genClickFun(tr: Element, extension?: string) {
+function createA(title: string, className: string, clickFun: (this: GlobalEventHandlers, ev: MouseEvent) => any) {
+  const insertTag = document.createElement('a')
+  insertTag.innerHTML = title
+  insertTag.href = 'javascript:void(0)'
+  insertTag.onclick = clickFun
+  insertTag.className = className
+  return insertTag
+}
+
+function genClickFun(path: string, extension?: string) {
   return () => {
-    const fileChild = tr.children[1]
-    const aElement = fileChild.firstElementChild
-    let text = location.href + aElement?.innerHTML
-    text = text.replace('/browse/', '/')
+    let text = path.replace('/browse/', '/')
     if (extension === 'script') {
       text = `<script src="${text}"></script>`
     } else if (extension === 'link') {
@@ -52,15 +56,19 @@ function insertAction(tr: Element) {
   td.className = 'unpkg-copy-td'
   td.style.borderTop = '1px solid #eaecef'
   // copy url
-  const urlImgElement = createImg(iconUrl, 'copy url', genClickFun(tr))
+  const fileChild = tr.children[1]
+  const aElement = fileChild.firstElementChild
+  const aHtml = aElement?.innerHTML
+  let path = location.href + aHtml
+  const urlImgElement = createImg(iconUrl, 'copy url', genClickFun(path))
   td.append(urlImgElement)
-  if (isExtension(tr, '.js')) {
+  if (isExtension(aHtml, 'js')) {
     // copy script tag
-    const scriptTagImgElement = createImg(iconTag, 'copy script tag', genClickFun(tr, 'script'))
+    const scriptTagImgElement = createImg(iconTag, 'copy script tag', genClickFun(path, 'script'))
     td.append(scriptTagImgElement)
-  } else if (isExtension(tr, 'css')) {
+  } else if (isExtension(aHtml, 'css')) {
     // copy link tag
-    const scriptTagImgElement = createImg(iconTag, 'copy link tag', genClickFun(tr, 'link'))
+    const scriptTagImgElement = createImg(iconTag, 'copy link tag', genClickFun(path, 'link'))
     td.append(scriptTagImgElement)
   }
   tr.append(td)
@@ -69,15 +77,17 @@ async function main() {
   console.log('main')
   const aTag = document.querySelector('a[href="' + location.pathname.replace('/browse', '') + '"]')
   if (aTag) {
-    const insertTag = document.createElement('a')
-    insertTag.innerHTML = 'copy url'
-    insertTag.href = 'javascript:void(0)'
-    insertTag.onclick = e => {
-      e.stopPropagation()
-      navigator.clipboard.writeText(location.href.replace('/browse', ''))
+    const urlA = createA('copy url', aTag.className, genClickFun(location.href))
+    aTag.parentElement?.insertBefore(urlA, aTag)
+    if (isExtension(location.href, 'js')) {
+      // copy script tag
+      const scriptA = createA('copy script tag', aTag.className, genClickFun(location.href, 'script'))
+      aTag.parentElement?.insertBefore(scriptA, aTag)
+    } else if (isExtension(location.href, 'css')) {
+      // copy link tag
+      const linkA = createA('copy link tag', aTag.className, genClickFun(location.href, 'link'))
+      aTag.parentElement?.insertBefore(linkA, aTag)
     }
-    insertTag.className = aTag.className
-    aTag.parentElement?.insertBefore(insertTag, aTag)
   } else {
     const trList = document.querySelectorAll('table tbody tr')
     trList.forEach(insertAction)
