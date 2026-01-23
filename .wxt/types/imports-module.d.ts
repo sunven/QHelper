@@ -19,6 +19,5 @@ declare module '#imports' {
   export { useState, useCallback, useMemo, useEffect, useRef, useContext, useReducer } from 'react';
   export { fakeBrowser } from 'wxt/testing';
   export { useChromeCookies } from '../hooks/useChromeCookies';
-  export { useChromeTabs } from '../hooks/useChromeTabs';
   export { useExtensionStorage } from '../hooks/useExtensionStorage';
 }

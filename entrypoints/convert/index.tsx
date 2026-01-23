@@ -25,14 +25,14 @@ function ConvertTool() {
     let str = '';
     for (let i = 0; i < srcText.length; i++) {
       const code = srcText.charCodeAt(i).toString(16);
-      str += '\\u' + '0000'.substring(0, 4 - code.length) + code;
+      str += `\u0000${'0000'.substring(0, 4 - code.length)}${code}`;
     }
     setResult(str);
   }
 
   // Unicode解码
   function uniDecode() {
-    setResult(srcText.replace(/\\u([\d\w]{4})/gi, (match, code) => {
+    setResult(srcText.replace(/\\u([\d\w]{4})/gi, (_match, code) => {
       return String.fromCharCode(parseInt(code, 16));
     }));
   }
@@ -54,8 +54,8 @@ function ConvertTool() {
   // Base64编码
   function base64Encode() {
     try {
-      setResult(btoa(encodeURIComponent(srcText).replace(/%([0-9A-F]{2})/g, (match, p1) =>
-        String.fromCharCode('0x' + p1),
+      setResult(btoa(encodeURIComponent(srcText).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
+        String.fromCharCode(parseInt(`0x${p1}`, 16)),
       )));
     } catch {
       setResult('Base64 编码失败');
@@ -68,7 +68,7 @@ function ConvertTool() {
       setResult(decodeURIComponent(
         atob(srcText)
           .split('')
-          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
           .join(''),
       ));
     } catch {
@@ -113,7 +113,7 @@ function ConvertTool() {
       <div className="space-y-4">
         {/* 输入区域 */}
         <div className="border rounded-lg p-4">
-          <label className="block text-sm font-medium mb-2">Text</label>
+          <span className="block text-sm font-medium mb-2">Text</span>
           <textarea
             value={srcText}
             onChange={(e) => setSrcText(e.target.value)}
@@ -125,36 +125,42 @@ function ConvertTool() {
         {/* 编码按钮 */}
         <div className="border rounded-lg p-4 flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={htmlEscape}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
             HTML转义
           </button>
           <button
+            type="button"
             onClick={uniEncode}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
             Unicode编码
           </button>
           <button
+            type="button"
             onClick={utf8Encode}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
             UTF8编码
           </button>
           <button
+            type="button"
             onClick={base64Encode}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
             base64编码
           </button>
           <button
+            type="button"
             onClick={md5Encode}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
             md5编码
           </button>
           <button
+            type="button"
             onClick={html2js}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
@@ -165,24 +171,28 @@ function ConvertTool() {
         {/* 解码按钮 */}
         <div className="border rounded-lg p-4 flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={htmlUnescape}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
             HTML反转义
           </button>
           <button
+            type="button"
             onClick={uniDecode}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
             Unicode解码
           </button>
           <button
+            type="button"
             onClick={utf8Decode}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
             UTF8解码
           </button>
           <button
+            type="button"
             onClick={base64Decode}
             className="px-4 py-2 border rounded hover:bg-blue-50 transition-colors"
           >
@@ -192,7 +202,7 @@ function ConvertTool() {
 
         {/* 结果区域 */}
         <div className="border rounded-lg p-4">
-          <label className="block text-sm font-medium mb-2">结果</label>
+          <span className="block text-sm font-medium mb-2">结果</span>
           <textarea
             value={result}
             readOnly

@@ -11,9 +11,9 @@ interface HistoryItem {
 function JsonTool() {
   const [jsoncon, setJsoncon] = useState('');
   const [newjsoncon, setNewjsoncon] = useState('');
-  const [baseview, setBaseview] = useState<'formater' | 'diff'>('formater');
-  const [view, setView] = useState<'code' | 'error' | 'empty'>('empty');
-  const [jsonhtml, setJsonhtml] = useState<any>(null);
+  const [baseview, setBaseview] = useState<'formatter' | 'diff'>('formatter');
+  const [view, setView] = useState<'code' | 'error' | 'empty' | 'compress'>('empty');
+  const [jsonhtml, setJsonhtml] = useState<object | null>(null);
   const [compressStr, setCompressStr] = useState('');
   const [error, setError] = useState('');
   const [historys, setHistorys] = useState<HistoryItem[]>([]);
@@ -21,19 +21,17 @@ function JsonTool() {
   const [historyName, setHistoryName] = useState('');
   const [isExportTxtShow, setIsExportTxtShow] = useState(false);
   const [exTxtName, setExTxtName] = useState('');
-  const [expandAll, setExpandAll] = useState(false);
-  const [rjv, setRjv] = useState<any>(null);
 
   // 处理 JSON 输入变化
   useEffect(() => {
-    if (baseview === 'formater' && jsoncon) {
+    if (baseview === 'formatter' && jsoncon) {
       try {
         const parsed = JSON.parse(jsoncon);
         setJsonhtml(parsed);
         setView('code');
         setError('');
       } catch (e) {
-        setError('JSON 解析错误：' + (e instanceof Error ? e.message : String(e)));
+        setError(`JSON 解析错误：${e instanceof Error ? e.message : String(e)}`);
         setView('error');
         setJsonhtml(null);
       }
@@ -47,7 +45,7 @@ function JsonTool() {
       setCompressStr(JSON.stringify(parsed));
       setView('compress');
     } catch (e) {
-      setError('JSON 解析错误：' + (e instanceof Error ? e.message : String(e)));
+      setError(`JSON 解析错误：${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
@@ -60,7 +58,7 @@ function JsonTool() {
       setView('code');
       setError('');
     } catch (e) {
-      setError('JSON 解析错误：' + (e instanceof Error ? e.message : String(e)));
+      setError(`JSON 解析错误：${e instanceof Error ? e.message : String(e)}`);
       setView('error');
       setJsonhtml(null);
     }
@@ -76,13 +74,13 @@ function JsonTool() {
     setView('empty');
   }
 
-  // 展开/折叠
+  // 展开/折叠（预留功能）
   function handleExpandAll() {
-    setExpandAll(true);
+    // TODO: 实现展开功能
   }
 
   function handleCollapseAll() {
-    setExpandAll(false);
+    // TODO: 实现折叠功能
   }
 
   // 切换到 Diff 视图
@@ -91,8 +89,8 @@ function JsonTool() {
   }
 
   // 切换到格式化视图
-  function baseViewToFormater() {
-    setBaseview('formater');
+  function baseViewToFormatter() {
+    setBaseview('formatter');
   }
 
   // Diff 功能
@@ -111,12 +109,12 @@ function JsonTool() {
   }
 
   // 恢复历史记录
-  function restore(his: HistoryItem) {
-    setJsoncon(his.content);
+  function restore(_his: HistoryItem) {
+    setJsoncon(_his.content);
   }
 
   // 删除历史记录
-  function remove(his: HistoryItem, index: number) {
+  function remove(_his: HistoryItem, index: number) {
     setHistorys((prev) => prev.filter((_, i) => i !== index));
   }
 
@@ -165,7 +163,7 @@ function JsonTool() {
       {baseview !== 'diff' && (
         <div className="flex-1 overflow-auto">
           {/* 格式化视图 */}
-          {baseview === 'formater' && (
+          {baseview === 'formatter' && (
             <>
               {view === 'code' && jsonhtml && (
                 <div className="p-4">
@@ -176,7 +174,7 @@ function JsonTool() {
                     onEdit={(edit) => console.log('Edit:', edit)}
                     onDelete={(path) => console.log('Delete:', path)}
                     enableClipboard
-                    shouldCollapse={({ rjv, depth }) => depth > 5}
+                    shouldCollapse={() => true}
                   />
                 </div>
               )}
@@ -205,9 +203,10 @@ function JsonTool() {
           )}
 
           {/* 工具栏 */}
-          {baseview === 'formater' && (
+          {baseview === 'formatter' && (
             <div className="fixed right-0 top-0 p-4 space-x-2">
               <button
+                type="button"
                 onClick={compress}
                 className={`px-3 py-2 rounded ${view === 'compress' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'}`}
                 title="压缩"
@@ -215,6 +214,7 @@ function JsonTool() {
                 📦
               </button>
               <button
+                type="button"
                 onClick={beauty}
                 className="px-3 py-2 rounded hover:bg-gray-100"
                 title="美化"
@@ -222,6 +222,7 @@ function JsonTool() {
                 ✨
               </button>
               <button
+                type="button"
                 onClick={clearAll}
                 className="px-3 py-2 rounded hover:bg-gray-100"
                 title="清空"
@@ -229,6 +230,7 @@ function JsonTool() {
                 🗑️
               </button>
               <button
+                type="button"
                 onClick={() => setIsExportTxtShow(true)}
                 className="px-3 py-2 rounded hover:bg-gray-100"
                 title="导出文本文件"
@@ -236,6 +238,7 @@ function JsonTool() {
                 📄
               </button>
               <button
+                type="button"
                 onClick={handleExpandAll}
                 className="px-3 py-2 rounded hover:bg-gray-100"
                 title="全部展开"
@@ -243,6 +246,7 @@ function JsonTool() {
                 ➕
               </button>
               <button
+                type="button"
                 onClick={handleCollapseAll}
                 className="px-3 py-2 rounded hover:bg-gray-100"
                 title="全部折叠"
@@ -250,6 +254,7 @@ function JsonTool() {
                 ➖
               </button>
               <button
+                type="button"
                 onClick={baseViewToDiff}
                 className="px-3 py-2 rounded hover:bg-gray-100"
                 title="Diff"
@@ -260,19 +265,21 @@ function JsonTool() {
               {/* 历史记录 */}
               {historys.length > 0 && (
                 <div className="relative">
-                  <button className="px-3 py-2 rounded hover:bg-gray-100" title="历史保存">
+                  <button type="button" className="px-3 py-2 rounded hover:bg-gray-100" title="历史保存">
                     📝
                   </button>
                   <div className="absolute right-0 top-full w-48 bg-white border rounded shadow-lg p-2 space-y-1">
                     {historys.map((his, index) => (
-                      <div key={index} className="flex items-center justify-between gap-2">
+                      <div key={`${his.name}-${index}`} className="flex items-center justify-between gap-2">
                         <button
+                          type="button"
                           onClick={() => restore(his)}
                           className="flex-1 text-left hover:bg-blue-50 px-2 py-1 rounded"
                         >
                           {his.name}
                         </button>
                         <button
+                          type="button"
                           onClick={() => remove(his, index)}
                           className="text-red-500 hover:bg-red-50 px-2 py-1"
                         >
@@ -285,6 +292,7 @@ function JsonTool() {
               )}
 
               <button
+                type="button"
                 onClick={() => setIsSaveShow(true)}
                 className="px-3 py-2 rounded hover:bg-gray-100"
                 title="保存"
@@ -298,6 +306,7 @@ function JsonTool() {
           {baseview === 'diff' && (
             <div className="fixed right-0 top-0 p-4 space-x-2">
               <button
+                type="button"
                 onClick={diffTwo}
                 className="px-3 py-2 rounded bg-blue-600 text-white"
                 title="Diff"
@@ -305,7 +314,8 @@ function JsonTool() {
                 ↔️
               </button>
               <button
-                onClick={baseViewToFormater}
+                type="button"
+                onClick={baseViewToFormatter}
                 className="px-3 py-2 rounded hover:bg-gray-100"
                 title="格式化视图"
               >
@@ -321,6 +331,7 @@ function JsonTool() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 space-y-4">
             <button
+              type="button"
               onClick={() => setIsSaveShow(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
             >
@@ -332,9 +343,9 @@ function JsonTool() {
               onChange={(e) => setHistoryName(e.target.value)}
               placeholder="请输入辨识名称"
               className="w-full px-3 py-2 border rounded"
-              autoFocus
             />
             <button
+              type="button"
               onClick={saveHistory}
               className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
@@ -349,21 +360,22 @@ function JsonTool() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 space-y-4">
             <button
+              type="button"
               onClick={() => setIsExportTxtShow(false)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
             >
               ✕
             </button>
-            <label className="block text-sm font-medium mb-2">.txt</label>
+            <span className="block text-sm font-medium mb-2">.txt</span>
             <input
               type="text"
               value={exTxtName}
               onChange={(e) => setExTxtName(e.target.value)}
               placeholder="请输入辨识名称"
               className="w-full px-3 py-2 border rounded"
-              autoFocus
             />
             <button
+              type="button"
               onClick={exportTxt}
               className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
             >

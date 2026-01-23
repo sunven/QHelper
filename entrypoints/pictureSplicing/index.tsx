@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import '../../index.css';
@@ -66,7 +66,7 @@ function PictureSplicingTool() {
     };
   }, []);
 
-  function handleDragEnd(event: any) {
+  function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (active.id !== over.id) {
       setImages((items) => {

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
+import { copyToClipboard, formatFileSize } from '../../lib/utils';
 import '../../index.css';
 
 function ImageBase64Tool() {
@@ -73,19 +74,9 @@ function ImageBase64Tool() {
   }
 
   function handleCopy() {
-    navigator.clipboard.writeText(result).then(() => {
+    copyToClipboard(result).then(() => {
       alert('已复制到剪贴板');
     });
-  }
-
-  function formatSize(bytes: number): string {
-    if (bytes < 1024) {
-      return `${bytes} B`;
-    }
-    if (bytes < 1024 * 1024) {
-      return `${(bytes / 1024).toFixed(2)} KB`;
-    }
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   }
 
   return (
@@ -107,6 +98,7 @@ function ImageBase64Tool() {
 
           <div className="mt-4 space-y-2">
             <button
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               className="w-full px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
             >
@@ -128,7 +120,7 @@ function ImageBase64Tool() {
         {/* 右侧：结果 */}
         <div className="border rounded-lg p-4 min-h-[400px]">
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">DataURI</label>
+            <span className="block text-sm font-medium mb-2">DataURI</span>
             <textarea
               value={result}
               readOnly
@@ -139,16 +131,17 @@ function ImageBase64Tool() {
           <ul className="space-y-2 text-sm">
             <li className="flex items-center gap-2">
               <span className="font-medium">原始图片大小：</span>
-              <span>{formatSize(sizeOri)}</span>
+              <span>{formatFileSize(sizeOri)}</span>
             </li>
             <li className="flex items-center gap-2">
               <span className="font-medium">DataURI 大小：</span>
-              <span>{formatSize(sizeBase)}</span>
+              <span>{formatFileSize(sizeBase)}</span>
             </li>
           </ul>
 
           {result && (
             <button
+              type="button"
               onClick={handleCopy}
               className="w-full mt-4 px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
             >

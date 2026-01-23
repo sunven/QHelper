@@ -1,4 +1,3 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
 import '../../index.css';
 import { create } from '../../lib/chrome/tabs';
@@ -28,13 +27,14 @@ function App() {
     <div className="w-[120px]">
       <ul className="m-0 p-0 text-base">
         {tools.map((tool) => (
-          <li
+          <button
             key={tool.name}
-            className="mx-0 my-0.5 px-1.5 py-1.5 list-none cursor-pointer rounded hover:bg-[#008050] hover:text-white"
+            type="button"
+            className="w-full mx-0 my-0.5 px-1.5 py-1.5 list-none cursor-pointer rounded hover:bg-[#008050] hover:text-white text-left"
             onClick={() => handleToolClick(tool)}
           >
             {tool.name}
-          </li>
+          </button>
         ))}
       </ul>
     </div>

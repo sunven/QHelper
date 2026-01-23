@@ -19,11 +19,4 @@ export default defineConfig({
     },
   },
 
-  typescript: {
-    serviceWorker: true,
-  },
-
-  build: {
-    emptyOutDir: true,
-  },
 });

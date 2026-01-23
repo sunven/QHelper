@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import ReactDOM from 'react-dom/client';
-import * as beautify from 'js-beautify';
 import '../../index.css';
+import * as beautify from 'js-beautify';
+import ReactDOM from 'react-dom/client';
+import { useState } from 'react';
+
+import { copyToClipboard } from '../../lib/utils';
 
 type CodeType = 'js' | 'css' | 'html' | 'xml' | 'sql';
 
@@ -39,12 +41,12 @@ function CodeBeautifyTool() {
 
       setResult(beautified);
     } catch (e) {
-      setResult('美化失败：' + (e instanceof Error ? e.message : String(e)));
+      setResult(`美化失败：${e instanceof Error ? e.message : String(e)}`);
     }
   }
 
   function handleCopy() {
-    navigator.clipboard.writeText(result).then(() => {
+    copyToClipboard(result).then(() => {
       alert('已复制到剪贴板');
     });
   }
@@ -67,7 +69,7 @@ function CodeBeautifyTool() {
       <div className="space-y-4">
         {/* 源代码 */}
         <div className="border rounded-lg p-4">
-          <label className="block text-sm font-medium mb-2">Text</label>
+          <span className="block text-sm font-medium mb-2">Text</span>
           <textarea
             value={source}
             onChange={(e) => setSource(e.target.value)}
@@ -79,6 +81,7 @@ function CodeBeautifyTool() {
         {/* 操作按钮 */}
         <div className="border rounded-lg p-4 flex flex-wrap gap-2">
           <button
+            type="button"
             onClick={() => setCodeType('js')}
             className={`px-4 py-2 border rounded transition-colors ${
               codeType === 'js' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
@@ -87,6 +90,7 @@ function CodeBeautifyTool() {
             JS代码美化
           </button>
           <button
+            type="button"
             onClick={() => setCodeType('css')}
             className={`px-4 py-2 border rounded transition-colors ${
               codeType === 'css' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
@@ -95,6 +99,7 @@ function CodeBeautifyTool() {
             CSS代码美化
           </button>
           <button
+            type="button"
             onClick={() => setCodeType('html')}
             className={`px-4 py-2 border rounded transition-colors ${
               codeType === 'html' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
@@ -103,6 +108,7 @@ function CodeBeautifyTool() {
             HTML代码美化
           </button>
           <button
+            type="button"
             onClick={() => setCodeType('xml')}
             className={`px-4 py-2 border rounded transition-colors ${
               codeType === 'xml' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
@@ -111,6 +117,7 @@ function CodeBeautifyTool() {
             XML代码美化
           </button>
           <button
+            type="button"
             onClick={() => setCodeType('sql')}
             className={`px-4 py-2 border rounded transition-colors ${
               codeType === 'sql' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'
@@ -120,6 +127,7 @@ function CodeBeautifyTool() {
           </button>
 
           <button
+            type="button"
             onClick={doBeautify}
             className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
           >
@@ -129,7 +137,7 @@ function CodeBeautifyTool() {
 
         {/* 结果区域 */}
         <div className="border rounded-lg p-4">
-          <label className="block text-sm font-medium mb-2">结果</label>
+          <span className="block text-sm font-medium mb-2">结果</span>
           <textarea
             value={result}
             readOnly
@@ -141,6 +149,7 @@ function CodeBeautifyTool() {
         {result && (
           <div className="text-center">
             <button
+              type="button"
               onClick={handleCopy}
               className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
             >

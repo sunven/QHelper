@@ -19,7 +19,6 @@ declare global {
   const useAppConfig: typeof import('wxt/utils/app-config').useAppConfig
   const useCallback: typeof import('react').useCallback
   const useChromeCookies: typeof import('/Users/sunven/github/QHelper/hooks/useChromeCookies').useChromeCookies
-  const useChromeTabs: typeof import('/Users/sunven/github/QHelper/hooks/useChromeTabs').useChromeTabs
   const useContext: typeof import('react').useContext
   const useEffect: typeof import('react').useEffect
   const useExtensionStorage: typeof import('/Users/sunven/github/QHelper/hooks/useExtensionStorage').useExtensionStorage

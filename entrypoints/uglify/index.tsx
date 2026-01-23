@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import uglify from 'uglify-js';
+import { copyToClipboard } from '../../lib/utils';
 import '../../index.css';
 
 function UglifyTool() {
@@ -47,7 +48,7 @@ function UglifyTool() {
   }
 
   function handleCopy() {
-    navigator.clipboard.writeText(output).then(() => {
+    copyToClipboard(output).then(() => {
       alert('已复制到剪贴板');
     });
   }

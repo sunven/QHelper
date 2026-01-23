@@ -1,8 +1,8 @@
 async function insertVSCodeButton() {
   // .btn.d-none.d-md-block 取go to file按钮
   // span.d-none.d-md-flex 去code按钮
-  // let insertNode = document.querySelector('.btn.d-none.d-md-block') || document.querySelector('span.d-none.d-md-flex');
-  let insertNode = document.querySelector('.Header-item.mr-0.mr-md-3.flex-order-1.flex-md-order-none');
+  // const insertNode = document.querySelector('.btn.d-none.d-md-block') || document.querySelector('span.d-none.d-md-flex');
+  const insertNode = document.querySelector('.Header-item.mr-0.mr-md-3.flex-order-1.flex-md-order-none');
   if (!insertNode) {
     return;
   }
