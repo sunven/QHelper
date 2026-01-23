@@ -1,0 +1,45 @@
+{
+  "name": "qhelper",
+  "version": "1.2.0",
+  "description": "QHelper前端助手 - Chrome/Chromium 扩展",
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "build": "wxt build",
+    "type-check": "tsc --noEmit",
+    "lint": "biome check .",
+    "format": "biome format --write ."
+  },
+  "keywords": [
+    "chrome-extension",
+    "developer-tools"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@dnd-kit/utilities": "^3.2.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-json-view": "^1.21.3",
+    "tailwind-merge": "^3.4.0",
+    "typescript": "^5.9.3",
+    "uglify-js": "^3.19.3",
+    "wxt": "^0.20.13"
+  },
+  "devDependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "^19.2.3",
+    "@wxt-dev/module-react": "^1.1.5",
+    "autoprefixer": "^10.4.23",
+    "biome": "^0.3.3",
+    "js-beautify": "^1.15.4",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.18"
+  }
+}
