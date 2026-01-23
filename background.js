@@ -7,7 +7,7 @@ var max = 5;
 var current = min;
 
 function updateIcon() {
-  chrome.browserAction.setIcon({path:"icon" + current + ".png"});
+  chrome.action.setIcon({path:"icon" + current + ".png"});
   current++;
 
   if (current > max)

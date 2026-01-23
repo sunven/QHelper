@@ -7,7 +7,8 @@ $(".q-list li").click(function () {
             active: true
         })
     } else if (type == "clearCookie") {
-        chrome.tabs.getSelected(function (tab) {
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+            var tab = tabs[0];
             var reg = /^http(s)?:\/\/(.*?)\//;
             var url = reg.exec(tab.url)[0];
             // var r = confirm("确定要删除【"+url + "】的cookie吗?");
