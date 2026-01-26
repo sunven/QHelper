@@ -1,6 +1,22 @@
 import { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import ReactJsonView from 'react-json-view';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  FileJson,
+  Compress,
+  Sparkles,
+  Trash2,
+  FileText,
+  Minus,
+  Plus,
+  ArrowRightLeft,
+  Save,
+  Download,
+  X,
+} from 'lucide-react';
 import '../../index.css';
 
 interface HistoryItem {
@@ -95,7 +111,6 @@ function JsonTool() {
 
   // Diff 功能
   function diffTwo() {
-    // 使用 diffview.js 和 difflib.js 实现
     alert('Diff 功能需要加载 diffview.js 和 difflib.js 库，将在完整实现中添加');
   }
 
@@ -133,255 +148,219 @@ function JsonTool() {
   }
 
   return (
-    <div className="flex h-screen">
-      {/* 左侧输入 */}
-      <div className={`flex-1 ${baseview === 'diff' ? 'w-1/2' : 'w-full'}`}>
-        <textarea
-          value={jsoncon}
-          onChange={(e) => setJsoncon(e.target.value)}
-          placeholder="请输入 JSON 字符串"
-          className="w-full h-full p-4 font-mono text-sm border-0 resize-none focus:outline-none"
-        />
+    <div className="h-screen flex flex-col">
+      {/* 工具栏 */}
+      <div className="border-b p-2 flex items-center gap-2 bg-muted/50">
+        <Button
+          variant={baseview === 'formatter' ? 'default' : 'outline'}
+          size="sm"
+          onClick={baseViewToFormatter}
+          className="gap-1.5"
+        >
+          <FileJson className="w-4 h-4" />
+          格式化
+        </Button>
+        <Button
+          variant={baseview === 'diff' ? 'default' : 'outline'}
+          size="sm"
+          onClick={baseViewToDiff}
+          className="gap-1.5"
+        >
+          <ArrowRightLeft className="w-4 h-4" />
+          Diff
+        </Button>
+
+        {baseview === 'formatter' && (
+          <>
+            <div className="w-px h-6 bg-border mx-2" />
+            <Button variant="outline" size="sm" onClick={compress} className="gap-1.5">
+              <Compress className="w-4 h-4" />
+              压缩
+            </Button>
+            <Button variant="outline" size="sm" onClick={beauty} className="gap-1.5">
+              <Sparkles className="w-4 h-4" />
+              美化
+            </Button>
+            <Button variant="outline" size="sm" onClick={clearAll} className="gap-1.5">
+              <Trash2 className="w-4 h-4" />
+              清空
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setIsExportTxtShow(true)} className="gap-1.5">
+              <Download className="w-4 h-4" />
+              导出
+            </Button>
+            <div className="flex-1" />
+            <div className="relative">
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <Save className="w-4 h-4" />
+                历史 ({historys.length})
+              </Button>
+              {historys.length > 0 && (
+                <div className="absolute right-0 top-full mt-1 w-48 bg-popover border rounded-md shadow-lg p-2 z-10">
+                  {historys.map((his, index) => (
+                    <div
+                      key={`${his.name}-${index}`}
+                      className="flex items-center justify-between gap-2 px-2 py-1.5 hover:bg-muted rounded"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => restore(his)}
+                        className="flex-1 text-left text-sm"
+                      >
+                        {his.name}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => remove(his, index)}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setIsSaveShow(true)} className="gap-1.5">
+              <Save className="w-4 h-4" />
+              保存
+            </Button>
+          </>
+        )}
+
+        {baseview === 'diff' && (
+          <>
+            <div className="w-px h-6 bg-border mx-2" />
+            <Button variant="default" size="sm" onClick={diffTwo} className="gap-1.5">
+              <ArrowRightLeft className="w-4 h-4" />
+              执行 Diff
+            </Button>
+          </>
+        )}
       </div>
 
-      {/* Diff 模式的第二个输入 */}
-      {baseview === 'diff' && (
-        <div className="w-1/2 border-l">
-          <textarea
-            value={newjsoncon}
-            onChange={(e) => setNewjsoncon(e.target.value)}
-            placeholder="请输入新的 JSON 字符串用于对比"
-            className="w-full h-full p-4 font-mono text-sm border-0 resize-none focus:outline-none"
+      {/* 主内容区 */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* 左侧输入 */}
+        <div className={`flex-1 ${baseview === 'diff' ? 'w-1/2' : 'w-full'} border-r`}>
+          <Textarea
+            value={jsoncon}
+            onChange={(e) => setJsoncon(e.target.value)}
+            placeholder="请输入 JSON 字符串"
+            className="w-full h-full border-0 rounded-none resize-none font-mono text-sm"
           />
         </div>
-      )}
 
-      {/* 分隔线 */}
-      {baseview !== 'diff' && <div className="w-px bg-gray-300" />}
+        {/* Diff 模式的第二个输入 */}
+        {baseview === 'diff' && (
+          <div className="w-1/2">
+            <Textarea
+              value={newjsoncon}
+              onChange={(e) => setNewjsoncon(e.target.value)}
+              placeholder="请输入新的 JSON 字符串用于对比"
+              className="w-full h-full border-0 rounded-none resize-none font-mono text-sm"
+            />
+          </div>
+        )}
 
-      {/* 右侧结果 */}
-      {baseview !== 'diff' && (
-        <div className="flex-1 overflow-auto">
-          {/* 格式化视图 */}
-          {baseview === 'formatter' && (
-            <>
-              {view === 'code' && jsonhtml && (
-                <div className="p-4">
-                  <ReactJsonView
-                    src={jsonhtml}
-                    theme="monokai"
-                    onAdd={(path) => console.log('Add:', path)}
-                    onEdit={(edit) => console.log('Edit:', edit)}
-                    onDelete={(path) => console.log('Delete:', path)}
-                    enableClipboard
-                    shouldCollapse={() => true}
-                  />
-                </div>
-              )}
-
-              {view === 'empty' && <div className="p-4 text-gray-400">空视图</div>}
-
-              {view === 'compress' && (
-                <textarea
-                  value={compressStr}
-                  readOnly
-                  className="w-full h-full p-4 font-mono text-sm border-0 resize-none focus:outline-none bg-gray-50"
-                />
-              )}
-
-              {view === 'error' && (
-                <div className="p-4 text-red-600 font-mono text-sm whitespace-pre-wrap">{error}</div>
-              )}
-            </>
-          )}
-
-          {/* Diff 视图 */}
-          {baseview === 'diff' && (
-            <div id="diffoutput" className="p-4">
-              <p className="text-gray-600">Diff 功能实现中...</p>
-            </div>
-          )}
-
-          {/* 工具栏 */}
-          {baseview === 'formatter' && (
-            <div className="fixed right-0 top-0 p-4 space-x-2">
-              <button
-                type="button"
-                onClick={compress}
-                className={`px-3 py-2 rounded ${view === 'compress' ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'}`}
-                title="压缩"
-              >
-                📦
-              </button>
-              <button
-                type="button"
-                onClick={beauty}
-                className="px-3 py-2 rounded hover:bg-gray-100"
-                title="美化"
-              >
-                ✨
-              </button>
-              <button
-                type="button"
-                onClick={clearAll}
-                className="px-3 py-2 rounded hover:bg-gray-100"
-                title="清空"
-              >
-                🗑️
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsExportTxtShow(true)}
-                className="px-3 py-2 rounded hover:bg-gray-100"
-                title="导出文本文件"
-              >
-                📄
-              </button>
-              <button
-                type="button"
-                onClick={handleExpandAll}
-                className="px-3 py-2 rounded hover:bg-gray-100"
-                title="全部展开"
-              >
-                ➕
-              </button>
-              <button
-                type="button"
-                onClick={handleCollapseAll}
-                className="px-3 py-2 rounded hover:bg-gray-100"
-                title="全部折叠"
-              >
-                ➖
-              </button>
-              <button
-                type="button"
-                onClick={baseViewToDiff}
-                className="px-3 py-2 rounded hover:bg-gray-100"
-                title="Diff"
-              >
-                ↔️
-              </button>
-
-              {/* 历史记录 */}
-              {historys.length > 0 && (
-                <div className="relative">
-                  <button type="button" className="px-3 py-2 rounded hover:bg-gray-100" title="历史保存">
-                    📝
-                  </button>
-                  <div className="absolute right-0 top-full w-48 bg-white border rounded shadow-lg p-2 space-y-1">
-                    {historys.map((his, index) => (
-                      <div key={`${his.name}-${index}`} className="flex items-center justify-between gap-2">
-                        <button
-                          type="button"
-                          onClick={() => restore(his)}
-                          className="flex-1 text-left hover:bg-blue-50 px-2 py-1 rounded"
-                        >
-                          {his.name}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => remove(his, index)}
-                          className="text-red-500 hover:bg-red-50 px-2 py-1"
-                        >
-                          🗑️
-                        </button>
-                      </div>
-                    ))}
+        {/* 右侧结果 */}
+        {baseview !== 'diff' && (
+          <div className="flex-1 overflow-auto">
+            {baseview === 'formatter' && (
+              <>
+                {view === 'code' && jsonhtml && (
+                  <div className="p-4">
+                    <ReactJsonView
+                      src={jsonhtml}
+                      theme="monokai"
+                      onAdd={(path) => console.log('Add:', path)}
+                      onEdit={(edit) => console.log('Edit:', edit)}
+                      onDelete={(path) => console.log('Delete:', path)}
+                      enableClipboard
+                      shouldCollapse={() => true}
+                    />
                   </div>
-                </div>
-              )}
+                )}
 
-              <button
-                type="button"
-                onClick={() => setIsSaveShow(true)}
-                className="px-3 py-2 rounded hover:bg-gray-100"
-                title="保存"
-              >
-                💾
-              </button>
-            </div>
-          )}
+                {view === 'empty' && (
+                  <div className="p-8 text-center text-muted-foreground">
+                    <FileJson className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>请输入 JSON 字符串</p>
+                  </div>
+                )}
 
-          {/* Diff 工具栏 */}
-          {baseview === 'diff' && (
-            <div className="fixed right-0 top-0 p-4 space-x-2">
-              <button
-                type="button"
-                onClick={diffTwo}
-                className="px-3 py-2 rounded bg-blue-600 text-white"
-                title="Diff"
-              >
-                ↔️
-              </button>
-              <button
-                type="button"
-                onClick={baseViewToFormatter}
-                className="px-3 py-2 rounded hover:bg-gray-100"
-                title="格式化视图"
-              >
-                🌳
-              </button>
-            </div>
-          )}
-        </div>
-      )}
+                {view === 'compress' && (
+                  <Textarea
+                    value={compressStr}
+                    readOnly
+                    className="w-full h-full border-0 rounded-none resize-none font-mono text-sm bg-muted/30"
+                  />
+                )}
+
+                {view === 'error' && (
+                  <div className="p-4 text-destructive font-mono text-sm whitespace-pre-wrap">
+                    {error}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* 保存对话框 */}
       {isSaveShow && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 space-y-4">
-            <button
-              type="button"
-              onClick={() => setIsSaveShow(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-            <input
-              type="text"
-              value={historyName}
-              onChange={(e) => setHistoryName(e.target.value)}
-              placeholder="请输入辨识名称"
-              className="w-full px-3 py-2 border rounded"
-            />
-            <button
-              type="button"
-              onClick={saveHistory}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              保存
-            </button>
-          </div>
+          <Card className="w-80">
+            <CardHeader>
+              <CardTitle className="text-base">保存历史</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <input
+                type="text"
+                value={historyName}
+                onChange={(e) => setHistoryName(e.target.value)}
+                placeholder="请输入辨识名称"
+                className="w-full px-3 py-2 border rounded-md"
+              />
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setIsSaveShow(false)} className="flex-1">
+                  取消
+                </Button>
+                <Button onClick={saveHistory} className="flex-1">
+                  保存
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
       {/* 导出对话框 */}
       {isExportTxtShow && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 space-y-4">
-            <button
-              type="button"
-              onClick={() => setIsExportTxtShow(false)}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            >
-              ✕
-            </button>
-            <span className="block text-sm font-medium mb-2">.txt</span>
-            <input
-              type="text"
-              value={exTxtName}
-              onChange={(e) => setExTxtName(e.target.value)}
-              placeholder="请输入辨识名称"
-              className="w-full px-3 py-2 border rounded"
-            />
-            <button
-              type="button"
-              onClick={exportTxt}
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              下载
-            </button>
-          </div>
+          <Card className="w-80">
+            <CardHeader>
+              <CardTitle className="text-base">导出为 .txt</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <input
+                type="text"
+                value={exTxtName}
+                onChange={(e) => setExTxtName(e.target.value)}
+                placeholder="请输入文件名"
+                className="w-full px-3 py-2 border rounded-md"
+              />
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setIsExportTxtShow(false)} className="flex-1">
+                  取消
+                </Button>
+                <Button onClick={exportTxt} className="flex-1">
+                  下载
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
     </div>

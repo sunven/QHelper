@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 import { copyToClipboard, formatFileSize } from '../../lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Upload, Copy, Image as ImageIcon, FileType } from 'lucide-react';
 import '../../index.css';
 
 function ImageBase64Tool() {
@@ -81,74 +85,91 @@ function ImageBase64Tool() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-6">
-        图片Base64编码工具（DataURI数据）
-      </h1>
+      <h1 className="text-2xl font-bold text-center mb-2">图片 Base64 编码</h1>
+      <p className="text-sm text-center text-muted-foreground mb-6">
+        将图片转换为 DataURI 格式
+      </p>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* 左侧：预览和上传 */}
-        <div className="border rounded-lg p-4 min-h-[400px]">
-          {preview ? (
-            <img src={preview} alt="预览" className="max-w-full h-auto rounded" />
-          ) : (
-            <div className="flex items-center justify-center h-64 text-gray-400 border-2 border-dashed rounded-lg">
-              <span className="text-sm">图片预览区域</span>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ImageIcon className="w-4 h-4" />
+              图片预览
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {preview ? (
+              <img
+                src={preview}
+                alt="预览"
+                className="w-full h-auto rounded-md border"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-48 border-2 border-dashed rounded-md text-muted-foreground">
+                <span className="text-sm">图片预览区域</span>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                选择图片
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                支持拖拽或 Ctrl + V 粘贴
+              </p>
             </div>
-          )}
 
-          <div className="mt-4 space-y-2">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-            >
-              选择图片
-            </button>
-            <p className="text-sm text-gray-600">或者选择一张图片拖拽图片到这里来</p>
-            <p className="text-xs text-gray-500">支持屏幕截图后直接 Ctrl + V</p>
-          </div>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
-        </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+          </CardContent>
+        </Card>
 
         {/* 右侧：结果 */}
-        <div className="border rounded-lg p-4 min-h-[400px]">
-          <div className="mb-4">
-            <span className="block text-sm font-medium mb-2">DataURI</span>
-            <textarea
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <FileType className="w-4 h-4" />
+              Base64 结果
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
               value={result}
               readOnly
-              className="w-full h-64 px-3 py-2 border rounded bg-gray-50 text-xs font-mono"
+              placeholder="Base64 结果将显示在这里"
+              className="h-48 font-mono text-xs"
             />
-          </div>
 
-          <ul className="space-y-2 text-sm">
-            <li className="flex items-center gap-2">
-              <span className="font-medium">原始图片大小：</span>
-              <span>{formatFileSize(sizeOri)}</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <span className="font-medium">DataURI 大小：</span>
-              <span>{formatFileSize(sizeBase)}</span>
-            </li>
-          </ul>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="space-y-1">
+                <span className="text-muted-foreground">原始大小</span>
+                <div className="font-medium">{formatFileSize(sizeOri)}</div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-muted-foreground">Base64 大小</span>
+                <div className="font-medium">{formatFileSize(sizeBase)}</div>
+              </div>
+            </div>
 
-          {result && (
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="w-full mt-4 px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            >
-              复制到剪贴板
-            </button>
-          )}
-        </div>
+            {result && (
+              <Button onClick={handleCopy} className="w-full">
+                <Copy className="w-4 h-4 mr-2" />
+                复制到剪贴板
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

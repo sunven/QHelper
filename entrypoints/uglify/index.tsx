@@ -2,6 +2,11 @@ import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import uglify from 'uglify-js';
 import { copyToClipboard } from '../../lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Zap, Copy, Play } from 'lucide-react';
 import '../../index.css';
 
 function UglifyTool() {
@@ -55,77 +60,87 @@ function UglifyTool() {
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-6">uglify</h1>
+      <h1 className="text-2xl font-bold text-center mb-2">JavaScript 压缩</h1>
+      <p className="text-sm text-center text-muted-foreground mb-6">
+        使用 UglifyJS 压缩 JavaScript 代码
+      </p>
 
-      <div className="space-y-4">
+      <div className="space-y-6">
         {/* 选项区域 */}
-        <div className="border rounded-lg p-4 flex gap-4">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={mangle}
-              onChange={(e) => setMangle(e.target.checked)}
-              className="w-4 h-4"
-            />
-            <span>Mangle（变量名缩短）</span>
-          </label>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Zap className="w-4 h-4" />
+              选项
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-6">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={mangle}
+                onCheckedChange={(checked) => setMangle(checked === true)}
+              />
+              <span className="text-sm">Mangle（变量名缩短）</span>
+            </label>
 
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={compress}
-              onChange={(e) => setCompress(e.target.checked)}
-              className="w-4 h-4"
-            />
-            <span>Compress（去除空格和注释）</span>
-          </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <Checkbox
+                checked={compress}
+                onCheckedChange={(checked) => setCompress(checked === true)}
+              />
+              <span className="text-sm">Compress（去除空格和注释）</span>
+            </label>
 
-          <button
-            onClick={doUglify}
-            className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-          >
-            执行
-          </button>
-        </div>
+            <Button onClick={doUglify} className="ml-auto">
+              <Play className="w-4 h-4 mr-2" />
+              执行压缩
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* 代码区域 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* 源代码 */}
-          <div className="border rounded-lg p-4">
-            <textarea
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
-              placeholder="在这里粘贴需要进行混淆的代码"
-              className="w-full h-96 px-3 py-2 border rounded font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="text-base">源代码</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                placeholder="在这里粘贴需要进行压缩的 JavaScript 代码"
+                className="h-[400px] font-mono text-sm"
+              />
+            </CardContent>
+          </Card>
 
           {/* 结果代码 */}
-          <div className="border rounded-lg p-4">
-            {error && (
-              <div className="mb-2 p-2 bg-red-50 text-red-600 rounded text-sm">
-                {error}
-              </div>
-            )}
-            <textarea
-              value={output}
-              readOnly
-              className="w-full h-96 px-3 py-2 border rounded bg-gray-50 font-mono text-sm"
-            />
-          </div>
+          <Card className="h-full">
+            <CardHeader>
+              <CardTitle className="text-base">压缩结果</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {error && (
+                <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
+                  {error}
+                </div>
+              )}
+              <Textarea
+                value={output}
+                readOnly
+                placeholder="压缩结果将显示在这里"
+                className="h-[340px] font-mono text-sm bg-muted/50"
+              />
+              {output && (
+                <Button onClick={handleCopy} variant="outline" className="w-full">
+                  <Copy className="w-4 h-4 mr-2" />
+                  复制结果
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         </div>
-
-        {/* 复制按钮 */}
-        {output && (
-          <div className="text-center">
-            <button
-              onClick={handleCopy}
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-            >
-              复制结果
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -1,5 +1,9 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Palette, ArrowRight } from 'lucide-react';
 import '../../index.css';
 
 function ColorTransformTool() {
@@ -47,102 +51,98 @@ function ColorTransformTool() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-8">颜色转换</h1>
+      <h1 className="text-2xl font-bold text-center mb-2">颜色转换</h1>
+      <p className="text-sm text-center text-muted-foreground mb-6">
+        RGB 与 HEX 颜色格式互转
+      </p>
 
       <div className="space-y-6">
         {/* 颜色预览 */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <div className="flex items-center gap-4">
-            <div className="text-sm font-medium">颜色预览：</div>
-            <div className="flex-1 h-16 rounded border" style={{ backgroundColor: color }} />
-            <input
-              type="color"
-              value={color}
-              onChange={handleColorChange}
-              className="w-16 h-16 cursor-pointer"
-            />
-          </div>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Palette className="w-4 h-4" />
+              颜色预览
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <div className="flex-1 h-16 rounded-md border" style={{ backgroundColor: color }} />
+              <input
+                type="color"
+                value={color}
+                onChange={handleColorChange}
+                className="w-16 h-16 cursor-pointer rounded-md border"
+              />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* RGB → HEX */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-4 border-b pb-2">【RGB】 → 【HEX】</h4>
-
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={srcRgb[0]}
-              onChange={(e) => setSrcRgb([e.target.value, srcRgb[1], srcRgb[2]])}
-              placeholder="R"
-              className="w-20 px-3 py-2 border rounded"
-            />
-            <input
-              type="text"
-              value={srcRgb[1]}
-              onChange={(e) => setSrcRgb([srcRgb[0], e.target.value, srcRgb[2]])}
-              placeholder="G"
-              className="w-20 px-3 py-2 border rounded"
-            />
-            <input
-              type="text"
-              value={srcRgb[2]}
-              onChange={(e) => setSrcRgb([srcRgb[0], srcRgb[1], e.target.value])}
-              placeholder="B"
-              className="w-20 px-3 py-2 border rounded"
-            />
-            <button
-              onClick={rgbToHex}
-              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              转换
-            </button>
-            <input
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ArrowRight className="w-4 h-4" />
+              RGB → HEX
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-end gap-3">
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                value={srcRgb[0]}
+                onChange={(e) => setSrcRgb([e.target.value, srcRgb[1], srcRgb[2]])}
+                placeholder="R"
+                className="w-20"
+              />
+              <Input
+                type="text"
+                value={srcRgb[1]}
+                onChange={(e) => setSrcRgb([srcRgb[0], e.target.value, srcRgb[2]])}
+                placeholder="G"
+                className="w-20"
+              />
+              <Input
+                type="text"
+                value={srcRgb[2]}
+                onChange={(e) => setSrcRgb([srcRgb[0], srcRgb[1], e.target.value])}
+                placeholder="B"
+                className="w-20"
+              />
+            </div>
+            <Button onClick={rgbToHex}>转换</Button>
+            <Input
               type="text"
               value={desHex}
               disabled
-              className="flex-1 px-3 py-2 border rounded disabled:bg-gray-200"
+              placeholder="#RRGGBB"
+              className="flex-1"
             />
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* HEX → RGB */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-4 border-b pb-2">【HEX】 → 【RGB】</h4>
-
-          <div className="flex items-center gap-2">
-            <input
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ArrowRight className="w-4 h-4" />
+              HEX → RGB
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-end gap-3">
+            <Input
               type="text"
               value={srcHex}
               onChange={(e) => setSrcHex(e.target.value)}
               placeholder="#RRGGBB"
-              className="w-32 px-3 py-2 border rounded"
+              className="w-32"
             />
-            <button
-              onClick={hexToRgb}
-              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              转换
-            </button>
-            <input
-              type="text"
-              value={desRgbR}
-              disabled
-              className="w-20 px-3 py-2 border rounded disabled:bg-gray-200"
-            />
-            <input
-              type="text"
-              value={desRgbG}
-              disabled
-              className="w-20 px-3 py-2 border rounded disabled:bg-gray-200"
-            />
-            <input
-              type="text"
-              value={desRgbB}
-              disabled
-              className="w-20 px-3 py-2 border rounded disabled:bg-gray-200"
-            />
-          </div>
-        </div>
+            <Button onClick={hexToRgb}>转换</Button>
+            <Input value={desRgbR} disabled placeholder="R" className="w-20" />
+            <Input value={desRgbG} disabled placeholder="G" className="w-20" />
+            <Input value={desRgbB} disabled placeholder="B" className="w-20" />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

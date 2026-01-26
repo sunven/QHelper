@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Upload, X, Image as ImageIcon, Download, Trash2, Settings } from 'lucide-react';
 import '../../index.css';
 
 interface ImageItem {
@@ -22,13 +26,18 @@ function SortableItem({ id, src, onRemove }: { id: string; src: string; onRemove
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative group cursor-move">
-      <img src={src} alt="" className="w-32 h-32 object-cover rounded border" />
-      <button
-        onClick={() => onRemove(id)}
-        className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+      <img src={src} alt="" className="w-32 h-32 object-cover rounded-md border" />
+      <Button
+        variant="destructive"
+        size="icon"
+        className="absolute -top-2 -right-2 w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={(e) => {
+          e.stopPropagation();
+          onRemove(id);
+        }}
       >
-        ×
-      </button>
+        <X className="w-3 h-3" />
+      </Button>
     </div>
   );
 }
@@ -178,111 +187,155 @@ function PictureSplicingTool() {
   }
 
   return (
-    <div className="p-4">
-      {/* 上传按钮 */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        multiple
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        className="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-      >
-        选择图片
-      </button>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold text-center mb-2">图片拼接</h1>
+      <p className="text-sm text-center text-muted-foreground mb-6">
+        将多张图片拼接成一张图片
+      </p>
 
-      {/* 拖拽排序区域 */}
-      {images.length > 0 && !canvasUrl && (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={images.map((img) => img.id)} strategy={verticalListSortingStrategy}>
-            <div className="flex gap-2 flex-wrap mb-4">
-              {images.map((img) => (
-                <SortableItem key={img.id} id={img.id} src={img.src} onRemove={removeImage} />
-              ))}
-            </div>
-          </SortableContext>
-        </DndContext>
-      )}
-
-      {/* 设置面板 */}
-      {images.length > 0 && !canvasUrl && (
-        <div className="p-4 bg-white border rounded shadow-lg space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">拼接方向</label>
-            <select
-              value={direction}
-              onChange={(e) => setDirection(e.target.value as 'horizontal' | 'vertical')}
-              className="w-full px-3 py-2 border rounded"
-            >
-              <option value="horizontal">水平拼接</option>
-              <option value="vertical">垂直拼接</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">图片间距（px）</label>
+      <div className="space-y-6">
+        {/* 上传区域 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Upload className="w-4 h-4" />
+              上传图片
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
             <input
-              type="number"
-              value={gap}
-              onChange={(e) => setGap(Number(e.target.value))}
-              min={0}
-              className="w-full px-3 py-2 border rounded"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
             />
-          </div>
+            <Button onClick={() => fileInputRef.current?.click()} className="w-full">
+              <Upload className="w-4 h-4 mr-2" />
+              选择图片
+            </Button>
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              支持拖拽或 Ctrl + V 粘贴
+            </p>
+          </CardContent>
+        </Card>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">背景颜色</label>
-            <input
-              type="color"
-              value={bgColor}
-              onChange={(e) => setBgColor(e.target.value)}
-              className="w-full h-10 cursor-pointer"
-            />
-          </div>
+        {/* 图片排序区域 */}
+        {images.length > 0 && !canvasUrl && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ImageIcon className="w-4 h-4" />
+                图片列表 ({images.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={images.map((img) => img.id)} strategy={verticalListSortingStrategy}>
+                  <div className="flex gap-3 flex-wrap">
+                    {images.map((img) => (
+                      <SortableItem key={img.id} id={img.id} src={img.src} onRemove={removeImage} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+              <p className="text-xs text-muted-foreground mt-3">
+                拖拽图片可以调整顺序
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
-          <button
-            onClick={generateCanvas}
-            className="w-full px-6 py-3 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            生成拼接
-          </button>
-        </div>
-      )}
+        {/* 设置面板 */}
+        {images.length > 0 && !canvasUrl && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Settings className="w-4 h-4" />
+                拼接设置
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">拼接方向</label>
+                  <select
+                    value={direction}
+                    onChange={(e) => setDirection(e.target.value as 'horizontal' | 'vertical')}
+                    className="w-full px-3 py-2 border rounded-md bg-background"
+                  >
+                    <option value="horizontal">水平拼接</option>
+                    <option value="vertical">垂直拼接</option>
+                  </select>
+                </div>
 
-      {/* 结果预览 */}
-      {canvasUrl && (
-        <div className="mt-4">
-          <img src={canvasUrl} alt="拼接结果" className="max-w-full border" />
-          <div className="mt-4 flex gap-4">
-            <button
-              onClick={downloadCanvas}
-              className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-700"
-            >
-              下载拼接结果
-            </button>
-            <button
-              onClick={clearImages}
-              className="px-6 py-3 bg-gray-600 text-white rounded hover:bg-gray-700"
-            >
-              清除
-            </button>
-          </div>
-        </div>
-      )}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">图片间距（px）</label>
+                  <Input
+                    type="number"
+                    value={gap}
+                    onChange={(e) => setGap(Number(e.target.value))}
+                    min={0}
+                  />
+                </div>
 
-      {/* 拖拽提示 */}
-      {images.length > 0 && !canvasUrl && (
-        <p className="text-gray-500 text-sm mt-2">拖拽图片可以调整顺序</p>
-      )}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">背景颜色</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="color"
+                      value={bgColor}
+                      onChange={(e) => setBgColor(e.target.value)}
+                      className="w-10 h-10 cursor-pointer rounded-md border"
+                    />
+                    <Input
+                      type="text"
+                      value={bgColor}
+                      onChange={(e) => setBgColor(e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <Button onClick={generateCanvas} className="w-full">
+                生成拼接图片
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* 结果预览 */}
+        {canvasUrl && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ImageIcon className="w-4 h-4" />
+                拼接结果
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <img src={canvasUrl} alt="拼接结果" className="w-full rounded-md border" />
+
+              <div className="flex gap-3">
+                <Button onClick={downloadCanvas} className="flex-1">
+                  <Download className="w-4 h-4 mr-2" />
+                  下载拼接结果
+                </Button>
+                <Button onClick={clearImages} variant="outline" className="flex-1">
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  清除并重新开始
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   );
 }
 
-// Mount the React app
 const root = document.getElementById('app');
 if (root) {
   ReactDOM.createRoot(root).render(<PictureSplicingTool />);
