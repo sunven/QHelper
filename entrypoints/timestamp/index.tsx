@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { ArrowRight, ArrowLeft, Clock } from 'lucide-react';
 import '../../index.css';
 
 function TimestampTool() {
@@ -62,85 +66,88 @@ function TimestampTool() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-4">时间戳转换</h1>
-      <h4 className="text-sm text-center text-gray-600 mb-6">
+      <h1 className="text-2xl font-bold text-center mb-2">时间戳转换</h1>
+      <p className="text-sm text-center text-muted-foreground mb-6">
         源自：
-        <a href="https://github.com/zxlie/FeHelper" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+        <a href="https://github.com/zxlie/FeHelper" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
           https://github.com/zxlie/FeHelper
         </a>
-      </h4>
+      </p>
 
       <div className="space-y-6">
-        {/* Unix时间戳定义 */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-4 border-b pb-2">Unix时间戳定义</h4>
-
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
-              <span className="w-32 text-right">现在的当地时间为：</span>
-              <input type="text" value={nowDate} disabled className="flex-1 px-3 py-2 border rounded disabled:bg-gray-200" />
+        {/* 当前时间 */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              当前时间
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">当地时间</label>
+              <Input value={nowDate} disabled />
             </div>
-
-            <div className="flex items-center gap-4">
-              <span className="w-32 text-right">现在的Unix时间戳：</span>
-              <input type="text" value={now} disabled className="flex-1 px-3 py-2 border rounded disabled:bg-gray-200" />
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Unix 时间戳</label>
+              <Input value={now} disabled />
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         {/* Unix时间戳 → 当地时间 */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-4 border-b pb-2">【Unix时间戳】 → 【当地时间】</h4>
-
-          <div className="flex items-center gap-4">
-            <input
-              type="text"
-              value={srcStamp}
-              onChange={(e) => setSrcStamp(e.target.value)}
-              placeholder="例如：1507722100"
-              className="flex-1 px-3 py-2 border rounded"
-            />
-            <button
-              onClick={stampToDate}
-              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ArrowRight className="w-4 h-4" />
+              Unix 时间戳 → 当地时间
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col sm:flex-row gap-3 items-end">
+            <div className="flex-1 w-full space-y-2">
+              <label className="text-sm font-medium">时间戳</label>
+              <Input
+                value={srcStamp}
+                onChange={(e) => setSrcStamp(e.target.value)}
+                placeholder="例如：1507722100"
+              />
+            </div>
+            <Button onClick={stampToDate} variant="default">
               转换
-            </button>
-            <input
-              type="text"
-              value={desDate}
-              disabled
-              className="flex-1 px-3 py-2 border rounded disabled:bg-gray-200"
-            />
-          </div>
-        </div>
+            </Button>
+            <div className="flex-1 w-full space-y-2">
+              <label className="text-sm font-medium">结果</label>
+              <Input value={desDate} disabled placeholder="转换结果" />
+            </div>
+          </CardContent>
+        </Card>
 
         {/* 当地时间 → Unix时间戳 */}
-        <div className="border rounded-lg p-4 bg-gray-50">
-          <h4 className="font-semibold mb-4 border-b pb-2">【当地时间】 → 【Unix时间戳】</h4>
-
-          <div className="flex items-center gap-4">
-            <input
-              type="text"
-              value={srcLocale}
-              onChange={(e) => setSrcLocale(e.target.value)}
-              placeholder="例如：2017-10-11 19:42:00"
-              className="flex-1 px-3 py-2 border rounded"
-            />
-            <button
-              onClick={dateToStamp}
-              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ArrowLeft className="w-4 h-4" />
+              当地时间 → Unix 时间戳
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col sm:flex-row gap-3 items-end">
+            <div className="flex-1 w-full space-y-2">
+              <label className="text-sm font-medium">时间</label>
+              <Input
+                value={srcLocale}
+                onChange={(e) => setSrcLocale(e.target.value)}
+                placeholder="例如：2017-10-11 19:42:00"
+              />
+            </div>
+            <Button onClick={dateToStamp} variant="default">
               转换
-            </button>
-            <input
-              type="text"
-              value={desStamp}
-              disabled
-              className="flex-1 px-3 py-2 border rounded disabled:bg-gray-200"
-            />
-          </div>
-        </div>
+            </Button>
+            <div className="flex-1 w-full space-y-2">
+              <label className="text-sm font-medium">结果</label>
+              <Input value={desStamp} disabled placeholder="转换结果" />
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
