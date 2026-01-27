@@ -1,5 +1,5 @@
 ---
-name: OPSX: Continue
+name: "OPSX: Continue"
 description: Continue working on a change - create the next artifact (Experimental)
 category: Workflow
 tags: [workflow, artifacts, experimental]
@@ -30,7 +30,7 @@ Continue working on a change by creating the next artifact.
    openspec status --change "<name>" --json
    ```
    Parse the JSON to understand current state. The response includes:
-   - `schemaName`: The workflow schema being used (e.g., "spec-driven", "tdd")
+   - `schemaName`: The workflow schema being used (e.g., "spec-driven")
    - `artifacts`: Array of artifacts with their status ("done", "ready", "blocked")
    - `isComplete`: Boolean indicating if all artifacts are complete
 
@@ -52,10 +52,17 @@ Continue working on a change by creating the next artifact.
      ```bash
      openspec instructions <artifact-id> --change "<name>" --json
      ```
-   - Parse the JSON to get template, dependencies, and what it unlocks
-   - **Create the artifact file** using the template as a starting point:
+   - Parse the JSON. The key fields are:
+     - `context`: Project background (constraints for you - do NOT include in output)
+     - `rules`: Artifact-specific rules (constraints for you - do NOT include in output)
+     - `template`: The structure to use for your output file
+     - `instruction`: Schema-specific guidance
+     - `outputPath`: Where to write the artifact
+     - `dependencies`: Completed artifacts to read for context
+   - **Create the artifact file**:
      - Read any completed dependency files for context
-     - Fill in the template based on context and user's goals
+     - Use `template` as the structure - fill in its sections
+     - Apply `context` and `rules` as constraints when writing - but do NOT copy them into the file
      - Write to the output path specified in instructions
    - Show what was created and what's now unlocked
    - STOP after creating ONE artifact
@@ -93,12 +100,6 @@ Common artifact patterns:
 - **design.md**: Document technical decisions, architecture, and implementation approach.
 - **tasks.md**: Break down implementation into checkboxed tasks.
 
-**tdd schema** (spec → tests → implementation → docs):
-- **spec.md**: Feature specification defining what to build.
-- **tests/*.test.ts**: Write tests BEFORE implementation (TDD red phase).
-- **src/*.ts**: Implement to make tests pass (TDD green phase).
-- **docs/*.md**: Document the implemented feature.
-
 For other schemas, follow the `instruction` field from the CLI output.
 
 **Guardrails**
@@ -108,3 +109,6 @@ For other schemas, follow the `instruction` field from the CLI output.
 - If context is unclear, ask the user before creating
 - Verify the artifact file exists after writing before marking progress
 - Use the schema's artifact sequence, don't assume specific artifact names
+- **IMPORTANT**: `context` and `rules` are constraints for YOU, not content for the file
+  - Do NOT copy `<context>`, `<rules>`, `<project_context>` blocks into the artifact
+  - These guide what you write, but should never appear in the output
