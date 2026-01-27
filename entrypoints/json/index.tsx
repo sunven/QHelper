@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import {
   FileJson,
-  Compress,
   Sparkles,
   Trash2,
   FileText,
@@ -174,7 +173,7 @@ function JsonTool() {
           <>
             <div className="w-px h-6 bg-border mx-2" />
             <Button variant="outline" size="sm" onClick={compress} className="gap-1.5">
-              <Compress className="w-4 h-4" />
+              <Minus className="w-4 h-4" />
               压缩
             </Button>
             <Button variant="outline" size="sm" onClick={beauty} className="gap-1.5">
