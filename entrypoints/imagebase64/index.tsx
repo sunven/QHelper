@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { copyToClipboard, formatFileSize } from '../../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,6 +14,21 @@ function ImageBase64Tool() {
   const [sizeOri, setSizeOri] = useState(0);
   const [sizeBase, setSizeBase] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const processFile = useCallback((file: File | Blob) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setPreview(dataUrl);
+      setResult(dataUrl);
+      setSizeOri(file.size);
+
+      // Calculate base64 size (approximately)
+      const base64Size = Math.round(dataUrl.length * 0.75);
+      setSizeBase(base64Size);
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   useEffect(() => {
     // Handle paste events
@@ -53,28 +69,13 @@ function ImageBase64Tool() {
       document.removeEventListener('drop', handleDrop);
       document.removeEventListener('dragover', handleDragOver);
     };
-  }, []);
+  }, [processFile]);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
       processFile(file);
     }
-  }
-
-  function processFile(file: File | Blob) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
-      setPreview(dataUrl);
-      setResult(dataUrl);
-      setSizeOri(file.size);
-
-      // Calculate base64 size (approximately)
-      const base64Size = Math.round(dataUrl.length * 0.75);
-      setSizeBase(base64Size);
-    };
-    reader.readAsDataURL(file);
   }
 
   function handleCopy() {
@@ -177,5 +178,9 @@ function ImageBase64Tool() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<ImageBase64Tool />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="imagebase64" toolName="图片 Base64 编码">
+      <ImageBase64Tool />
+    </ToolErrorBoundary>,
+  );
 }

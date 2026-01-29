@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -150,5 +151,9 @@ function ColorTransformTool() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<ColorTransformTool />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="colorTransform" toolName="颜色转换">
+      <ColorTransformTool />
+    </ToolErrorBoundary>,
+  );
 }

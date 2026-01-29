@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
+import { useToolState } from '@/hooks/useToolState';
 import ReactDOM from 'react-dom/client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, ArrowLeft, Clock } from 'lucide-react';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import '../../index.css';
 
 function TimestampTool() {
   const [nowDate, setNowDate] = useState('');
   const [now, setNow] = useState('');
-  const [srcStamp, setSrcStamp] = useState('');
+  const [srcStamp, setSrcStamp] = useToolState('timestamp', 'srcStamp', '');
   const [desDate, setDesDate] = useState('');
-  const [srcLocale, setSrcLocale] = useState('');
+  const [srcLocale, setSrcLocale] = useToolState('timestamp', 'srcLocale', '');
   const [desStamp, setDesStamp] = useState('');
 
   useEffect(() => {
@@ -155,5 +157,9 @@ function TimestampTool() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<TimestampTool />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="timestamp" toolName="时间戳转换">
+      <TimestampTool />
+    </ToolErrorBoundary>,
+  );
 }

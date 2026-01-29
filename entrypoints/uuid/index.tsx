@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -196,5 +197,9 @@ function UUIDGenerator() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<UUIDGenerator />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="uuid" toolName="UUID 生成器">
+      <UUIDGenerator />
+    </ToolErrorBoundary>,
+  );
 }

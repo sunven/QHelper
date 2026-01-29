@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import * as yaml from 'js-yaml';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -226,5 +227,9 @@ address:
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<YAMLConverter />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="yaml" toolName="YAML 转换器">
+      <YAMLConverter />
+    </ToolErrorBoundary>,
+  );
 }

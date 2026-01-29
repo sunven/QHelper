@@ -1,6 +1,7 @@
 import '../../index.css';
 import * as beautify from 'js-beautify';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { useState } from 'react';
 import { copyToClipboard } from '../../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -149,5 +150,9 @@ function CodeBeautifyTool() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<CodeBeautifyTool />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="codebeautify" toolName="代码美化">
+      <CodeBeautifyTool />
+    </ToolErrorBoundary>,
+  );
 }

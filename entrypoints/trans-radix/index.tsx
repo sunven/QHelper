@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -180,5 +181,9 @@ function TransRadixTool() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<TransRadixTool />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="trans-radix" toolName="进制转换">
+      <TransRadixTool />
+    </ToolErrorBoundary>,
+  );
 }

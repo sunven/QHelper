@@ -1,10 +1,14 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowRight, ArrowLeft, Code, Lock, Key, FileCode } from 'lucide-react';
 import { md5 } from '@/lib/utils/md5';
+import { useToolHistory } from '@/hooks/useToolHistory';
+import { useToolState } from '@/hooks/useToolState';
+import { CopyButton } from '@/components/tool/CopyButton';
 import '../../index.css';
 
 type EncodeType =
@@ -40,8 +44,22 @@ const encodeItems: EncodeItem[] = [
 ];
 
 function ConvertTool() {
-  const [srcText, setSrcText] = useState('');
+  const [srcText, setSrcText] = useToolState('convert', 'srcText', '');
   const [result, setResult] = useState('');
+
+  // 历史记录
+  const { history, addHistory, clearHistory } = useToolHistory<string, string>(
+    'convert',
+    { maxHistory: 50 },
+  );
+
+  // 执行编解码并添加历史记录
+  function executeEncode(type: EncodeType, encodeFn: () => void) {
+    encodeFn();
+    if (srcText && result) {
+      addHistory(srcText, result, { type });
+    }
+  }
 
   function htmlEscape() {
     const div = document.createElement('div');
@@ -120,22 +138,22 @@ function ConvertTool() {
   function handleEncode(type: EncodeType) {
     switch (type) {
       case 'htmlEscape':
-        htmlEscape();
+        executeEncode(type, htmlEscape);
         break;
       case 'uniEncode':
-        uniEncode();
+        executeEncode(type, uniEncode);
         break;
       case 'utf8Encode':
-        utf8Encode();
+        executeEncode(type, utf8Encode);
         break;
       case 'base64Encode':
-        base64Encode();
+        executeEncode(type, base64Encode);
         break;
       case 'md5Encode':
-        md5Encode();
+        executeEncode(type, md5Encode);
         break;
       case 'html2js':
-        html2js();
+        executeEncode(type, html2js);
         break;
     }
   }
@@ -143,18 +161,23 @@ function ConvertTool() {
   function handleDecode(type: EncodeType) {
     switch (type) {
       case 'htmlUnescape':
-        htmlUnescape();
+        executeEncode(type, htmlUnescape);
         break;
       case 'uniDecode':
-        uniDecode();
+        executeEncode(type, uniDecode);
         break;
       case 'utf8Decode':
-        utf8Decode();
+        executeEncode(type, utf8Decode);
         break;
       case 'base64Decode':
-        base64Decode();
+        executeEncode(type, base64Decode);
         break;
     }
+  }
+
+  // 恢复历史记录
+  function restoreHistory(input: string) {
+    setSrcText(input);
   }
 
   const encodeButtons = encodeItems.filter((item) => item.direction === 'encode');
@@ -246,7 +269,10 @@ function ConvertTool() {
         {/* 结果区域 */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">结果</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">结果</CardTitle>
+              {result && <CopyButton content={result} label="复制结果" size="sm" />}
+            </div>
           </CardHeader>
           <CardContent>
             <Textarea
@@ -257,6 +283,44 @@ function ConvertTool() {
             />
           </CardContent>
         </Card>
+
+        {/* 历史记录 */}
+        {history.length > 0 && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">历史记录</CardTitle>
+                <Button variant="outline" size="sm" onClick={clearHistory}>
+                  清除历史 ({history.length})
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {history.slice(-10).reverse().map((entry) => (
+                  <div
+                    key={entry.id}
+                    className="p-3 bg-muted rounded-md text-sm cursor-pointer hover:bg-muted/80"
+                    onClick={() => restoreHistory(entry.input)}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-muted-foreground">
+                        {new Date(entry.timestamp).toLocaleString()}
+                      </span>
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                        {entry.metadata?.type as string || '未知'}
+                      </span>
+                    </div>
+                    <div className="truncate font-mono">
+                      {entry.input.slice(0, 50)}
+                      {entry.input.length > 50 ? '...' : ''}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
@@ -264,5 +328,9 @@ function ConvertTool() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<ConvertTool />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="convert" toolName="字符串编解码">
+      <ConvertTool />
+    </ToolErrorBoundary>,
+  );
 }

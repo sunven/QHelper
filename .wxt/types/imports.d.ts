@@ -10,25 +10,14 @@ declare global {
   const CardHeader: typeof import('/Users/sunven/github/QHelper/components/ui/card').CardHeader
   const CardTitle: typeof import('/Users/sunven/github/QHelper/components/ui/card').CardTitle
   const Checkbox: typeof import('/Users/sunven/github/QHelper/components/ui/checkbox').Checkbox
-  const CompactToolLayout: typeof import('/Users/sunven/github/QHelper/components/index').CompactToolLayout
   const ContentScriptContext: typeof import('wxt/utils/content-script-context').ContentScriptContext
-  const InlineErrorDisplay: typeof import('/Users/sunven/github/QHelper/components/ToolErrorDisplay').InlineErrorDisplay
+  const Input: typeof import('/Users/sunven/github/QHelper/components/ui/input').Input
   const InvalidMatchPattern: typeof import('wxt/utils/match-patterns').InvalidMatchPattern
-  const KeyboardShortcutsProvider: typeof import('/Users/sunven/github/QHelper/components/KeyboardShortcutsHelp').KeyboardShortcutsProvider
+  const Label: typeof import('/Users/sunven/github/QHelper/components/ui/label').Label
   const MatchPattern: typeof import('wxt/utils/match-patterns').MatchPattern
-  const SimpleToolLayout: typeof import('/Users/sunven/github/QHelper/components/index').SimpleToolLayout
+  const Slider: typeof import('/Users/sunven/github/QHelper/components/ui/slider').Slider
   const Textarea: typeof import('/Users/sunven/github/QHelper/components/ui/textarea').Textarea
-  const ToolCard: typeof import('/Users/sunven/github/QHelper/components/index').ToolCard
-  const ToolContent: typeof import('/Users/sunven/github/QHelper/components/index').ToolContent
-  const ToolDivider: typeof import('/Users/sunven/github/QHelper/components/index').ToolDivider
-  const ToolErrorBoundary: typeof import('/Users/sunven/github/QHelper/components/ToolErrorBoundary').ToolErrorBoundary
-  const ToolErrorDisplay: typeof import('/Users/sunven/github/QHelper/components/ToolErrorDisplay').ToolErrorDisplay
-  const ToolHeader: typeof import('/Users/sunven/github/QHelper/components/index').ToolHeader
-  const ToolHint: typeof import('/Users/sunven/github/QHelper/components/index').ToolHint
-  const ToolInputArea: typeof import('/Users/sunven/github/QHelper/components/index').ToolInputArea
-  const ToolLayout: typeof import('/Users/sunven/github/QHelper/components/index').ToolLayout
-  const ToolOutputArea: typeof import('/Users/sunven/github/QHelper/components/index').ToolOutputArea
-  const ToolSection: typeof import('/Users/sunven/github/QHelper/components/index').ToolSection
+  const ToolErrorBoundary: typeof import('/Users/sunven/github/QHelper/components/index').ToolErrorBoundary
   const browser: typeof import('wxt/browser').browser
   const cn: typeof import('/Users/sunven/github/QHelper/components/ui/utils').cn
   const createIframeUi: typeof import('wxt/utils/content-script-ui/iframe').createIframeUi
@@ -50,12 +39,10 @@ declare global {
   const useEffect: typeof import('react').useEffect
   const useExtensionStorage: typeof import('/Users/sunven/github/QHelper/hooks/useExtensionStorage').useExtensionStorage
   const useKeyboardShortcuts: typeof import('/Users/sunven/github/QHelper/hooks/useKeyboardShortcuts').useKeyboardShortcuts
-  const useKeyboardShortcutsHelp: typeof import('/Users/sunven/github/QHelper/components/KeyboardShortcutsHelp').useKeyboardShortcutsHelp
   const useMemo: typeof import('react').useMemo
   const useReducer: typeof import('react').useReducer
   const useRef: typeof import('react').useRef
   const useState: typeof import('react').useState
-  const useToolErrorBoundary: typeof import('/Users/sunven/github/QHelper/components/ToolErrorBoundary').useToolErrorBoundary
   const useToolHistory: typeof import('/Users/sunven/github/QHelper/hooks/useToolHistory').useToolHistory
   const useToolHistoryStats: typeof import('/Users/sunven/github/QHelper/hooks/useToolHistory').useToolHistoryStats
   const useToolState: typeof import('/Users/sunven/github/QHelper/hooks/useToolState').useToolState
@@ -96,6 +83,9 @@ declare global {
   // @ts-ignore
   export type { ButtonProps } from '/Users/sunven/github/QHelper/components/ui/button'
   import('/Users/sunven/github/QHelper/components/ui/button')
+  // @ts-ignore
+  export type { SliderProps } from '/Users/sunven/github/QHelper/components/ui/slider'
+  import('/Users/sunven/github/QHelper/components/ui/slider')
   // @ts-ignore
   export type { KeyboardShortcut, KeyboardShortcuts } from '/Users/sunven/github/QHelper/hooks/useKeyboardShortcuts'
   import('/Users/sunven/github/QHelper/hooks/useKeyboardShortcuts')

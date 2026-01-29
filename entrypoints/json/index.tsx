@@ -23,7 +23,6 @@ import {
 import { jsonDiff, type DiffResult, type DiffChange } from '@/lib/utils/jsonDiff';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import { useKeyboardShortcuts, type KeyboardShortcut } from '@/hooks/useKeyboardShortcuts';
-import { useKeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
 import type { HistoryEntry } from '@/types/storage';
 import '../../index.css';
 
@@ -187,9 +186,6 @@ function JsonTool() {
     setBaseview('formatter');
   }, []);
 
-  // 键盘快捷键帮助
-  const { showHelp, registerShortcuts } = useKeyboardShortcutsHelp();
-
   // 注册键盘快捷键
   const shortcuts: KeyboardShortcut[] = useMemo(
     () => [
@@ -236,11 +232,6 @@ function JsonTool() {
 
   // 使用键盘快捷键 Hook
   useKeyboardShortcuts({ shortcuts, isEnabled: true });
-
-  // 注册快捷键到帮助系统
-  useEffect(() => {
-    registerShortcuts(shortcuts);
-  }, [shortcuts, registerShortcuts]);
 
   // Diff 功能
   function diffTwo() {
@@ -569,9 +560,6 @@ function JsonTool() {
                     <ReactJsonView
                       src={jsonhtml}
                       theme="monokai"
-                      onAdd={(path) => console.log('Add:', path)}
-                      onEdit={(edit) => console.log('Edit:', edit)}
-                      onDelete={(path) => console.log('Delete:', path)}
                       enableClipboard
                       shouldCollapse={(field) => {
                         // 对于大型对象，默认折叠以提高性能

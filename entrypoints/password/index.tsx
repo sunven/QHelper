@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,12 +8,15 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import { Copy, RefreshCw, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { useToolState } from '@/hooks/useToolState';
+import { CopyButton } from '@/components/tool/CopyButton';
 import '../../index.css';
 
 function PasswordGenerator() {
-  const [length, setLength] = useState(16);
+  // 使用持久化状态保存用户配置
+  const [length, setLength] = useToolState('password', 'length', 16);
   const [password, setPassword] = useState('');
-  const [options, setOptions] = useState({
+  const [options, setOptions] = useToolState('password', 'options', {
     uppercase: true,
     lowercase: true,
     numbers: true,
@@ -93,10 +97,6 @@ function PasswordGenerator() {
     setPassword(result);
   }
 
-  async function handleCopy() {
-    await navigator.clipboard.writeText(password);
-  }
-
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center gap-3 mb-6">
@@ -127,9 +127,7 @@ function PasswordGenerator() {
                 <Button onClick={generatePassword} variant="outline" size="icon">
                   <RefreshCw className="w-4 h-4" />
                 </Button>
-                <Button onClick={handleCopy} variant="outline" size="icon">
-                  <Copy className="w-4 h-4" />
-                </Button>
+                <CopyButton content={password} variant="outline" size="icon" label="" />
               </div>
 
               {/* 密码强度指示 */}
@@ -283,5 +281,9 @@ function PasswordGenerator() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<PasswordGenerator />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="password" toolName="密码生成器">
+      <PasswordGenerator />
+    </ToolErrorBoundary>,
+  );
 }

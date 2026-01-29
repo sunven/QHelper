@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import uglify from 'uglify-js';
 import { copyToClipboard } from '../../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -148,5 +149,9 @@ function UglifyTool() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<UglifyTool />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="uglify" toolName="JavaScript 压缩">
+      <UglifyTool />
+    </ToolErrorBoundary>,
+  );
 }

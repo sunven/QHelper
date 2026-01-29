@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -185,5 +186,9 @@ function URLParser() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<URLParser />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="urlparser" toolName="URL 解析器">
+      <URLParser />
+    </ToolErrorBoundary>,
+  );
 }

@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
+import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -52,6 +53,24 @@ function PictureSplicingTool() {
 
   const sensors = useSensors(useSensor(PointerSensor), useSensor(KeyboardSensor));
 
+  const processFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const newItem: ImageItem = {
+          id: Date.now().toString() + Math.random(),
+          src: e.target?.result as string,
+          width: img.width,
+          height: img.height,
+        };
+        setImages((prev) => [...prev, newItem]);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
   useEffect(() => {
     const handleDrop = (e: DragEvent) => {
       e.preventDefault();
@@ -73,7 +92,7 @@ function PictureSplicingTool() {
       document.removeEventListener('drop', handleDrop);
       document.removeEventListener('dragover', (e) => e.preventDefault());
     };
-  }, []);
+  }, [processFile]);
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -84,24 +103,6 @@ function PictureSplicingTool() {
         return arrayMove(items, oldIndex, newIndex);
       });
     }
-  }
-
-  function processFile(file: File) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const newItem: ImageItem = {
-          id: Date.now().toString() + Math.random(),
-          src: e.target?.result as string,
-          width: img.width,
-          height: img.height,
-        };
-        setImages((prev) => [...prev, newItem]);
-      };
-      img.src = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
   }
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -338,5 +339,9 @@ function PictureSplicingTool() {
 
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<PictureSplicingTool />);
+  ReactDOM.createRoot(root).render(
+    <ToolErrorBoundary toolId="pictureSplicing" toolName="图片拼接">
+      <PictureSplicingTool />
+    </ToolErrorBoundary>,
+  );
 }
