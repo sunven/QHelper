@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QHelper 前端助手 - 隐私政策</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            background: #fff;
+            min-height: 100vh;
+        }
+        h1 {
+            font-size: 28px;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #4f46e5;
+            padding-bottom: 15px;
+        }
+        .meta {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        h2 {
+            font-size: 22px;
+            color: #1a1a1a;
+            margin-top: 35px;
+            margin-bottom: 15px;
+        }
+        h3 {
+            font-size: 18px;
+            color: #333;
+            margin-top: 25px;
+            margin-bottom: 10px;
+        }
+        p {
+            margin-bottom: 15px;
+            color: #444;
+        }
+        ul {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+        li {
+            margin-bottom: 8px;
+            color: #444;
+        }
+        .permission-box {
+            background: #f9fafb;
+            border-left: 4px solid #4f46e5;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .permission-box strong {
+            color: #4f46e5;
+        }
+        .no-data {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+            padding: 15px 20px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        .no-data li {
+            color: #065f46;
+        }
+        .contact {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 15px 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+        .contact a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+        .contact a:hover {
+            text-decoration: underline;
+        }
+        .divider {
+            border-top: 1px solid #e5e7eb;
+            margin: 30px 0;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 14px;
+            color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>QHelper 前端助手 - 隐私政策</h1>
+        <p class="meta">生效日期: 2025 年 1 月 | 版本: 1.0</p>
+
+        <div class="divider"></div>
+
+        <h2>概述</h2>
+        <p>QHelper 前端助手（以下简称"本扩展"）是一款为前端开发者设计的浏览器实用工具扩展。我们高度重视您的隐私，并承诺保护您的个人信息。</p>
+
+        <h2>数据收集</h2>
+        <div class="no-data">
+            <p><strong>本扩展不收集任何用户数据</strong></p>
+            <ul>
+                <li>不收集用户浏览历史</li>
+                <li>不收集用户输入的内容</li>
+                <li>不向任何服务器发送数据</li>
+                <li>不使用任何分析工具或追踪服务</li>
+                <li>不与第三方共享任何信息</li>
+            </ul>
+        </div>
+
+        <h2>权限说明</h2>
+        <p>本扩展请求以下权限，仅用于实现特定功能：</p>
+
+        <h3>1. cookies 权限</h3>
+        <div class="permission-box">
+            <p><strong>用途:</strong> "清除 Cookie" 功能</p>
+            <ul>
+                <li>仅在您主动点击"清除 Cookie"按钮时使用</li>
+                <li>用于读取和删除当前网站的 Cookie</li>
+                <li>Cookie 数据不会离开您的浏览器</li>
+                <li>不会记录或传输任何 Cookie 内容</li>
+            </ul>
+        </div>
+
+        <h3>2. tabs 权限</h3>
+        <div class="permission-box">
+            <p><strong>用途:</strong> 在新标签页中打开工具</p>
+            <ul>
+                <li>仅用于创建新标签页显示各种工具界面</li>
+                <li>不读取标签页内容或浏览历史</li>
+                <li>不追踪您访问的网站</li>
+            </ul>
+        </div>
+
+        <h3>3. storage 权限</h3>
+        <div class="permission-box">
+            <p><strong>用途:</strong> 存储用户偏好设置</p>
+            <ul>
+                <li>仅存储您最近使用的工具记录</li>
+                <li>所有数据保存在浏览器本地存储中</li>
+                <li>数据仅由您本人访问</li>
+            </ul>
+        </div>
+
+        <h3>4. host_permissions（<code>&lt;all_urls&gt;</code>）</h3>
+        <div class="permission-box">
+            <p><strong>用途:</strong> GitHub 页面集成功能</p>
+            <ul>
+                <li>仅在 GitHub 仓库页面注入内容脚本</li>
+                <li>功能：添加一个"在 vscode.dev 中打开"的按钮</li>
+                <li>不读取、修改或传输任何页面内容</li>
+                <li>不在其他网站运行任何脚本</li>
+            </ul>
+        </div>
+
+        <h2>数据存储</h2>
+        <p>所有数据均存储在您的浏览器本地：</p>
+        <ul>
+            <li>Cookie 数据：仅存储在浏览器 Cookie 存储区</li>
+            <li>用户偏好：仅存储在浏览器本地存储（chrome.storage.local）</li>
+            <li>不会同步到云端服务器</li>
+            <li>不会在设备间同步</li>
+        </ul>
+
+        <h2>第三方服务</h2>
+        <p>本扩展：</p>
+        <ul>
+            <li>不使用任何第三方服务</li>
+            <li>不嵌入任何第三方代码</li>
+            <li>不连接任何外部 API</li>
+            <li>不显示任何广告</li>
+        </ul>
+
+        <h2>数据安全</h2>
+        <ul>
+            <li>所有数据处理均在您的浏览器本地完成</li>
+            <li>无服务器交互，无数据传输风险</li>
+            <li>无数据泄露可能性</li>
+        </ul>
+
+        <h2>儿童隐私</h2>
+        <p>本扩展面向成年开发者使用。我们不有意收集 13 岁以下儿童的任何信息。</p>
+
+        <h2>隐私政策变更</h2>
+        <p>如果我们更新本隐私政策，将在扩展更新说明中通知用户。继续使用扩展即表示您接受更新后的政策。</p>
+
+        <h2>联系方式</h2>
+        <div class="contact">
+            <p>如有任何隐私相关问题，请通过以下方式联系：</p>
+            <ul>
+                <li>GitHub Issues: <a href="https://github.com/sunven/QHelper/issues" target="_blank">https://github.com/sunven/QHelper/issues</a></li>
+                <li>Email: (可通过 GitHub 联系)</li>
+            </ul>
+        </div>
+
+        <div class="divider"></div>
+        <p style="color: #999; font-size: 14px;">本隐私政策最后更新日期: 2025 年 1 月</p>
+    </div>
+</body>
+</html>

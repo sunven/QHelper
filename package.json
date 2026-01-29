@@ -18,7 +18,7 @@
     "chrome-extension",
     "developer-tools"
   ],
-  "author": "",
+  "author": "sunven",
   "license": "ISC",
   "dependencies": {
     "@dnd-kit/utilities": "^3.2.2",
