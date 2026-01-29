@@ -4,6 +4,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowRight, ArrowLeft, Code, Lock, Key, FileCode } from 'lucide-react';
+import { md5 } from '@/lib/utils/md5';
 import '../../index.css';
 
 type EncodeType =
@@ -104,14 +105,9 @@ function ConvertTool() {
     }
   }
 
-  async function md5Encode() {
+  function md5Encode() {
     try {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(srcText);
-      const hash = await crypto.subtle.digest('MD5', data);
-      const hashArray = Array.from(new Uint8Array(hash));
-      const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
-      setResult(hashHex);
+      setResult(md5(srcText));
     } catch {
       setResult('MD5 编码失败');
     }

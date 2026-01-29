@@ -40,7 +40,7 @@ function UglifyTool() {
       });
 
       if (result.error) {
-        setError(result.error);
+        setError(result.error.message);
         setOutput('');
       } else {
         setError('');

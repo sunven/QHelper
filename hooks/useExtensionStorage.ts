@@ -22,14 +22,16 @@ export function useExtensionStorage<T>(key: string, defaultValue: T) {
 
     loadValue();
 
-    const unsubscribe = storage.onChanged((changes, areaName) => {
+    const handler = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
       if (areaName === 'local' && key in changes) {
-        setValue(changes[key].newValue ?? defaultValue);
+        setValue((changes[key].newValue ?? defaultValue) as T);
       }
-    });
+    };
+
+    storage.onChanged(handler);
 
     return () => {
-      unsubscribe();
+      chrome.storage.onChanged.removeListener(handler);
     };
   }, [key, defaultValue]);
 

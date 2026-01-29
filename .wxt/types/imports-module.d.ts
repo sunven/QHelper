@@ -18,6 +18,18 @@ declare module '#imports' {
   export { InvalidMatchPattern, MatchPattern } from 'wxt/utils/match-patterns';
   export { useState, useCallback, useMemo, useEffect, useRef, useContext, useReducer } from 'react';
   export { fakeBrowser } from 'wxt/testing';
+  export { useKeyboardShortcutsHelp, KeyboardShortcutsProvider } from '../components/KeyboardShortcutsHelp';
+  export { ToolErrorBoundary, ToolErrorBoundary, useToolErrorBoundary } from '../components/ToolErrorBoundary';
+  export { ToolErrorDisplay, InlineErrorDisplay } from '../components/ToolErrorDisplay';
+  export { ToolLayout, SimpleToolLayout, CompactToolLayout, ToolHeader, ToolContent, ToolCard, ToolSection, ToolInputArea, ToolOutputArea, ToolDivider, ToolHint } from '../components/index';
+  export { Button, ButtonProps } from '../components/ui/button';
+  export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent } from '../components/ui/card';
+  export { Checkbox } from '../components/ui/checkbox';
+  export { Textarea } from '../components/ui/textarea';
+  export { cn } from '../components/ui/utils';
   export { useChromeCookies } from '../hooks/useChromeCookies';
   export { useExtensionStorage } from '../hooks/useExtensionStorage';
+  export { useKeyboardShortcuts, getShortcutDisplayText, KeyboardShortcut, KeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+  export { useToolHistory, useToolHistoryStats } from '../hooks/useToolHistory';
+  export { useToolState, useToolStateWithConfig } from '../hooks/useToolState';
 }

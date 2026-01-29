@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
 import ReactJsonView from 'react-json-view';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -15,8 +15,50 @@ import {
   Save,
   Download,
   X,
+  Check,
+  AlertCircle,
+  Clock,
+  FileWarning,
 } from 'lucide-react';
+import { jsonDiff, type DiffResult, type DiffChange } from '@/lib/utils/jsonDiff';
+import { useToolHistory } from '@/hooks/useToolHistory';
+import { useKeyboardShortcuts, type KeyboardShortcut } from '@/hooks/useKeyboardShortcuts';
+import { useKeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp';
+import type { HistoryEntry } from '@/types/storage';
 import '../../index.css';
+
+// 文件大小阈值
+const SIZE_THRESHOLDS = {
+  SMALL: 100 * 1024,      // 100KB
+  MEDIUM: 1024 * 1024,    // 1MB
+  LARGE: 10 * 1024 * 1024, // 10MB
+  WARNING: 5 * 1024 * 1024, // 5MB - 显示警告
+};
+
+// 获取文件大小描述
+function getFileSizeDescription(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+  if (bytes < 10 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+// 防抖函数
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 interface HistoryItem {
   name: string;
@@ -31,30 +73,76 @@ function JsonTool() {
   const [jsonhtml, setJsonhtml] = useState<object | null>(null);
   const [compressStr, setCompressStr] = useState('');
   const [error, setError] = useState('');
-  const [historys, setHistorys] = useState<HistoryItem[]>([]);
   const [isSaveShow, setIsSaveShow] = useState(false);
   const [historyName, setHistoryName] = useState('');
   const [isExportTxtShow, setIsExportTxtShow] = useState(false);
   const [exTxtName, setExTxtName] = useState('');
 
+  // Diff 相关状态
+  const [diffResult, setDiffResult] = useState<DiffResult | null>(null);
+  const [diffError, setDiffError] = useState('');
+
+  // 性能优化相关状态
+  const [processingTime, setProcessingTime] = useState<number>(0);
+  const [inputSize, setInputSize] = useState<number>(0);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const parsingStartTimeRef = useRef<number>(0);
+
+  // 使用防抖输入，对于大文件延迟解析
+  const debouncedJsoncon = useDebounce(jsoncon, inputSize > SIZE_THRESHOLDS.MEDIUM ? 500 : 200);
+
+  // 使用工具历史记录 Hook
+  const { history, loading: historyLoading, addHistory, clearHistory, removeHistory } = useToolHistory<string, object>(
+    'json',
+    { maxHistory: 50 },
+  );
+
+  // 将历史记录转换为旧格式以保持兼容性
+  const historys: HistoryItem[] = history.map((entry: HistoryEntry<string, object>) => ({
+    name: entry.metadata?.name as string || `历史记录 ${new Date(entry.timestamp).toLocaleString()}`,
+    content: entry.input,
+  }));
+
   // 处理 JSON 输入变化
   useEffect(() => {
-    if (baseview === 'formatter' && jsoncon) {
-      try {
-        const parsed = JSON.parse(jsoncon);
-        setJsonhtml(parsed);
-        setView('code');
-        setError('');
-      } catch (e) {
-        setError(`JSON 解析错误：${e instanceof Error ? e.message : String(e)}`);
-        setView('error');
-        setJsonhtml(null);
-      }
+    // 更新输入大小
+    setInputSize(jsoncon.length);
+
+    if (baseview === 'formatter' && debouncedJsoncon) {
+      setIsProcessing(true);
+      parsingStartTimeRef.current = performance.now();
+
+      // 使用 setTimeout 让 UI 有机会更新加载状态
+      const timeoutId = setTimeout(() => {
+        try {
+          const parsed = JSON.parse(debouncedJsoncon);
+          const endTime = performance.now();
+          setProcessingTime(endTime - parsingStartTimeRef.current);
+          setJsonhtml(parsed);
+          setView('code');
+          setError('');
+        } catch (e) {
+          setProcessingTime(0);
+          setError(`JSON 解析错误：${e instanceof Error ? e.message : String(e)}`);
+          setView('error');
+          setJsonhtml(null);
+        } finally {
+          setIsProcessing(false);
+        }
+      }, 0);
+
+      return () => clearTimeout(timeoutId);
+    } else if (!debouncedJsoncon) {
+      setJsonhtml(null);
+      setView('empty');
+      setError('');
+      setProcessingTime(0);
+      setIsProcessing(false);
     }
-  }, [jsoncon, baseview]);
+  }, [debouncedJsoncon, baseview]);
 
   // 压缩
-  function compress() {
+  const compress = useCallback(() => {
     try {
       const parsed = JSON.parse(jsoncon);
       setCompressStr(JSON.stringify(parsed));
@@ -62,10 +150,10 @@ function JsonTool() {
     } catch (e) {
       setError(`JSON 解析错误：${e instanceof Error ? e.message : String(e)}`);
     }
-  }
+  }, [jsoncon]);
 
   // 美化
-  function beauty() {
+  const beauty = useCallback(() => {
     try {
       const parsed = JSON.parse(jsoncon);
       setJsonhtml(parsed);
@@ -77,49 +165,155 @@ function JsonTool() {
       setView('error');
       setJsonhtml(null);
     }
-  }
+  }, [jsoncon]);
 
   // 清空
-  function clearAll() {
+  const clearAll = useCallback(() => {
     setJsoncon('');
     setNewjsoncon('');
     setJsonhtml(null);
     setCompressStr('');
     setError('');
     setView('empty');
-  }
-
-  // 展开/折叠（预留功能）
-  function handleExpandAll() {
-    // TODO: 实现展开功能
-  }
-
-  function handleCollapseAll() {
-    // TODO: 实现折叠功能
-  }
+  }, []);
 
   // 切换到 Diff 视图
-  function baseViewToDiff() {
+  const baseViewToDiff = useCallback(() => {
     setBaseview('diff');
-  }
+  }, []);
 
   // 切换到格式化视图
-  function baseViewToFormatter() {
+  const baseViewToFormatter = useCallback(() => {
     setBaseview('formatter');
-  }
+  }, []);
+
+  // 键盘快捷键帮助
+  const { showHelp, registerShortcuts } = useKeyboardShortcutsHelp();
+
+  // 注册键盘快捷键
+  const shortcuts: KeyboardShortcut[] = useMemo(
+    () => [
+      {
+        key: 'k',
+        ctrlKey: true,
+        metaKey: true,
+        description: '清空输入',
+        action: clearAll,
+      },
+      {
+        key: 'Enter',
+        ctrlKey: true,
+        metaKey: true,
+        description: '执行格式化',
+        action: beauty,
+      },
+      {
+        key: 's',
+        ctrlKey: true,
+        metaKey: true,
+        description: '保存历史',
+        action: () => {
+          if (jsoncon) setIsSaveShow(true);
+        },
+      },
+      {
+        key: 'd',
+        ctrlKey: true,
+        metaKey: true,
+        description: '切换到 Diff',
+        action: baseViewToDiff,
+      },
+      {
+        key: 'f',
+        ctrlKey: true,
+        metaKey: true,
+        description: '切换到格式化',
+        action: baseViewToFormatter,
+      },
+    ],
+    [jsoncon, clearAll, beauty, baseViewToDiff, baseViewToFormatter]
+  );
+
+  // 使用键盘快捷键 Hook
+  useKeyboardShortcuts({ shortcuts, isEnabled: true });
+
+  // 注册快捷键到帮助系统
+  useEffect(() => {
+    registerShortcuts(shortcuts);
+  }, [shortcuts, registerShortcuts]);
 
   // Diff 功能
   function diffTwo() {
-    alert('Diff 功能需要加载 diffview.js 和 difflib.js 库，将在完整实现中添加');
+    setDiffError('');
+    setDiffResult(null);
+
+    if (!jsoncon.trim() || !newjsoncon.trim()) {
+      setDiffError('请输入两个 JSON 内容进行对比');
+      return;
+    }
+
+    try {
+      const result = jsonDiff(jsoncon, newjsoncon);
+      setDiffResult(result);
+    } catch (e) {
+      setDiffError(`Diff 失败：${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
+  // 渲染差异变更项
+  function renderDiffChange(change: DiffChange) {
+    const typeConfig = {
+      added: { icon: Plus, className: 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20', label: '添加' },
+      removed: { icon: Minus, className: 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20', label: '删除' },
+      modified: { icon: AlertCircle, className: 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20', label: '修改' },
+      unchanged: { icon: Check, className: 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20', label: '未变化' },
+    };
+
+    const config = typeConfig[change.type];
+    const Icon = config.icon;
+
+    return (
+      <div key={change.path} className={`p-3 rounded-md ${config.className} mb-2`}>
+        <div className="flex items-start gap-2">
+          <Icon className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-medium text-sm">{config.label}</span>
+              <code className="text-xs bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded">
+                {change.path || '(根)'}
+              </code>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+              {change.oldValue !== undefined && (
+                <div>
+                  <span className="opacity-70">旧值:</span>
+                  <pre className="mt-1 whitespace-pre-wrap break-all">{JSON.stringify(change.oldValue, null, 2)}</pre>
+                </div>
+              )}
+              {change.newValue !== undefined && (
+                <div>
+                  <span className="opacity-70">新值:</span>
+                  <pre className="mt-1 whitespace-pre-wrap break-all">{JSON.stringify(change.newValue, null, 2)}</pre>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // 保存历史记录
   function saveHistory() {
     if (!historyName || !jsoncon) return;
-    const newHistory: HistoryItem = { name: historyName, content: jsoncon };
-    setHistorys((prev) => [...prev, newHistory]);
-    setIsSaveShow(false);
-    setHistoryName('');
+    try {
+      const parsed = JSON.parse(jsoncon);
+      addHistory(jsoncon, parsed, { name: historyName });
+      setIsSaveShow(false);
+      setHistoryName('');
+    } catch {
+      // 忽略无效 JSON
+    }
   }
 
   // 恢复历史记录
@@ -128,8 +322,11 @@ function JsonTool() {
   }
 
   // 删除历史记录
-  function remove(_his: HistoryItem, index: number) {
-    setHistorys((prev) => prev.filter((_, i) => i !== index));
+  async function remove(_his: HistoryItem, index: number) {
+    // 从历史记录中找到对应的 entry 并删除
+    if (history[index]) {
+      await removeHistory(history[index].id);
+    }
   }
 
   // 导出文本文件
@@ -146,10 +343,42 @@ function JsonTool() {
     setExTxtName('');
   }
 
+  // 性能指示器组件
+  const PerformanceIndicator = useMemo(() => {
+    if (!jsoncon && !inputSize) return null;
+
+    const showWarning = inputSize >= SIZE_THRESHOLDS.WARNING;
+    const sizeText = getFileSizeDescription(inputSize);
+
+    return (
+      <div className={`flex items-center gap-2 text-xs ${
+        showWarning ? 'text-yellow-600 dark:text-yellow-400' : 'text-muted-foreground'
+      }`}>
+        {showWarning && <FileWarning className="w-3 h-3" />}
+        <span>{sizeText}</span>
+        {processingTime > 0 && (
+          <>
+            <span className="text-muted-foreground">•</span>
+            <div className="flex items-center gap-1">
+              <Clock className="w-3 h-3" />
+              <span>{processingTime.toFixed(1)}ms</span>
+            </div>
+          </>
+        )}
+        {isProcessing && (
+          <>
+            <span className="text-muted-foreground">•</span>
+            <span className="animate-pulse">处理中...</span>
+          </>
+        )}
+      </div>
+    );
+  }, [inputSize, processingTime, isProcessing, jsoncon]);
+
   return (
     <div className="h-screen flex flex-col">
       {/* 工具栏 */}
-      <div className="border-b p-2 flex items-center gap-2 bg-muted/50">
+      <div className="border-b p-2 flex items-center gap-2 bg-muted/50 flex-wrap">
         <Button
           variant={baseview === 'formatter' ? 'default' : 'outline'}
           size="sm"
@@ -168,6 +397,9 @@ function JsonTool() {
           <ArrowRightLeft className="w-4 h-4" />
           Diff
         </Button>
+
+        {/* 性能指示器 */}
+        {PerformanceIndicator}
 
         {baseview === 'formatter' && (
           <>
@@ -241,7 +473,15 @@ function JsonTool() {
       {/* 主内容区 */}
       <div className="flex-1 flex overflow-hidden">
         {/* 左侧输入 */}
-        <div className={`flex-1 ${baseview === 'diff' ? 'w-1/2' : 'w-full'} border-r`}>
+        <div
+          className={`flex-1 ${
+            baseview === 'diff'
+              ? diffResult
+                ? 'w-1/3'
+                : 'w-1/2'
+              : 'w-full'
+          } border-r`}
+        >
           <Textarea
             value={jsoncon}
             onChange={(e) => setJsoncon(e.target.value)}
@@ -250,16 +490,63 @@ function JsonTool() {
           />
         </div>
 
-        {/* Diff 模式的第二个输入 */}
+        {/* Diff 模式的第二个输入或结果展示 */}
         {baseview === 'diff' && (
-          <div className="w-1/2">
-            <Textarea
-              value={newjsoncon}
-              onChange={(e) => setNewjsoncon(e.target.value)}
-              placeholder="请输入新的 JSON 字符串用于对比"
-              className="w-full h-full border-0 rounded-none resize-none font-mono text-sm"
-            />
-          </div>
+          <>
+            {diffResult ? (
+              /* Diff 结果展示 */
+              <div className="flex-1 overflow-auto">
+                <div className="p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-semibold">
+                      Diff 结果
+                      {diffResult.isModified && (
+                        <span className="ml-2 text-sm font-normal text-muted-foreground">
+                          ({diffResult.changes.length} 处变更)
+                        </span>
+                      )}
+                    </h3>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDiffResult(null)}
+                      className="gap-1.5"
+                    >
+                      <X className="w-4 h-4" />
+                      清除
+                    </Button>
+                  </div>
+
+                  {diffError && (
+                    <div className="p-4 bg-destructive/10 text-destructive rounded-md mb-4">
+                      {diffError}
+                    </div>
+                  )}
+
+                  {!diffResult.isModified ? (
+                    <div className="p-8 text-center text-muted-foreground">
+                      <Check className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>两个 JSON 完全相同，没有发现差异</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {diffResult.changes.map(renderDiffChange)}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              /* 第二个 JSON 输入 */
+              <div className="w-1/2">
+                <Textarea
+                  value={newjsoncon}
+                  onChange={(e) => setNewjsoncon(e.target.value)}
+                  placeholder="请输入新的 JSON 字符串用于对比"
+                  className="w-full h-full border-0 rounded-none resize-none font-mono text-sm"
+                />
+              </div>
+            )}
+          </>
         )}
 
         {/* 右侧结果 */}
@@ -267,7 +554,17 @@ function JsonTool() {
           <div className="flex-1 overflow-auto">
             {baseview === 'formatter' && (
               <>
-                {view === 'code' && jsonhtml && (
+                {isProcessing && (
+                  <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current mb-4" />
+                    <p className="text-sm">处理中...</p>
+                    {inputSize > SIZE_THRESHOLDS.MEDIUM && (
+                      <p className="text-xs mt-2">大文件处理可能需要较长时间</p>
+                    )}
+                  </div>
+                )}
+
+                {!isProcessing && view === 'code' && jsonhtml && (
                   <div className="p-4">
                     <ReactJsonView
                       src={jsonhtml}
@@ -276,7 +573,15 @@ function JsonTool() {
                       onEdit={(edit) => console.log('Edit:', edit)}
                       onDelete={(path) => console.log('Delete:', path)}
                       enableClipboard
-                      shouldCollapse={() => true}
+                      shouldCollapse={(field) => {
+                        // 对于大型对象，默认折叠以提高性能
+                        if (inputSize > SIZE_THRESHOLDS.MEDIUM) {
+                          return typeof field !== 'string';
+                        }
+                        return false;
+                      }}
+                      displayObjectSize={inputSize <= SIZE_THRESHOLDS.LARGE}
+                      displayDataTypes={inputSize <= SIZE_THRESHOLDS.LARGE}
                     />
                   </div>
                 )}

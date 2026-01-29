@@ -2,15 +2,15 @@
  * Chrome Cookies API 封装
  */
 export async function getAll(
-  details?: chrome.cookies.GetAllDetails,
+  details?: chrome.cookies.GetAllDetails | undefined,
 ): Promise<chrome.cookies.Cookie[]> {
-  return chrome.cookies.getAll(details);
+  return await chrome.cookies.getAll(details ?? {});
 }
 
 export async function remove(
-  details: chrome.cookies.RemoveDetails,
-): Promise<chrome.cookies.Cookie | null> {
-  return chrome.cookies.remove(details);
+  details: { name: string; url: string },
+): Promise<chrome.cookies.CookieDetails | null> {
+  return await chrome.cookies.remove(details);
 }
 
 export async function removeAll(): Promise<void> {
