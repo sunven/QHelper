@@ -127,27 +127,27 @@ function App() {
   }
 
   return (
-    <div className="w-[280px] min-h-[200px] p-3 bg-background">
+    <div className="w-[480px] min-h-[200px] p-2 bg-background">
       {/* 标题 */}
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-          <Wrench className="w-4 h-4 text-primary-foreground" />
+      <div className="flex items-center gap-2 mb-2 pb-2 border-b">
+        <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+          <Wrench className="w-3.5 h-3.5 text-primary-foreground" />
         </div>
-        <h1 className="text-lg font-semibold">QHelper</h1>
+        <h1 className="text-base font-semibold">QHelper</h1>
       </div>
 
       {/* 最近使用 */}
       {recentTools.length > 0 && (
-        <div className="mb-3">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <div className="mb-2">
+          <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
               <Clock className="w-3 h-3" />
               最近使用
             </div>
             <Button
               variant="ghost"
               size="sm"
-              className="h-5 px-1.5 text-xs"
+              className="h-5 px-1.5 text-[10px]"
               onClick={async () => {
                 await clearRecentTools()
                 setRecentTools([])
@@ -156,13 +156,13 @@ function App() {
               清除
             </Button>
           </div>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-4 gap-1">
             {recentTools.map((entry) => (
               <Button
                 key={entry.toolId}
                 variant="ghost"
                 size="sm"
-                className="justify-start gap-2 h-8 text-xs"
+                className="justify-start gap-1.5 h-7 text-[10px]"
                 onClick={() => handleToolClick({ id: entry.toolId, name: entry.toolName, url: `${entry.toolId}.html`, type: 'jump' })}
               >
                 {getIcon(entry.toolId)}
@@ -174,20 +174,20 @@ function App() {
       )}
 
       {/* 工具列表 */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {Array.from(toolsByCategory.entries()).map(([categoryId, tools]) => (
           <div key={categoryId}>
-            <div className="flex items-center gap-1.5 mb-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {categoryIcons[categoryId] || <Wrench className="w-4 h-4" />}
+            <div className="flex items-center gap-1 mb-1 text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+              {categoryIcons[categoryId] || <Wrench className="w-3 h-3" />}
               {TOOL_CATEGORIES[categoryId as keyof typeof TOOL_CATEGORIES] || categoryId}
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-4 gap-1">
               {tools.map((tool) => (
                 <Button
                   key={tool.id}
                   variant="ghost"
                   size="sm"
-                  className="justify-start gap-2 h-8 text-xs"
+                  className="justify-start gap-1.5 h-7 text-[10px]"
                   onClick={() => handleToolClick(tool)}
                 >
                   {getIcon(tool.id)}
