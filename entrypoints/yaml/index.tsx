@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, FileCode, FileJson, ArrowRightLeft } from 'lucide-react';
 import '../../index.css';
+import { ToolNavigation } from '@/components/ToolNavigation';
 
 function YAMLConverter() {
   const [input, setInput] = useState('');
@@ -86,6 +87,12 @@ address:
   }
 
   return (
+
+
+    <>
+
+
+      <ToolNavigation />
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
@@ -222,7 +229,10 @@ address:
         </Card>
       </div>
     </div>
-  );
+  
+
+
+    </>);
 }
 
 const root = document.getElementById('app');

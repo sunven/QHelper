@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Copy, RefreshCw, Trash2, Hash } from 'lucide-react';
 import '../../index.css';
+import { ToolNavigation } from '@/components/ToolNavigation';
 
 function UUIDGenerator() {
   const [uuids, setUuids] = useState<string[]>(['']);
@@ -66,6 +67,12 @@ function UUIDGenerator() {
   }
 
   return (
+
+
+    <>
+
+
+      <ToolNavigation />
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
@@ -192,7 +199,10 @@ function UUIDGenerator() {
         </Card>
       </div>
     </div>
-  );
+  
+
+
+    </>);
 }
 
 const root = document.getElementById('app');

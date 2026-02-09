@@ -24,6 +24,7 @@ import { jsonDiff, type DiffResult, type DiffChange } from '@/lib/utils/jsonDiff
 import { useToolHistory } from '@/hooks/useToolHistory';
 import { useKeyboardShortcuts, type KeyboardShortcut } from '@/hooks/useKeyboardShortcuts';
 import type { HistoryEntry } from '@/types/storage';
+import { ToolNavigation } from '@/components/ToolNavigation';
 import '../../index.css';
 
 // 文件大小阈值
@@ -367,9 +368,11 @@ function JsonTool() {
   }, [inputSize, processingTime, isProcessing, jsoncon]);
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* 工具栏 */}
-      <div className="border-b p-2 flex items-center gap-2 bg-muted/50 flex-wrap">
+    <>
+      <ToolNavigation />
+      <div className="h-screen flex flex-col">
+        {/* 工具栏 */}
+        <div className="border-b p-2 flex items-center gap-2 bg-muted/50 flex-wrap">
         <Button
           variant={baseview === 'formatter' ? 'default' : 'outline'}
           size="sm"
@@ -656,6 +659,7 @@ function JsonTool() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

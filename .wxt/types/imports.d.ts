@@ -18,6 +18,7 @@ declare global {
   const Slider: typeof import('/Users/sunven/github/QHelper/components/ui/slider').Slider
   const Textarea: typeof import('/Users/sunven/github/QHelper/components/ui/textarea').Textarea
   const ToolErrorBoundary: typeof import('/Users/sunven/github/QHelper/components/index').ToolErrorBoundary
+  const ToolNavigation: typeof import('/Users/sunven/github/QHelper/components/ToolNavigation').ToolNavigation
   const browser: typeof import('wxt/browser').browser
   const cn: typeof import('/Users/sunven/github/QHelper/components/ui/utils').cn
   const createIframeUi: typeof import('wxt/utils/content-script-ui/iframe').createIframeUi

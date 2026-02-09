@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Upload, X, Image as ImageIcon, Download, Trash2, Settings } from 'lucide-react';
 import '../../index.css';
+import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface ImageItem {
   id: string;
@@ -188,7 +189,9 @@ function PictureSplicingTool() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <>
+      <ToolNavigation />
+      <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold text-center mb-2">图片拼接</h1>
       <p className="text-sm text-center text-muted-foreground mb-6">
         将多张图片拼接成一张图片
@@ -334,6 +337,7 @@ function PictureSplicingTool() {
         )}
       </div>
     </div>
+    </>
   );
 }
 

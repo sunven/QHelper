@@ -19,6 +19,7 @@ declare module '#imports' {
   export { useState, useCallback, useMemo, useEffect, useRef, useContext, useReducer } from 'react';
   export { fakeBrowser } from 'wxt/testing';
   export { ToolErrorBoundary } from '../components/ToolErrorBoundary';
+  export { ToolNavigation } from '../components/ToolNavigation';
   export { ToolErrorBoundary } from '../components/index';
   export { Button, ButtonProps } from '../components/ui/button';
   export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent } from '../components/ui/card';

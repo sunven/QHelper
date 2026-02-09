@@ -10,6 +10,7 @@ import { useToolHistory } from '@/hooks/useToolHistory';
 import { useToolState } from '@/hooks/useToolState';
 import { CopyButton } from '@/components/tool/CopyButton';
 import '../../index.css';
+import { ToolNavigation } from '@/components/ToolNavigation';
 
 type EncodeType =
   | 'htmlEscape'
@@ -184,6 +185,12 @@ function ConvertTool() {
   const decodeButtons = encodeItems.filter((item) => item.direction === 'decode');
 
   return (
+
+
+    <>
+
+
+      <ToolNavigation />
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-2xl font-bold text-center mb-2">字符串编解码</h1>
       <p className="text-sm text-center text-muted-foreground mb-6">
@@ -323,7 +330,10 @@ function ConvertTool() {
         )}
       </div>
     </div>
-  );
+  
+
+
+    </>);
 }
 
 const root = document.getElementById('app');

@@ -11,6 +11,7 @@ import { Copy, RefreshCw, Shield, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { useToolState } from '@/hooks/useToolState';
 import { CopyButton } from '@/components/tool/CopyButton';
 import '../../index.css';
+import { ToolNavigation } from '@/components/ToolNavigation';
 
 function PasswordGenerator() {
   // 使用持久化状态保存用户配置
@@ -98,6 +99,12 @@ function PasswordGenerator() {
   }
 
   return (
+
+
+    <>
+
+
+      <ToolNavigation />
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
@@ -276,7 +283,10 @@ function PasswordGenerator() {
         </Card>
       </div>
     </div>
-  );
+  
+
+
+    </>);
 }
 
 const root = document.getElementById('app');

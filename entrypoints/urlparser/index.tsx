@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, Link2 } from 'lucide-react';
 import '../../index.css';
+import { ToolNavigation } from '@/components/ToolNavigation';
 
 function URLParser() {
   const [input, setInput] = useState('');
@@ -37,6 +38,12 @@ function URLParser() {
   }
 
   return (
+
+
+    <>
+
+
+      <ToolNavigation />
     <div className="max-w-4xl mx-auto p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
@@ -181,7 +188,10 @@ function URLParser() {
         )}
       </div>
     </div>
-  );
+  
+
+
+    </>);
 }
 
 const root = document.getElementById('app');

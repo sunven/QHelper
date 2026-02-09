@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import '../../index.css';
+import { ToolNavigation } from '@/components/ToolNavigation';
 
 const RADIX_OPTIONS = [
   { value: 2, label: '2进制' },
@@ -60,6 +61,12 @@ function TransRadixTool() {
   }
 
   return (
+
+
+    <>
+
+
+      <ToolNavigation />
     <div className="w-[400px] mx-auto p-6">
       <Card>
         <CardHeader>
@@ -176,7 +183,10 @@ function TransRadixTool() {
         </CardContent>
       </Card>
     </div>
-  );
+  
+
+
+    </>);
 }
 
 const root = document.getElementById('app');

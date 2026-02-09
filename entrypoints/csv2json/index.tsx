@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FileJson, FileText, Copy, Upload, Download } from 'lucide-react';
 import '../../index.css';
+import { ToolNavigation } from '@/components/ToolNavigation';
 
 function CSVToJSON() {
   const [input, setInput] = useState('');
@@ -120,6 +121,12 @@ function CSVToJSON() {
   }
 
   return (
+
+
+    <>
+
+
+      <ToolNavigation />
     <div className="max-w-6xl mx-auto p-6">
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
@@ -244,7 +251,10 @@ function CSVToJSON() {
         </CardContent>
       </Card>
     </div>
-  );
+  
+
+
+    </>);
 }
 
 const root = document.getElementById('app');
