@@ -124,7 +124,7 @@ Global styles are in `index.css` with Tailwind directives and CSS variables.
 
 ### Content Scripts
 
-The GitHub integration now targets repository root pages on `github.com` and adds a `Zread` button that opens the matching `https://zread.ai/<owner>/<repo>` page. The WXT-native shipping path lives in `entrypoints/github.content.ts`; `content/openinvscode.js` remains a legacy compatibility script for older manifest-based flows.
+The GitHub integration now targets repository root pages on `github.com` and adds a `Zread` button that opens the matching `https://zread.ai/<owner>/<repo>` page. The shipping content-script source lives in `entrypoints/github.content.ts`, which delegates to the shared DOM logic in `lib/github/zread-button.ts`.
 
 ## Extension Permissions
 

@@ -18,17 +18,8 @@ declare module '#imports' {
   export { InvalidMatchPattern, MatchPattern } from 'wxt/utils/match-patterns';
   export { useState, useCallback, useMemo, useEffect, useRef, useContext, useReducer } from 'react';
   export { fakeBrowser } from 'wxt/testing';
-  export { ToolErrorBoundary } from '../components/ToolErrorBoundary';
+  export { ToolErrorBoundary, ToolErrorBoundary } from '../components/ToolErrorBoundary';
   export { ToolNavigation } from '../components/ToolNavigation';
-  export { ToolErrorBoundary } from '../components/index';
-  export { Button, ButtonProps } from '../components/ui/button';
-  export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent } from '../components/ui/card';
-  export { Checkbox } from '../components/ui/checkbox';
-  export { Input } from '../components/ui/input';
-  export { Label } from '../components/ui/label';
-  export { Slider, SliderProps } from '../components/ui/slider';
-  export { Textarea } from '../components/ui/textarea';
-  export { cn } from '../components/ui/utils';
   export { useChromeCookies } from '../hooks/useChromeCookies';
   export { useExtensionStorage } from '../hooks/useExtensionStorage';
   export { useKeyboardShortcuts, getShortcutDisplayText, KeyboardShortcut, KeyboardShortcuts } from '../hooks/useKeyboardShortcuts';

@@ -46,7 +46,7 @@ function SvgOptimizer() {
             params: {
               overrides: {
                 removeViewBox: false,
-                cleanupIDs: false,
+                cleanupIds: false,
               },
             },
           },

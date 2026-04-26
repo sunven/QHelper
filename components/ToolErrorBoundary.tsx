@@ -5,8 +5,8 @@ import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
-  toolId: string;
-  toolName: string;
+  toolId?: string;
+  toolName?: string;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
@@ -35,7 +35,7 @@ export class ToolErrorBoundary extends Component<Props, State> {
     this.setState({ errorInfo });
 
     // 记录错误到控制台
-    console.error(`Error in tool ${this.props.toolId}:`, error, errorInfo);
+    console.error(`Error in tool ${this.props.toolId ?? 'unknown-tool'}:`, error, errorInfo);
 
     // 调用自定义错误处理函数
     this.props.onError?.(error, errorInfo);
@@ -46,8 +46,8 @@ export class ToolErrorBoundary extends Component<Props, State> {
 
   private reportError(error: Error, errorInfo: ErrorInfo): void {
     const errorReport = {
-      toolId: this.props.toolId,
-      toolName: this.props.toolName,
+      toolId: this.props.toolId ?? 'unknown-tool',
+      toolName: this.props.toolName ?? '当前工具',
       error: {
         message: error.message,
         name: error.name,
@@ -95,7 +95,7 @@ export class ToolErrorBoundary extends Component<Props, State> {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-2">工具</p>
-                <p className="font-medium">{this.props.toolName}</p>
+                <p className="font-medium">{this.props.toolName ?? '当前工具'}</p>
               </div>
 
               {this.state.error && (

@@ -38,12 +38,12 @@ function CronParser() {
     }
 
     try {
-      const interval = cronParser.parseExpression(state.expression);
+      const interval = cronParser.parse(state.expression);
       const now = Date.now();
       const nextRuns: Date[] = [];
 
       for (let i = 0; i < 10; i++) {
-        nextRuns.push(interval.next());
+        nextRuns.push(interval.next().toDate());
       }
 
       setState((prev) => ({ ...prev, isValid: true, error: null, nextRuns }));

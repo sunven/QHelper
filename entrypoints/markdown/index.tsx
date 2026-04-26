@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createRoot } from 'react-dom/client';
-import { marked } from 'marked';
+import { marked, type Tokens } from 'marked';
 import hljs from 'highlight.js';
 import { Copy, Download, FileText } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
@@ -8,20 +8,21 @@ import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
 import '../../index.css';
 
+const renderer = new marked.Renderer();
+renderer.code = ({ text, lang }: Tokens.Code) => {
+  const highlighted = lang && hljs.getLanguage(lang)
+    ? hljs.highlight(text, { language: lang }).value
+    : hljs.highlightAuto(text).value;
+
+  const languageClass = lang ? ` language-${lang}` : '';
+  return `<pre><code class="hljs${languageClass}">${highlighted}</code></pre>`;
+};
+
 // 配置 marked 选项
 marked.setOptions({
   gfm: true,
   breaks: true,
-  highlight: (code, lang) => {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(code, { language: lang }).value;
-      } catch {
-        return code;
-      }
-    }
-    return hljs.highlightAuto(code).value;
-  },
+  renderer,
 });
 
 // 导入 highlight.js 样式

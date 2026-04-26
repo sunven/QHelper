@@ -1,11 +1,12 @@
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { HistoryEntry } from '@/types/storage';
+import type { ToolHistoryItem } from '@/types/tool';
 import * as chromeStorage from '@/lib/chrome/storage';
 
 /**
  * 历史记录配置选项
  */
-interface HistoryOptions<TInput, TOutput> {
+interface ModernHistoryOptions<TInput, TOutput> {
   /** 最大历史记录条数，默认为 50 */
   maxHistory?: number;
   /** 存储键名前缀，默认为 'history' */
@@ -18,6 +19,53 @@ interface HistoryOptions<TInput, TOutput> {
   serialize?: (entry: HistoryEntry<TInput, TOutput>) => HistoryEntry<unknown, unknown>;
   /** 自定义反序列化函数 */
   deserialize?: (entry: HistoryEntry<unknown, unknown>) => HistoryEntry<TInput, TOutput>;
+}
+
+/**
+ * 旧版历史记录配置选项（兼容旧工具页）
+ */
+interface LegacyHistoryOptions {
+  /** 旧版最大历史记录条数配置 */
+  maxSize?: number;
+  /** 旧版存储键配置 */
+  key?: string;
+}
+
+type HistoryOptions<TInput, TOutput> = ModernHistoryOptions<TInput, TOutput> | LegacyHistoryOptions;
+
+interface HistoryActions<TInput, TOutput> {
+  loading: boolean;
+  addHistory: (input: TInput, output: TOutput, metadata?: Record<string, unknown>) => HistoryEntry<TInput, TOutput>;
+  clearHistory: () => Promise<void>;
+  removeHistory: (id: string) => Promise<void>;
+  searchHistory: (
+    query: string,
+    fields?: ('input' | 'output' | 'metadata')[],
+  ) => HistoryEntry<TInput, TOutput>[];
+  filterByTimeRange: (startTime: number, endTime: number) => HistoryEntry<TInput, TOutput>[];
+  getRecent: (count: number) => HistoryEntry<TInput, TOutput>[];
+}
+
+type ModernHistoryReturn<TInput, TOutput> = HistoryActions<TInput, TOutput> & {
+  history: HistoryEntry<TInput, TOutput>[];
+  addToHistory: (
+    item: TInput | ToolHistoryItem,
+    metadata?: Record<string, unknown>,
+  ) => HistoryEntry<TInput, TOutput>;
+};
+
+type LegacyHistoryReturn<TState> = HistoryActions<TState, TState> & {
+  history: TState[];
+  addToHistory: (
+    item: TState | ToolHistoryItem,
+    metadata?: Record<string, unknown>,
+  ) => HistoryEntry<TState, TState>;
+};
+
+function isLegacyOptions<TInput, TOutput>(
+  options: HistoryOptions<TInput, TOutput>,
+): options is LegacyHistoryOptions {
+  return 'maxSize' in options || 'key' in options;
 }
 
 /**
@@ -45,23 +93,28 @@ interface HistoryOptions<TInput, TOutput> {
  * const results = searchHistory('my data');
  * ```
  */
+export function useToolHistory<TState = unknown>(
+  toolId: string,
+  options: LegacyHistoryOptions,
+): LegacyHistoryReturn<TState>;
+export function useToolHistory<TInput = unknown, TOutput = unknown>(
+  toolId: string,
+  options?: ModernHistoryOptions<TInput, TOutput>,
+): ModernHistoryReturn<TInput, TOutput>;
 export function useToolHistory<TInput = unknown, TOutput = unknown>(
   toolId: string,
   options: HistoryOptions<TInput, TOutput> = {},
-) {
-  const {
-    maxHistory = 50,
-    storageKey = 'history',
-    autoRecord = true,
-    filter,
-    serialize,
-    deserialize,
-  } = options;
+): ModernHistoryReturn<TInput, TOutput> | LegacyHistoryReturn<TInput> {
+  const legacyMode = isLegacyOptions(options);
+  const maxHistory = legacyMode ? options.maxSize ?? 50 : options.maxHistory ?? 50;
+  const storageKey = legacyMode ? options.key ?? 'history' : options.storageKey ?? 'history';
+  const filter = legacyMode ? undefined : options.filter;
+  const serialize = legacyMode ? undefined : options.serialize;
+  const deserialize = legacyMode ? undefined : options.deserialize;
 
   const fullStorageKey = `tool_${toolId}_${storageKey}`;
   const [history, setHistory] = useState<HistoryEntry<TInput, TOutput>[]>([]);
   const [loading, setLoading] = useState(true);
-  const addHistoryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // 生成历史记录ID
   const generateId = useCallback(() => {
@@ -215,13 +268,22 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
     [history],
   );
 
-  return {
+  const addToHistory = useCallback(
+    (item: TInput | ToolHistoryItem, metadata?: Record<string, unknown>) => {
+      const snapshot = item as TInput;
+      return addHistory(snapshot, snapshot as unknown as TOutput, metadata);
+    },
+    [addHistory],
+  );
+
+  const actions = {
     /** 历史记录列表 */
-    history,
     /** 是否正在加载 */
     loading,
     /** 添加历史记录 */
     addHistory,
+    /** 兼容旧版 API 的添加历史记录方法 */
+    addToHistory,
     /** 清除所有历史记录 */
     clearHistory,
     /** 删除单条历史记录 */
@@ -233,6 +295,18 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
     /** 获取最近的 N 条记录 */
     getRecent,
   };
+
+  if (legacyMode) {
+    return {
+      ...actions,
+      history: history.map((entry) => entry.input as TInput),
+    } as unknown as LegacyHistoryReturn<TInput>;
+  }
+
+  return {
+    ...actions,
+    history,
+  } as ModernHistoryReturn<TInput, TOutput>;
 }
 
 /**

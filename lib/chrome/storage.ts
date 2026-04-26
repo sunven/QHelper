@@ -35,13 +35,15 @@ function getLocalStorage() {
   return localStorage;
 }
 
-export async function get<T>(key: string, defaultValue?: T): Promise<T> {
+export async function get<T>(key: string): Promise<T | undefined>;
+export async function get<T>(key: string, defaultValue: T): Promise<T>;
+export async function get<T>(key: string, defaultValue?: T): Promise<T | undefined> {
   // 优先使用 chrome.storage.local
   if (isChromeStorageAvailable()) {
     try {
       const storage = getChromeStorage();
       const result = await storage.get(key);
-      return (result[key] ?? defaultValue) as T;
+      return (result[key] ?? defaultValue) as T | undefined;
     } catch (e) {
       console.warn('chrome.storage.local get failed, falling back to localStorage:', e);
     }
@@ -54,7 +56,7 @@ export async function get<T>(key: string, defaultValue?: T): Promise<T> {
     return value ? (JSON.parse(value) as T) : defaultValue;
   } catch (e) {
     console.warn('localStorage get failed:', e);
-    return defaultValue as T;
+    return defaultValue;
   }
 }
 

@@ -86,9 +86,6 @@ entrypoints/        # WXT 入口点
   ├── github.content.ts  # GitHub 仓库首页 Zread 内容脚本
   └── ...                # 其他工具入口点
 
-content/            # 兼容旧 manifest 流程的遗留内容脚本
-  └── openinvscode.js    # GitHub 页面 legacy 兼容脚本
-
 static/             # 共享静态资源
   ├── css/               # CSS 库（Element Plus, Semantic UI）
   ├── img/               # 扩展图标
@@ -96,7 +93,7 @@ static/             # 共享静态资源
   └── semantic/           # Semantic UI 资源
 
 background.js       # Service Worker 后台脚本
-manifest.json       # 扩展清单文件
+.output/chrome-mv3/manifest.json  # WXT 构建时自动生成的扩展清单文件
 ```
 
 #### 模块化模式
