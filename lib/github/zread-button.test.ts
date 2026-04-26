@@ -62,14 +62,14 @@ describe('buildZreadUrl', () => {
 });
 
 describe('syncZreadButton', () => {
-  it('renders a single 在 Zread button on repository root pages', () => {
+  it('renders a single Zread button on repository root pages', () => {
     renderGitHubHeader();
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
 
     const button = document.querySelector<HTMLAnchorElement>(`#${ZREAD_BUTTON_ID}`);
     expect(button).not.toBeNull();
-    expect(button?.textContent).toBe('在 Zread');
+    expect(button?.textContent).toBe('Zread');
     expect(button?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
     expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
   });

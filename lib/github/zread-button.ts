@@ -112,7 +112,7 @@ function createZreadAnchor(doc: Document, href: string): HTMLAnchorElement {
   anchor.target = '_blank';
   anchor.rel = 'noopener noreferrer';
   anchor.className = 'btn-sm btn';
-  anchor.textContent = '在 Zread';
+  anchor.textContent = 'Zread';
   return anchor;
 }
 

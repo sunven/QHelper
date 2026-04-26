@@ -8,6 +8,7 @@ declare module "wxt/browser" {
     | "/background.js"
     | "/codebeautify.html"
     | "/colorTransform.html"
+    | "/content-scripts/github.js"
     | "/convert.html"
     | "/cron.html"
     | "/csstool.html"

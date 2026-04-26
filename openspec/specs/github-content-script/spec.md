@@ -20,7 +20,7 @@
 
 #### Scenario: 注入按钮
 - **WHEN** 用户访问 GitHub 仓库首页
-- **THEN** 在仓库头部注入 "在 Zread" 按钮
+- **THEN** 在仓库头部注入 "Zread" 按钮
 - **THEN** 如果 Watch / Fork / Star 区域可用，按钮优先插入在该区域附近
 
 #### Scenario: 忽略仓库子页面
@@ -36,7 +36,7 @@
 - **THEN** 按钮链接为 https://zread.ai/owner/repo
 
 #### Scenario: 新标签页打开
-- **WHEN** 用户点击 "在 Zread" 按钮
+- **WHEN** 用户点击 "Zread" 按钮
 - **THEN** Zread 页面在新标签页打开
 
 ### Requirement: 按钮位置
