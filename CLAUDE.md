@@ -124,7 +124,7 @@ Global styles are in `index.css` with Tailwind directives and CSS variables.
 
 ### Content Scripts
 
-`content/openinvscode.js` is injected into GitHub pages (`*://github.com/*`) at `document_end` to add a "vscode.dev" button for opening repositories in VSCode Web.
+The GitHub integration now targets repository root pages on `github.com` and adds a `在 Zread` button that opens the matching `https://zread.ai/<owner>/<repo>` page. The WXT-native shipping path lives in `entrypoints/github.content.ts`; `content/openinvscode.js` remains a legacy compatibility script for older manifest-based flows.
 
 ## Extension Permissions
 
