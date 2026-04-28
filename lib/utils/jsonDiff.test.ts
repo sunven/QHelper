@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { jsonDiff, generateDiffReport } from './jsonDiff';
+import { formatDiffChange, generateDiffReport, jsonDiff } from './jsonDiff';
 
 describe('jsonDiff', () => {
   it('should detect no changes for identical objects', () => {
@@ -99,6 +99,58 @@ describe('jsonDiff', () => {
     expect(result.changes).toHaveLength(1);
     expect(result.changes[0].type).toBe('modified');
   });
+
+  it('should treat matching null values as unchanged', () => {
+    const result = jsonDiff({ a: null }, { a: null });
+
+    expect(result.isModified).toBe(false);
+    expect(result.changes).toHaveLength(0);
+  });
+
+  it('should handle invalid JSON strings as plain strings', () => {
+    const result = jsonDiff('{invalid', '{"valid":true');
+
+    expect(result.isModified).toBe(true);
+    expect(result.changes).toEqual([
+      {
+        path: '',
+        type: 'modified',
+        oldValue: '{invalid',
+        newValue: '{"valid":true',
+      },
+    ]);
+  });
+
+  it('should detect added and removed array items', () => {
+    expect(jsonDiff([1], [1, 2]).changes).toEqual([
+      { path: '[1]', type: 'added', newValue: 2 },
+    ]);
+    expect(jsonDiff([1, 2], [1]).changes).toEqual([
+      { path: '[1]', type: 'removed', oldValue: 2 },
+    ]);
+  });
+
+  it('should include parent paths for nested array item changes', () => {
+    expect(jsonDiff({ items: [1] }, { items: [1, 2] }).changes).toEqual([
+      { path: 'items[1]', type: 'added', newValue: 2 },
+    ]);
+  });
+
+  it('should handle root-level additions and removals', () => {
+    expect(jsonDiff(undefined, { a: 1 }).changes).toEqual([
+      { path: '', type: 'added', newValue: { a: 1 } },
+    ]);
+    expect(jsonDiff({ a: 1 }, undefined).changes).toEqual([
+      { path: '', type: 'removed', oldValue: { a: 1 } },
+    ]);
+  });
+
+  it('should treat two undefined values as unchanged', () => {
+    expect(jsonDiff(undefined, undefined)).toEqual({
+      changes: [],
+      isModified: false,
+    });
+  });
 });
 
 describe('generateDiffReport', () => {
@@ -115,5 +167,21 @@ describe('generateDiffReport', () => {
 
     expect(report).toContain('1 处差异');
     expect(report).toContain('修改');
+  });
+
+  it('should include added and removed values in readable reports', () => {
+    const result = jsonDiff({ removed: true }, { added: true });
+    const report = generateDiffReport(result);
+
+    expect(report).toContain('[删除] "removed" ← true');
+    expect(report).toContain('[添加] "added" → true');
+  });
+
+  it('should format root-level modifications', () => {
+    expect(generateDiffReport(jsonDiff('old', 'new'))).toContain('[修改] 根: "old" → "new"');
+  });
+
+  it('should format unchanged changes without value details', () => {
+    expect(formatDiffChange({ path: 'same', type: 'unchanged' })).toBe('[未变化] "same"');
   });
 });

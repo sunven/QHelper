@@ -23,9 +23,7 @@ describe('md5', () => {
   });
 
   it('should handle Chinese characters', () => {
-    const hash = md5('测试');
-    expect(hash).toHaveLength(32);
-    expect(/^[0-9a-f]{32}$/.test(hash)).toBe(true);
+    expect(md5('测试')).toBe('db06c78d1e24cf708a14ce81c9b617ec');
   });
 
   it('should produce consistent results', () => {

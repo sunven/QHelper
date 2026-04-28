@@ -9,7 +9,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./test/setup.ts'],
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
-    exclude: ['node_modules', '.output', 'dist', '.wxt'],
+    exclude: ['node_modules', '.output', 'dist', '.wxt', 'tests/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -21,7 +21,6 @@ export default defineConfig({
         'components/ui/',
       ],
     },
-    ui: true,
   },
   resolve: {
     alias: {

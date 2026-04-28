@@ -1,6 +1,6 @@
 ---
-stepsCompleted: ['step-01-preflight-and-context', 'step-02-identify-targets']
-lastStep: 'step-02-identify-targets'
+stepsCompleted: ['step-01-preflight-and-context', 'step-02-identify-targets', 'step-03-generate-tests', 'step-04-validate-and-summarize']
+lastStep: 'step-04-validate-and-summarize'
 lastSaved: '2026-04-28'
 inputDocuments:
   - '.claude/skills/bmad-tea/resources/knowledge/test-levels-framework.md'
@@ -98,3 +98,15 @@ inputDocuments:
 3. **阶段 3**: 补全 P3 工具的 E2E 功能测试 (5 个工具)
 4. **阶段 4**: 补充 lib/ 单元测试
 5. **阶段 5**: 补充 tool-pages.spec.ts 中缺失的 uglify, scss 冒烟测试
+
+## 2026-04-28 单测覆盖率扩展记录
+
+- **执行模式**: Standalone / 顺序执行
+- **覆盖范围**: 当前 Vitest coverage 配置纳入的 `lib/chrome/`, `lib/github/`, `lib/utils/`
+- **单测结果**: 8 个测试文件, 110 个用例全部通过
+- **覆盖率结果**: statements 100%, branches 100%, functions 100%, lines 100%
+- **无效测试处理**: 未删除测试；将 `md5('测试')` 的弱断言替换为标准 UTF-8 MD5 精确断言
+- **源码修复**: 修复 `jsonDiff` 对相同 `null` 值的崩溃；修复 MD5 对非 ASCII 字符按 UTF-8 编码计算；删除 `parseRepoCoordinates` 的不可达 owner/repo 空值分支
+- **新增覆盖重点**: Chrome storage fallback/异常路径、GitHub Zread 按钮安装器导航/重试/MutationObserver 路径、JSON diff 根路径/数组/格式化边界、recent tools 空变更分支
+- **验证命令**: `pnpm lint`, `pnpm type-check`, `pnpm test:run`, `pnpm test:coverage`
+- **剩余风险**: 100% 仅代表当前 Vitest coverage 配置范围；`entrypoints/` 与 UI 组件仍按现有配置排除在单测覆盖率口径外

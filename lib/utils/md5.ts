@@ -84,7 +84,8 @@ function ii(
 
 function convertToWordArray(str: string): number[] {
   let lWordCount: number;
-  const lMessageLength = str.length;
+  const bytes = new TextEncoder().encode(str);
+  const lMessageLength = bytes.length;
   const lNumberOfWordsTemp1 = lMessageLength + 8;
   const lNumberOfWordsTemp2 =
     (lNumberOfWordsTemp1 - (lNumberOfWordsTemp1 % 64)) / 64;
@@ -97,7 +98,7 @@ function convertToWordArray(str: string): number[] {
     lWordCount = (lByteCount - (lByteCount % 4)) / 4;
     lBytePosition = (lByteCount % 4) * 8;
     lWordArray[lWordCount] =
-      lWordArray[lWordCount] | (str.charCodeAt(lByteCount) << lBytePosition);
+      lWordArray[lWordCount] | (bytes[lByteCount] << lBytePosition);
     lByteCount++;
   }
 

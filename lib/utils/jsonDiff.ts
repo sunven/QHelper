@@ -71,6 +71,10 @@ function compare(
     return changes;
   }
 
+  if (isEqual(oldValue, newValue)) {
+    return changes;
+  }
+
   // 类型不同 -> 修改
   if (typeof oldValue !== typeof newValue) {
     changes.push({ path, type: 'modified', oldValue, newValue });
@@ -125,9 +129,7 @@ function compare(
   }
 
   // 基本类型值比较
-  if (!isEqual(oldValue, newValue)) {
-    changes.push({ path, type: 'modified', oldValue, newValue });
-  }
+  changes.push({ path, type: 'modified', oldValue, newValue });
 
   return changes;
 }

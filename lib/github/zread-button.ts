@@ -39,11 +39,6 @@ export function parseRepoCoordinates(pathname: string): RepoCoordinates | null {
   }
 
   const [owner, repo] = segments;
-
-  if (!owner || !repo) {
-    return null;
-  }
-
   return { owner, repo };
 }
 

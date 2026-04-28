@@ -174,6 +174,29 @@ describe('recentTools', () => {
       expect(callback).toHaveBeenCalledWith(newRecent);
     });
 
+    it('should call callback with empty array when recent_tools new value is missing', () => {
+      const callback = vi.fn();
+      const mockListeners: Array<(changes: any, areaName: string) => void> = [];
+      vi.spyOn(chrome.storage.onChanged, 'addListener').mockImplementation(
+        (listener: any) => {
+          mockListeners.push(listener);
+        }
+      );
+
+      recentTools.onRecentToolsChange(callback);
+
+      mockListeners[0](
+        {
+          recent_tools: {
+            oldValue: [{ toolId: 'json' }],
+          },
+        },
+        'local',
+      );
+
+      expect(callback).toHaveBeenCalledWith([]);
+    });
+
     it('should not call callback when other keys change', () => {
       const callback = vi.fn();
       const mockListeners: Array<(changes: any, areaName: string) => void> = [];
