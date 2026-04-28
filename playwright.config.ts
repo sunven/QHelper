@@ -1,4 +1,4 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -14,4 +14,4 @@ export default defineConfig({
     ['junit', { outputFile: 'test-results/results.xml' }],
     ['list'],
   ],
-});
+})

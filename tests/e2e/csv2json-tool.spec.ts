@@ -14,7 +14,7 @@ test.describe('CSV to JSON Tool', () => {
     const page = await openToolPage(context, extensionId, 'csv2json');
 
     await page.locator('main textarea').first().fill('name,age\nAlice,30\nBob,25');
-    await page.locator('main button').filter({ hasText: '转换', exact: true }).click();
+    await page.getByRole('button', { name: '转换', exact: true }).click();
 
     const output = page.locator('main textarea[readonly]');
     const value = await output.inputValue();

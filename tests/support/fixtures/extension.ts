@@ -17,9 +17,10 @@ export type ExtensionFixtures = {
 };
 
 export const test = base.extend<ExtensionFixtures>({
-  context: async ({}, use) => {
+  context: async ({ headless }, use) => {
     const context = await chromium.launchPersistentContext('', {
-      headless: false,
+      channel: 'chromium',
+      headless,
       args: [
         `--disable-extensions-except=${extensionPath}`,
         `--load-extension=${extensionPath}`,
