@@ -6,6 +6,7 @@ import { Copy, Download, FileText } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
 
 const renderer = new marked.Renderer();
@@ -27,7 +28,6 @@ marked.setOptions({
 
 // 导入 highlight.js 样式
 import 'highlight.js/styles/github-dark.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface MarkdownState {
   input: string;
@@ -155,24 +155,8 @@ ${state.html}
   return (
 
 
-    <>
-
-
-      <ToolNavigation />
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <FileText className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Markdown 编辑器
-            </h1>
-          </div>
-          <p className="text-slate-600 dark:text-slate-400">
-            实时预览、语法高亮、支持 GFM
-          </p>
-        </div>
+    <ToolPageShell toolId="markdown" description="实时编写、预览并导出 Markdown，保留语法高亮与大篇幅编辑体验。">
+      <div className="mx-auto max-w-6xl">
 
         {/* 操作按钮 */}
         <div className="flex gap-2 mb-4">
@@ -187,7 +171,7 @@ ${state.html}
           <button
             type="button"
             onClick={handleExportHtml}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-700"
           >
             <Download className="w-4 h-4" />
             导出 HTML
@@ -242,11 +226,8 @@ ${state.html}
           </div>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 function App() {

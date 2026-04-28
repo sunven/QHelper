@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Wand2, Copy, FileCode, FileJson, FileType, Database } from 'lucide-react';
-import { ToolNavigation } from '@/components/ToolNavigation';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 
 type CodeType = 'js' | 'css' | 'html' | 'xml' | 'sql';
 
@@ -65,27 +65,21 @@ function CodeBeautifyTool() {
   }
 
   return (
+    <ToolPageShell toolId="codebeautify">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <p className="rounded-2xl border border-border/70 bg-white/55 px-4 py-3 text-sm text-muted-foreground dark:bg-slate-900/45">
+          源自：
+          {' '}
+          <a
+            href="https://www.baidufe.com/fehelper/codebeautify.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary hover:underline"
+          >
+            https://www.baidufe.com/fehelper/codebeautify.html
+          </a>
+        </p>
 
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-2">代码美化</h1>
-      <p className="text-sm text-center text-muted-foreground mb-6">
-        源自：
-        <a
-          href="https://www.baidufe.com/fehelper/codebeautify.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:underline"
-        >
-          https://www.baidufe.com/fehelper/codebeautify.html
-        </a>
-      </p>
-
-      <div className="space-y-6">
         {/* 源代码 */}
         <Card>
           <CardHeader>
@@ -151,11 +145,8 @@ function CodeBeautifyTool() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

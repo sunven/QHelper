@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Copy, RefreshCw, Trash2, Hash } from 'lucide-react';
+import { Copy, RefreshCw, Trash2 } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 function UUIDGenerator() {
   const [uuids, setUuids] = useState<string[]>(['']);
@@ -67,24 +67,8 @@ function UUIDGenerator() {
   }
 
   return (
-
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-          <Hash className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">UUID 生成器</h1>
-          <p className="text-sm text-muted-foreground">生成 UUID v4 标识符</p>
-        </div>
-      </div>
-
-      <div className="space-y-6">
+    <ToolPageShell toolId="uuid">
+      <div className="mx-auto max-w-4xl space-y-6">
         {/* 配置区域 */}
         <Card>
           <CardHeader>
@@ -161,7 +145,7 @@ function UUIDGenerator() {
               {uuids.map((uuid, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-2 p-3 bg-muted/50 rounded-md group"
+                  className="group flex items-center gap-2 rounded-2xl border border-border/70 bg-muted/50 px-4 py-3"
                 >
                   <code className="flex-1 font-mono text-sm">{uuid || '点击生成按钮创建 UUID'}</code>
                   {uuid && (
@@ -187,7 +171,7 @@ function UUIDGenerator() {
               <p>
                 <strong>UUID v4</strong> 是基于随机数生成的通用唯一标识符，格式为：
               </p>
-              <code className="block p-2 bg-muted rounded text-xs">
+              <code className="block rounded-xl bg-muted px-3 py-2 text-xs">
                 xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
               </code>
               <p className="text-xs">
@@ -198,11 +182,8 @@ function UUIDGenerator() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

@@ -5,8 +5,8 @@ import { Copy, Download, Image, Zap, Upload } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface SvgState {
   input: string;
@@ -116,29 +116,13 @@ function SvgOptimizer() {
   return (
 
 
-    <>
-
-
-      <ToolNavigation />
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Image className="w-8 h-8 text-purple-600" />
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              SVG 优化器
-            </h1>
-          </div>
-          <p className="text-slate-600 dark:text-slate-400">
-            优化 SVG 代码，减小文件大小
-          </p>
-        </div>
+    <ToolPageShell toolId="svgoptimizer">
+      <div className="mx-auto max-w-6xl">
 
         {/* 文件上传 */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
           <div className="flex items-center justify-between">
-            <label className="flex items-center gap-3 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg cursor-pointer transition-colors">
+            <label className="flex cursor-pointer items-center gap-3 rounded-lg bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-700">
               <Upload className="w-4 h-4" />
               <span>上传 SVG 文件</span>
               <input
@@ -204,7 +188,7 @@ function SvgOptimizer() {
                   type="button"
                   onClick={handleDownload}
                   disabled={!state.output}
-                  className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
+                  className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
                 >
                   <Download className="w-3 h-3" />
                   下载
@@ -267,11 +251,8 @@ function SvgOptimizer() {
           </div>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 function App() {

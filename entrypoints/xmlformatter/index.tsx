@@ -5,8 +5,8 @@ import { FileCode, Copy, Download, Minimize2, Maximize2, Sparkles, Trash2 } from
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface XmlState {
   input: string;
@@ -107,24 +107,8 @@ function XmlFormatter() {
   return (
 
 
-    <>
-
-
-      <ToolNavigation />
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <FileCode className="w-8 h-8 text-orange-600" />
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              XML 格式化器
-            </h1>
-          </div>
-          <p className="text-slate-600 dark:text-slate-400">
-            XML 美化、压缩、格式化、验证
-          </p>
-        </div>
+    <ToolPageShell toolId="xmlformatter">
+      <div className="mx-auto max-w-6xl">
 
         {/* 模式切换 */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
@@ -217,7 +201,7 @@ function XmlFormatter() {
                   type="button"
                   onClick={handleDownload}
                   disabled={!state.output}
-                  className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
+                  className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
                 >
                   <Download className="w-3 h-3" />
                   下载
@@ -265,11 +249,8 @@ function XmlFormatter() {
           </div>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 function App() {

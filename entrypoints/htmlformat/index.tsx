@@ -5,8 +5,8 @@ import { Copy, Download, FileCode, Minimize2, Maximize2, Settings2 } from 'lucid
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface HtmlFormatState {
   input: string;
@@ -95,24 +95,8 @@ function HtmlFormatter() {
   return (
 
 
-    <>
-
-
-      <ToolNavigation />
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <FileCode className="w-8 h-8 text-orange-600" />
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              HTML 格式化器
-            </h1>
-          </div>
-          <p className="text-slate-600 dark:text-slate-400">
-            美化或压缩 HTML 代码
-          </p>
-        </div>
+    <ToolPageShell toolId="htmlformat">
+      <div className="mx-auto max-w-6xl">
 
         {/* 操作栏 */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
@@ -124,7 +108,7 @@ function HtmlFormatter() {
                 onClick={() => setState((prev) => ({ ...prev, mode: 'beautify' }))}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   state.mode === 'beautify'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-emerald-600 text-white'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                 }`}
               >
@@ -136,7 +120,7 @@ function HtmlFormatter() {
                 onClick={() => setState((prev) => ({ ...prev, mode: 'minify' }))}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                   state.mode === 'minify'
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-emerald-600 text-white'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
                 }`}
               >
@@ -214,7 +198,7 @@ function HtmlFormatter() {
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors"
+                  className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm transition-colors"
                 >
                   <Download className="w-3 h-3" />
                   下载
@@ -256,11 +240,8 @@ function HtmlFormatter() {
           </div>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 function App() {

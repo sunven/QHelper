@@ -5,8 +5,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Palette, ArrowRight } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 function ColorTransformTool() {
   const [srcRgb, setSrcRgb] = useState(['', '', '']);
@@ -52,19 +52,8 @@ function ColorTransformTool() {
   }
 
   return (
-
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-2">颜色转换</h1>
-      <p className="text-sm text-center text-muted-foreground mb-6">
-        RGB 与 HEX 颜色格式互转
-      </p>
-
-      <div className="space-y-6">
+    <ToolPageShell toolId="colorTransform">
+      <div className="mx-auto max-w-4xl space-y-6">
         {/* 颜色预览 */}
         <Card>
           <CardHeader>
@@ -75,12 +64,12 @@ function ColorTransformTool() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
-              <div className="flex-1 h-16 rounded-md border" style={{ backgroundColor: color }} />
+              <div className="h-20 flex-1 rounded-2xl border border-border/70" style={{ backgroundColor: color }} />
               <input
                 type="color"
                 value={color}
                 onChange={handleColorChange}
-                className="w-16 h-16 cursor-pointer rounded-md border"
+                className="h-16 w-16 cursor-pointer rounded-2xl border border-border/70 bg-white/75"
               />
             </div>
           </CardContent>
@@ -152,11 +141,8 @@ function ColorTransformTool() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

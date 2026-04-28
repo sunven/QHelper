@@ -24,7 +24,7 @@ import { jsonDiff, type DiffResult, type DiffChange } from '@/lib/utils/jsonDiff
 import { useToolHistory } from '@/hooks/useToolHistory';
 import { useKeyboardShortcuts, type KeyboardShortcut } from '@/hooks/useKeyboardShortcuts';
 import type { HistoryEntry } from '@/types/storage';
-import { ToolNavigation } from '@/components/ToolNavigation';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
 
 // 文件大小阈值
@@ -368,11 +368,10 @@ function JsonTool() {
   }, [inputSize, processingTime, isProcessing, jsoncon]);
 
   return (
-    <>
-      <ToolNavigation />
-      <div className="h-screen flex flex-col">
+    <ToolPageShell toolId="json" description="高密度 JSON 工作台，支持格式化、压缩、Diff 对比与历史保存。">
+      <div className="flex min-h-[720px] flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/88 shadow-[0_24px_80px_rgba(15,23,42,0.14)] backdrop-blur dark:border-white/10 dark:bg-slate-950/72">
         {/* 工具栏 */}
-        <div className="border-b p-2 flex items-center gap-2 bg-muted/50 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2 border-b border-border/70 bg-muted/40 p-3">
         <Button
           variant={baseview === 'formatter' ? 'default' : 'outline'}
           size="sm"
@@ -602,6 +601,7 @@ function JsonTool() {
           </div>
         )}
       </div>
+      </div>
 
       {/* 保存对话框 */}
       {isSaveShow && (
@@ -658,8 +658,7 @@ function JsonTool() {
           </Card>
         </div>
       )}
-    </div>
-    </>
+    </ToolPageShell>
   );
 }
 

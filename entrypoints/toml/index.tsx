@@ -5,8 +5,8 @@ import { Copy, Download, FileJson, FileCode, ArrowLeftRight, Zap } from 'lucide-
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface TomlState {
   input: string;
@@ -103,24 +103,8 @@ dc = "eqdc10"
   return (
 
 
-    <>
-
-
-      <ToolNavigation />
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <FileJson className="w-8 h-8 text-teal-600" />
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              TOML 解析器
-            </h1>
-          </div>
-          <p className="text-slate-600 dark:text-slate-400">
-            TOML ↔ JSON 转换、验证、格式化
-          </p>
-        </div>
+    <ToolPageShell toolId="toml">
+      <div className="mx-auto max-w-6xl">
 
         {/* 模式切换 */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
@@ -213,7 +197,7 @@ dc = "eqdc10"
                   type="button"
                   onClick={handleDownload}
                   disabled={!state.output}
-                  className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
+                  className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
                 >
                   <Download className="w-3 h-3" />
                   下载
@@ -260,11 +244,8 @@ dc = "eqdc10"
           </div>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 function App() {

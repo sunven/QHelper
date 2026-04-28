@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 const RADIX_OPTIONS = [
   { value: 2, label: '2进制' },
@@ -61,14 +61,9 @@ function TransRadixTool() {
   }
 
   return (
-
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="w-[400px] mx-auto p-6">
-      <Card>
+    <ToolPageShell toolId="trans-radix">
+      <div className="mx-auto w-full max-w-[420px]">
+        <Card>
         <CardHeader>
           <CardTitle className="text-center">进制转换</CardTitle>
         </CardHeader>
@@ -103,7 +98,7 @@ function TransRadixTool() {
                   setRadixSelect1(val ? Number(val) : undefined);
                   if (val) setRadixRadio1(-1);
                 }}
-                className="w-20 px-3 py-2 border rounded-md bg-background text-sm"
+                className="w-24 rounded-xl border border-input bg-white/75 px-3 py-2 text-sm dark:bg-slate-900/58"
               >
                 <option value="">自定义</option>
                 {Array.from({ length: 35 }, (_, i) => (
@@ -162,7 +157,7 @@ function TransRadixTool() {
                   setRadixSelect2(val ? Number(val) : undefined);
                   if (val) setRadixRadio2(-1);
                 }}
-                className="w-20 px-3 py-2 border rounded-md bg-background text-sm"
+                className="w-24 rounded-xl border border-input bg-white/75 px-3 py-2 text-sm dark:bg-slate-900/58"
               >
                 <option value="">自定义</option>
                 {Array.from({ length: 35 }, (_, i) => (
@@ -182,11 +177,9 @@ function TransRadixTool() {
           </div>
         </CardContent>
       </Card>
-    </div>
-  
-
-
-    </>);
+      </div>
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

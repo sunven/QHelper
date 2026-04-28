@@ -4,9 +4,9 @@ import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Copy, Link2 } from 'lucide-react';
+import { Copy } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 function URLParser() {
   const [input, setInput] = useState('');
@@ -38,24 +38,8 @@ function URLParser() {
   }
 
   return (
-
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg flex items-center justify-center">
-          <Link2 className="w-5 h-5 text-cyan-600 dark:text-cyan-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">URL 解析器</h1>
-          <p className="text-sm text-muted-foreground">解析 URL 各个组成部分</p>
-        </div>
-      </div>
-
-      <div className="space-y-6">
+    <ToolPageShell toolId="urlparser">
+      <div className="mx-auto max-w-4xl space-y-6">
         {/* 输入区域 */}
         <Card>
           <CardHeader>
@@ -141,7 +125,10 @@ function URLParser() {
                   <label className="text-xs text-muted-foreground">查询参数 (Query Params)</label>
                   <div className="mt-2 space-y-2">
                     {parsed.params.map((param, index) => (
-                      <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 rounded-xl border border-border/70 bg-muted/55 px-3 py-2"
+                      >
                         <code className="flex-1 text-sm">
                           <span className="text-blue-600 dark:text-blue-400">{param.key}</span>
                           <span className="text-gray-500">=</span>
@@ -187,11 +174,8 @@ function URLParser() {
           </Card>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

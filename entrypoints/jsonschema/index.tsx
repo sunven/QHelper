@@ -5,8 +5,8 @@ import { FileJson, Shield, Copy, Download, X, CheckCircle2, AlertCircle } from '
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface JsonSchemaState {
   jsonData: string;
@@ -152,24 +152,8 @@ function JsonSchemaValidator() {
   return (
 
 
-    <>
-
-
-      <ToolNavigation />
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Shield className="w-8 h-8 text-teal-600" />
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              JSON Schema 验证器
-            </h1>
-          </div>
-          <p className="text-slate-600 dark:text-slate-400">
-            使用 JSON Schema 验证 JSON 数据结构
-          </p>
-        </div>
+    <ToolPageShell toolId="jsonschema">
+      <div className="mx-auto max-w-6xl">
 
         {/* 工具栏 */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
@@ -222,7 +206,7 @@ function JsonSchemaValidator() {
               <button
                 type="button"
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-sm"
               >
                 <Download className="w-4 h-4" />
                 下载
@@ -334,11 +318,8 @@ function JsonSchemaValidator() {
           </div>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 function App() {

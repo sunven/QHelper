@@ -10,8 +10,8 @@ import { Slider } from '@/components/ui/slider';
 import { Copy, RefreshCw, Shield, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { useToolState } from '@/hooks/useToolState';
 import { CopyButton } from '@/components/tool/CopyButton';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 function PasswordGenerator() {
   // 使用持久化状态保存用户配置
@@ -99,24 +99,8 @@ function PasswordGenerator() {
   }
 
   return (
-
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-          <Shield className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">密码生成器</h1>
-          <p className="text-sm text-muted-foreground">生成安全的随机密码</p>
-        </div>
-      </div>
-
-      <div className="space-y-6">
+    <ToolPageShell toolId="password">
+      <div className="mx-auto max-w-4xl space-y-6">
         {/* 密码显示 */}
         <Card>
           <CardHeader>
@@ -146,7 +130,7 @@ function PasswordGenerator() {
                       <span className={`text-sm font-medium ${strength.color}`}>{strength.label}</span>
                       <span className="text-xs text-muted-foreground">{password.length} 位</span>
                     </div>
-                    <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-700">
                       <div
                         className={`h-full transition-all ${
                           strength.level === 1
@@ -282,11 +266,8 @@ function PasswordGenerator() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

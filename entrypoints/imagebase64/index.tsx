@@ -6,8 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Copy, Image as ImageIcon, FileType } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 function ImageBase64Tool() {
   const [preview, setPreview] = useState<string | null>(null);
@@ -86,15 +86,8 @@ function ImageBase64Tool() {
   }
 
   return (
-    <>
-      <ToolNavigation />
-      <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-2">图片 Base64 编码</h1>
-      <p className="text-sm text-center text-muted-foreground mb-6">
-        将图片转换为 DataURI 格式
-      </p>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <ToolPageShell toolId="imagebase64" description="将图片快速编码为可复制、可嵌入的 Data URI 字符串。">
+      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2">
         {/* 左侧：预览和上传 */}
         <Card>
           <CardHeader>
@@ -108,10 +101,10 @@ function ImageBase64Tool() {
               <img
                 src={preview}
                 alt="预览"
-                className="w-full h-auto rounded-md border"
+                className="h-auto w-full rounded-2xl border border-border/70"
               />
             ) : (
-              <div className="flex items-center justify-center h-48 border-2 border-dashed rounded-md text-muted-foreground">
+              <div className="flex h-48 items-center justify-center rounded-2xl border-2 border-dashed border-border text-muted-foreground">
                 <span className="text-sm">图片预览区域</span>
               </div>
             )}
@@ -175,8 +168,7 @@ function ImageBase64Tool() {
           </CardContent>
         </Card>
       </div>
-    </div>
-    </>
+    </ToolPageShell>
   );
 }
 

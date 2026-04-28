@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, ArrowLeft, Clock } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
-import { ToolNavigation } from '@/components/ToolNavigation';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
 
 function TimestampTool() {
@@ -68,18 +68,21 @@ function TimestampTool() {
   }
 
   return (
-    <>
-      <ToolNavigation />
-      <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-2xl font-bold text-center mb-2">时间戳转换</h1>
-        <p className="text-sm text-center text-muted-foreground mb-6">
+    <ToolPageShell toolId="timestamp">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <p className="rounded-2xl border border-border/70 bg-white/55 px-4 py-3 text-sm text-muted-foreground dark:bg-slate-900/45">
           源自：
-          <a href="https://github.com/zxlie/FeHelper" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+          {' '}
+          <a
+            href="https://github.com/zxlie/FeHelper"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary hover:underline"
+          >
             https://github.com/zxlie/FeHelper
           </a>
         </p>
 
-        <div className="space-y-6">
           {/* 当前时间 */}
           <Card>
             <CardHeader>
@@ -153,9 +156,8 @@ function TimestampTool() {
               </div>
             </CardContent>
           </Card>
-        </div>
       </div>
-    </>
+    </ToolPageShell>
   );
 }
 

@@ -6,8 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, FileCode, FileJson, ArrowRightLeft } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 function YAMLConverter() {
   const [input, setInput] = useState('');
@@ -89,25 +89,8 @@ address:
   return (
 
 
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
-          <FileCode className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">YAML 转换器</h1>
-          <p className="text-sm text-muted-foreground">YAML 与 JSON 格式互转</p>
-        </div>
-        <span className="ml-auto px-2 py-1 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full">
-          Beta
-        </span>
-      </div>
-
-      <div className="space-y-6">
+    <ToolPageShell toolId="yaml">
+      <div className="mx-auto max-w-6xl space-y-6">
         {/* 模式切换 */}
         <Card>
           <CardHeader>
@@ -228,11 +211,8 @@ address:
           </CardContent>
         </Card>
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

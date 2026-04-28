@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowRight, ArrowLeft, Code, Lock, Key, FileCode } from 'lucide-react';
@@ -9,8 +9,8 @@ import { md5 } from '@/lib/utils/md5';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import { useToolState } from '@/hooks/useToolState';
 import { CopyButton } from '@/components/tool/CopyButton';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 type EncodeType =
   | 'htmlEscape'
@@ -185,27 +185,21 @@ function ConvertTool() {
   const decodeButtons = encodeItems.filter((item) => item.direction === 'decode');
 
   return (
+    <ToolPageShell toolId="convert">
+      <div className="mx-auto max-w-4xl space-y-6">
+        <p className="rounded-2xl border border-border/70 bg-white/55 px-4 py-3 text-sm text-muted-foreground dark:bg-slate-900/45">
+          源自：
+          {' '}
+          <a
+            href="https://www.baidufe.com/fehelper/endecode.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary hover:underline"
+          >
+            https://www.baidufe.com/fehelper/endecode.html
+          </a>
+        </p>
 
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-2">字符串编解码</h1>
-      <p className="text-sm text-center text-muted-foreground mb-6">
-        源自：
-        <a
-          href="https://www.baidufe.com/fehelper/endecode.html"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-primary hover:underline"
-        >
-          https://www.baidufe.com/fehelper/endecode.html
-        </a>
-      </p>
-
-      <div className="space-y-6">
         {/* 输入区域 */}
         <Card>
           <CardHeader>
@@ -307,7 +301,7 @@ function ConvertTool() {
                 {history.slice(-10).reverse().map((entry) => (
                   <div
                     key={entry.id}
-                    className="p-3 bg-muted rounded-md text-sm cursor-pointer hover:bg-muted/80"
+                    className="cursor-pointer rounded-2xl border border-border/70 bg-muted/55 p-3 text-sm transition-colors hover:bg-muted/80"
                     onClick={() => restoreHistory(entry.input)}
                   >
                     <div className="flex items-center justify-between mb-1">
@@ -329,11 +323,8 @@ function ConvertTool() {
           </Card>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

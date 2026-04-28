@@ -8,8 +8,8 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Upload, X, Image as ImageIcon, Download, Trash2, Settings } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface ImageItem {
   id: string;
@@ -189,15 +189,8 @@ function PictureSplicingTool() {
   }
 
   return (
-    <>
-      <ToolNavigation />
-      <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-2">图片拼接</h1>
-      <p className="text-sm text-center text-muted-foreground mb-6">
-        将多张图片拼接成一张图片
-      </p>
-
-      <div className="space-y-6">
+    <ToolPageShell toolId="pictureSplicing" description="上传、排序并生成拼接图，适合快速合并截图、海报或长图素材。">
+      <div className="mx-auto max-w-4xl space-y-6">
         {/* 上传区域 */}
         <Card>
           <CardHeader>
@@ -320,7 +313,7 @@ function PictureSplicingTool() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <img src={canvasUrl} alt="拼接结果" className="w-full rounded-md border" />
+              <img src={canvasUrl} alt="拼接结果" className="w-full rounded-2xl border border-border/70" />
 
               <div className="flex gap-3">
                 <Button onClick={downloadCanvas} className="flex-1">
@@ -336,8 +329,7 @@ function PictureSplicingTool() {
           </Card>
         )}
       </div>
-    </div>
-    </>
+    </ToolPageShell>
   );
 }
 

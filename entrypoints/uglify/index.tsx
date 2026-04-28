@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Zap, Copy, Play } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 function UglifyTool() {
   const [source, setSource] = useState('');
@@ -61,19 +61,8 @@ function UglifyTool() {
   }
 
   return (
-
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-6xl mx-auto p-6">
-      <h1 className="text-2xl font-bold text-center mb-2">JavaScript 压缩</h1>
-      <p className="text-sm text-center text-muted-foreground mb-6">
-        使用 UglifyJS 压缩 JavaScript 代码
-      </p>
-
-      <div className="space-y-6">
+    <ToolPageShell toolId="uglify" description="通过 UglifyJS 压缩、保留或混淆 JavaScript 输出，适合快速试验压缩策略。">
+      <div className="mx-auto max-w-6xl space-y-6">
         {/* 选项区域 */}
         <Card>
           <CardHeader>
@@ -150,11 +139,8 @@ function UglifyTool() {
           </Card>
         </div>
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');

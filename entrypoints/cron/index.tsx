@@ -5,8 +5,8 @@ import { Clock, Calendar, Play, Copy, Download, RefreshCw } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 interface CronState {
   expression: string;
@@ -110,26 +110,8 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
   };
 
   return (
-
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-      <div className="container mx-auto px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-6">
-          <div className="flex items-center gap-3 mb-2">
-            <Clock className="w-8 h-8 text-indigo-600" />
-            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-              Cron 表达式解析器
-            </h1>
-          </div>
-          <p className="text-slate-600 dark:text-slate-400">
-            解析、验证和计算 Cron 表达式运行时间
-          </p>
-        </div>
+    <ToolPageShell toolId="cron">
+      <div className="mx-auto max-w-6xl">
 
         {/* 预设按钮 */}
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
@@ -192,7 +174,7 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
               <button
                 type="button"
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm"
+                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-sm"
               >
                 <Download className="w-4 h-4" />
                 导出
@@ -280,11 +262,8 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
           </div>
         )}
       </div>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 function App() {

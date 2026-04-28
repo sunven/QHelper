@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileJson, FileText, Copy, Upload, Download } from 'lucide-react';
+import { FileJson, FileText, Copy } from 'lucide-react';
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
-import { ToolNavigation } from '@/components/ToolNavigation';
 
 function CSVToJSON() {
   const [input, setInput] = useState('');
@@ -121,26 +121,11 @@ function CSVToJSON() {
   }
 
   return (
-
-
-    <>
-
-
-      <ToolNavigation />
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-          <FileJson className="w-5 h-5 text-green-600 dark:text-green-400" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold">CSV 转 JSON</h1>
-          <p className="text-sm text-muted-foreground">将 CSV 格式转换为 JSON 格式</p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-6">
-        {/* 左侧：CSV 输入 */}
-        <div className="space-y-4">
+    <ToolPageShell toolId="csv2json">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {/* 左侧：CSV 输入 */}
+          <div className="space-y-4">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -231,30 +216,28 @@ function CSVToJSON() {
                 placeholder="JSON 结果将显示在这里..."
                 className="font-mono text-sm min-h-[400px] bg-muted/50"
               />
-            )}
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* 使用说明 */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-sm text-muted-foreground space-y-2">
+              <p className="font-medium text-foreground">使用说明：</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>支持逗号分隔的 CSV 格式</li>
+                <li>支持双引号包裹的字段</li>
+                <li>可以自动识别第一行作为字段名</li>
+                <li>支持转换为对象数组或二维数组</li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* 使用说明 */}
-      <Card className="mt-6">
-        <CardContent className="pt-6">
-          <div className="text-sm text-muted-foreground space-y-2">
-            <p className="font-medium text-foreground">使用说明：</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>支持逗号分隔的 CSV 格式</li>
-              <li>支持双引号包裹的字段</li>
-              <li>可以自动识别第一行作为字段名</li>
-              <li>支持转换为对象数组或二维数组</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  
-
-
-    </>);
+    </ToolPageShell>
+  );
 }
 
 const root = document.getElementById('app');
