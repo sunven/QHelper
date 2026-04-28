@@ -1,0 +1,274 @@
+<testsuites id="" name="" tests="111" failures="0" skipped="0" errors="0" time="81.037568">
+<testsuite name="codebeautify-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="2" failures="0" skipped="0" time="1.992" errors="0">
+<testcase name="Code Beautify Tool › page loads with input area" classname="codebeautify-tool.spec.ts" time="1.233">
+</testcase>
+<testcase name="Code Beautify Tool › beautifies code input" classname="codebeautify-tool.spec.ts" time="0.759">
+</testcase>
+</testsuite>
+<testsuite name="color-transform-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="4" failures="0" skipped="0" time="2.808" errors="0">
+<testcase name="Color Transform Tool › page loads successfully" classname="color-transform-tool.spec.ts" time="0.731">
+</testcase>
+<testcase name="Color Transform Tool › has RGB input fields" classname="color-transform-tool.spec.ts" time="0.675">
+</testcase>
+<testcase name="Color Transform Tool › has color picker input" classname="color-transform-tool.spec.ts" time="0.727">
+</testcase>
+<testcase name="Color Transform Tool › has conversion buttons" classname="color-transform-tool.spec.ts" time="0.675">
+</testcase>
+</testsuite>
+<testsuite name="convert-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="10" failures="0" skipped="0" time="7.274" errors="0">
+<testcase name="Convert Tool › page loads with input area" classname="convert-tool.spec.ts" time="0.662">
+</testcase>
+<testcase name="Convert Tool › HTML escapes special characters" classname="convert-tool.spec.ts" time="0.718">
+</testcase>
+<testcase name="Convert Tool › HTML unescapes entities" classname="convert-tool.spec.ts" time="0.813">
+</testcase>
+<testcase name="Convert Tool › URL encodes text" classname="convert-tool.spec.ts" time="0.732">
+</testcase>
+<testcase name="Convert Tool › URL decodes text" classname="convert-tool.spec.ts" time="0.732">
+</testcase>
+<testcase name="Convert Tool › Base64 encodes text" classname="convert-tool.spec.ts" time="0.732">
+</testcase>
+<testcase name="Convert Tool › Base64 decodes text" classname="convert-tool.spec.ts" time="0.728">
+</testcase>
+<testcase name="Convert Tool › Base64 decode shows error for invalid input" classname="convert-tool.spec.ts" time="0.72">
+</testcase>
+<testcase name="Convert Tool › MD5 encodes text" classname="convert-tool.spec.ts" time="0.724">
+</testcase>
+<testcase name="Convert Tool › Unicode decodes text" classname="convert-tool.spec.ts" time="0.713">
+</testcase>
+</testsuite>
+<testsuite name="cron-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="5" failures="0" skipped="0" time="3.667" errors="0">
+<testcase name="Cron Parser Tool › page loads with default expression" classname="cron-tool.spec.ts" time="0.682">
+</testcase>
+<testcase name="Cron Parser Tool › parses valid cron expression and shows next runs" classname="cron-tool.spec.ts" time="0.742">
+</testcase>
+<testcase name="Cron Parser Tool › shows error indicator for invalid cron" classname="cron-tool.spec.ts" time="0.85">
+</testcase>
+<testcase name="Cron Parser Tool › applies preset expression" classname="cron-tool.spec.ts" time="0.728">
+</testcase>
+<testcase name="Cron Parser Tool › has presets section" classname="cron-tool.spec.ts" time="0.665">
+</testcase>
+</testsuite>
+<testsuite name="csstool-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="2" failures="0" skipped="0" time="1.422" errors="0">
+<testcase name="CSS Tool › page loads with input area" classname="csstool-tool.spec.ts" time="0.64">
+</testcase>
+<testcase name="CSS Tool › formats CSS input" classname="csstool-tool.spec.ts" time="0.782">
+</testcase>
+</testsuite>
+<testsuite name="csv2json-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="4" failures="0" skipped="0" time="2.889" errors="0">
+<testcase name="CSV to JSON Tool › page loads with CSV input area" classname="csv2json-tool.spec.ts" time="0.691">
+</testcase>
+<testcase name="CSV to JSON Tool › converts CSV to JSON with headers" classname="csv2json-tool.spec.ts" time="0.729">
+</testcase>
+<testcase name="CSV to JSON Tool › loads sample data" classname="csv2json-tool.spec.ts" time="0.707">
+</testcase>
+<testcase name="CSV to JSON Tool › clears input and output" classname="csv2json-tool.spec.ts" time="0.762">
+</testcase>
+</testsuite>
+<testsuite name="htmlformat-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="2" failures="0" skipped="0" time="1.415" errors="0">
+<testcase name="HTML Format Tool › page loads with input area" classname="htmlformat-tool.spec.ts" time="0.682">
+</testcase>
+<testcase name="HTML Format Tool › formats HTML input" classname="htmlformat-tool.spec.ts" time="0.733">
+</testcase>
+</testsuite>
+<testsuite name="imagebase64-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="1" failures="0" skipped="0" time="0.649" errors="0">
+<testcase name="Image Base64 Tool › page loads successfully" classname="imagebase64-tool.spec.ts" time="0.649">
+</testcase>
+</testsuite>
+<testsuite name="json-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="10" failures="0" skipped="0" time="8.887" errors="0">
+<testcase name="JSON Formatter Tool › page loads with input area" classname="json-tool.spec.ts" time="0.685">
+</testcase>
+<testcase name="JSON Formatter Tool › formats valid JSON automatically on input" classname="json-tool.spec.ts" time="1.03">
+</testcase>
+<testcase name="JSON Formatter Tool › shows error for invalid JSON" classname="json-tool.spec.ts" time="1.046">
+</testcase>
+<testcase name="JSON Formatter Tool › compresses valid JSON" classname="json-tool.spec.ts" time="0.726">
+</testcase>
+<testcase name="JSON Formatter Tool › beautifies JSON" classname="json-tool.spec.ts" time="0.796">
+</testcase>
+<testcase name="JSON Formatter Tool › clears input and result" classname="json-tool.spec.ts" time="0.813">
+</testcase>
+<testcase name="JSON Formatter Tool › switches to diff mode" classname="json-tool.spec.ts" time="0.84">
+</testcase>
+<testcase name="JSON Formatter Tool › performs diff between two JSON objects" classname="json-tool.spec.ts" time="0.907">
+</testcase>
+<testcase name="JSON Formatter Tool › shows no differences for identical JSON" classname="json-tool.spec.ts" time="0.921">
+</testcase>
+<testcase name="JSON Formatter Tool › shows error for nested invalid JSON" classname="json-tool.spec.ts" time="1.123">
+</testcase>
+</testsuite>
+<testsuite name="jsonschema-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="4" failures="0" skipped="0" time="2.861" errors="0">
+<testcase name="JSON Schema Validator Tool › page loads successfully" classname="jsonschema-tool.spec.ts" time="0.74">
+</testcase>
+<testcase name="JSON Schema Validator Tool › has two textareas for data and schema" classname="jsonschema-tool.spec.ts" time="0.665">
+</testcase>
+<testcase name="JSON Schema Validator Tool › has toolbar buttons" classname="jsonschema-tool.spec.ts" time="0.72">
+</testcase>
+<testcase name="JSON Schema Validator Tool › clears all fields" classname="jsonschema-tool.spec.ts" time="0.736">
+</testcase>
+</testsuite>
+<testsuite name="markdown-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="1" failures="0" skipped="0" time="0.674" errors="0">
+<testcase name="Markdown Editor Tool › page loads with editor area" classname="markdown-tool.spec.ts" time="0.674">
+</testcase>
+</testsuite>
+<testsuite name="password-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="8" failures="0" skipped="0" time="5.601" errors="0">
+<testcase name="Password Generator Tool › page loads and generates a password automatically" classname="password-tool.spec.ts" time="0.644">
+</testcase>
+<testcase name="Password Generator Tool › generated password has correct default length" classname="password-tool.spec.ts" time="0.689">
+</testcase>
+<testcase name="Password Generator Tool › regenerates password on refresh click" classname="password-tool.spec.ts" time="0.741">
+</testcase>
+<testcase name="Password Generator Tool › shows strength indicator" classname="password-tool.spec.ts" time="0.644">
+</testcase>
+<testcase name="Password Generator Tool › shows password length label" classname="password-tool.spec.ts" time="0.7">
+</testcase>
+<testcase name="Password Generator Tool › toggling options regenerates password" classname="password-tool.spec.ts" time="0.727">
+</testcase>
+<testcase name="Password Generator Tool › password contains only lowercase when only lowercase is checked" classname="password-tool.spec.ts" time="0.767">
+</testcase>
+<testcase name="Password Generator Tool › shows configuration section" classname="password-tool.spec.ts" time="0.689">
+</testcase>
+</testsuite>
+<testsuite name="picture-splicing-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="1" failures="0" skipped="0" time="0.667" errors="0">
+<testcase name="Picture Splicing Tool › page loads successfully" classname="picture-splicing-tool.spec.ts" time="0.667">
+</testcase>
+</testsuite>
+<testsuite name="popup.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="5" failures="0" skipped="0" time="3.804" errors="0">
+<testcase name="Extension Popup › opens and displays tool buttons" classname="popup.spec.ts" time="0.644">
+</testcase>
+<testcase name="Extension Popup › clicking JSON tool opens new tab" classname="popup.spec.ts" time="0.794">
+</testcase>
+<testcase name="Extension Popup › clicking timestamp tool opens new tab" classname="popup.spec.ts" time="0.773">
+</testcase>
+<testcase name="Extension Popup › clicking convert tool opens new tab" classname="popup.spec.ts" time="0.774">
+</testcase>
+<testcase name="Extension Popup › clicking password tool opens new tab" classname="popup.spec.ts" time="0.819">
+</testcase>
+</testsuite>
+<testsuite name="scss-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="1" failures="0" skipped="0" time="0.729" errors="0">
+<testcase name="SCSS Compiler Tool › page renders without errors" classname="scss-tool.spec.ts" time="0.729">
+</testcase>
+</testsuite>
+<testsuite name="svgoptimizer-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="2" failures="0" skipped="0" time="1.416" errors="0">
+<testcase name="SVG Optimizer Tool › page loads with input area" classname="svgoptimizer-tool.spec.ts" time="0.706">
+</testcase>
+<testcase name="SVG Optimizer Tool › optimizes SVG input" classname="svgoptimizer-tool.spec.ts" time="0.71">
+</testcase>
+</testsuite>
+<testsuite name="timestamp-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="3" failures="0" skipped="0" time="1.936" errors="0">
+<testcase name="Timestamp Converter Tool › page loads and shows tool title" classname="timestamp-tool.spec.ts" time="0.661">
+</testcase>
+<testcase name="Timestamp Converter Tool › displays current time values" classname="timestamp-tool.spec.ts" time="0.637">
+</testcase>
+<testcase name="Timestamp Converter Tool › shows conversion sections" classname="timestamp-tool.spec.ts" time="0.638">
+</testcase>
+</testsuite>
+<testsuite name="toml-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="2" failures="0" skipped="0" time="1.394" errors="0">
+<testcase name="TOML Parser Tool › page loads with input area" classname="toml-tool.spec.ts" time="0.678">
+</testcase>
+<testcase name="TOML Parser Tool › has conversion mode options" classname="toml-tool.spec.ts" time="0.716">
+</testcase>
+</testsuite>
+<testsuite name="tool-pages.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="23" failures="0" skipped="0" time="15.091" errors="0">
+<testcase name="json tool page › loads successfully" classname="tool-pages.spec.ts" time="0.645">
+</testcase>
+<testcase name="timestamp tool page › loads successfully" classname="tool-pages.spec.ts" time="0.663">
+</testcase>
+<testcase name="convert tool page › loads successfully" classname="tool-pages.spec.ts" time="0.678">
+</testcase>
+<testcase name="codebeautify tool page › loads successfully" classname="tool-pages.spec.ts" time="0.694">
+</testcase>
+<testcase name="imagebase64 tool page › loads successfully" classname="tool-pages.spec.ts" time="0.715">
+</testcase>
+<testcase name="colorTransform tool page › loads successfully" classname="tool-pages.spec.ts" time="0.652">
+</testcase>
+<testcase name="trans-radix tool page › loads successfully" classname="tool-pages.spec.ts" time="0.638">
+</testcase>
+<testcase name="csv2json tool page › loads successfully" classname="tool-pages.spec.ts" time="0.634">
+</testcase>
+<testcase name="yaml tool page › loads successfully" classname="tool-pages.spec.ts" time="0.639">
+</testcase>
+<testcase name="markdown tool page › loads successfully" classname="tool-pages.spec.ts" time="0.704">
+</testcase>
+<testcase name="htmlformat tool page › loads successfully" classname="tool-pages.spec.ts" time="0.662">
+</testcase>
+<testcase name="csstool tool page › loads successfully" classname="tool-pages.spec.ts" time="0.678">
+</testcase>
+<testcase name="svgoptimizer tool page › loads successfully" classname="tool-pages.spec.ts" time="0.653">
+</testcase>
+<testcase name="cron tool page › loads successfully" classname="tool-pages.spec.ts" time="0.634">
+</testcase>
+<testcase name="toml tool page › loads successfully" classname="tool-pages.spec.ts" time="0.641">
+</testcase>
+<testcase name="jsonschema tool page › loads successfully" classname="tool-pages.spec.ts" time="0.633">
+</testcase>
+<testcase name="xmlformatter tool page › loads successfully" classname="tool-pages.spec.ts" time="0.646">
+</testcase>
+<testcase name="uuid tool page › loads successfully" classname="tool-pages.spec.ts" time="0.621">
+</testcase>
+<testcase name="password tool page › loads successfully" classname="tool-pages.spec.ts" time="0.631">
+</testcase>
+<testcase name="urlparser tool page › loads successfully" classname="tool-pages.spec.ts" time="0.611">
+</testcase>
+<testcase name="pictureSplicing tool page › loads successfully" classname="tool-pages.spec.ts" time="0.623">
+</testcase>
+<testcase name="uglify tool page › page renders" classname="tool-pages.spec.ts" time="0.625">
+</testcase>
+<testcase name="scss tool page › page renders" classname="tool-pages.spec.ts" time="0.771">
+</testcase>
+</testsuite>
+<testsuite name="trans-radix-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="2" failures="0" skipped="0" time="1.257" errors="0">
+<testcase name="Trans Radix Tool › page loads with conversion interface" classname="trans-radix-tool.spec.ts" time="0.612">
+</testcase>
+<testcase name="Trans Radix Tool › has input fields and conversion buttons" classname="trans-radix-tool.spec.ts" time="0.645">
+</testcase>
+</testsuite>
+<testsuite name="uglify-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="1" failures="0" skipped="0" time="0.651" errors="0">
+<testcase name="Uglify Tool › page renders without errors" classname="uglify-tool.spec.ts" time="0.651">
+</testcase>
+</testsuite>
+<testsuite name="urlparser-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="5" failures="0" skipped="0" time="3.393" errors="0">
+<testcase name="URL Parser Tool › page loads with URL input" classname="urlparser-tool.spec.ts" time="0.642">
+</testcase>
+<testcase name="URL Parser Tool › parses a complete URL and shows results" classname="urlparser-tool.spec.ts" time="0.691">
+</testcase>
+<testcase name="URL Parser Tool › displays query parameters section" classname="urlparser-tool.spec.ts" time="0.677">
+</testcase>
+<testcase name="URL Parser Tool › displays hash section" classname="urlparser-tool.spec.ts" time="0.708">
+</testcase>
+<testcase name="URL Parser Tool › shows no results for invalid URL" classname="urlparser-tool.spec.ts" time="0.675">
+</testcase>
+</testsuite>
+<testsuite name="uuid-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="6" failures="0" skipped="0" time="4.104" errors="0">
+<testcase name="UUID Generator Tool › page loads with generate button" classname="uuid-tool.spec.ts" time="0.66">
+</testcase>
+<testcase name="UUID Generator Tool › generates a UUID" classname="uuid-tool.spec.ts" time="0.698">
+</testcase>
+<testcase name="UUID Generator Tool › generates UUID without hyphens" classname="uuid-tool.spec.ts" time="0.697">
+</testcase>
+<testcase name="UUID Generator Tool › generates UUID in uppercase" classname="uuid-tool.spec.ts" time="0.69">
+</testcase>
+<testcase name="UUID Generator Tool › generates multiple UUIDs" classname="uuid-tool.spec.ts" time="0.686">
+</testcase>
+<testcase name="UUID Generator Tool › clears generated UUIDs" classname="uuid-tool.spec.ts" time="0.673">
+</testcase>
+</testsuite>
+<testsuite name="xmlformatter-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="2" failures="0" skipped="0" time="1.332" errors="0">
+<testcase name="XML Formatter Tool › page loads with input area" classname="xmlformatter-tool.spec.ts" time="0.615">
+</testcase>
+<testcase name="XML Formatter Tool › formats XML input" classname="xmlformatter-tool.spec.ts" time="0.717">
+</testcase>
+</testsuite>
+<testsuite name="yaml-tool.spec.ts" timestamp="2026-04-28T11:12:49.849Z" hostname="" tests="5" failures="0" skipped="0" time="3.406" errors="0">
+<testcase name="YAML Converter Tool › page loads with mode selector" classname="yaml-tool.spec.ts" time="0.637">
+</testcase>
+<testcase name="YAML Converter Tool › converts YAML to JSON" classname="yaml-tool.spec.ts" time="0.715">
+</testcase>
+<testcase name="YAML Converter Tool › switches to JSON to YAML mode" classname="yaml-tool.spec.ts" time="0.699">
+</testcase>
+<testcase name="YAML Converter Tool › shows error for invalid YAML" classname="yaml-tool.spec.ts" time="0.687">
+</testcase>
+<testcase name="YAML Converter Tool › loads sample data" classname="yaml-tool.spec.ts" time="0.668">
+</testcase>
+</testsuite>
+</testsuites>

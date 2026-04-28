@@ -265,6 +265,7 @@ function App() {
     <button
       key={tool.id}
       type="button"
+      data-testid={`tool-${tool.id}`}
       onClick={() => handleToolClick(tool)}
       className="group flex min-h-[46px] cursor-pointer items-center justify-between gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-left transition-[border-color,background-color,box-shadow] duration-200 hover:border-emerald-400/60 hover:bg-emerald-50/50 hover:shadow-[0_10px_24px_rgba(16,185,129,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
     >

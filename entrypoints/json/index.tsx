@@ -479,6 +479,7 @@ function JsonTool() {
             value={jsoncon}
             onChange={(e) => setJsoncon(e.target.value)}
             placeholder="请输入 JSON 字符串"
+            data-testid="json-input"
             className="w-full h-full border-0 rounded-none resize-none font-mono text-sm"
           />
         </div>
