@@ -11,8 +11,7 @@ export function Button({ className, variant = 'default', size = 'default', ...pr
   return (
     <button
       className={cn(
-        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-transparent font-medium shadow-[0_10px_25px_rgba(15,23,42,0.08)] transition-[transform,background-color,border-color,color,box-shadow] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:pointer-events-none disabled:opacity-50',
-        'hover:-translate-y-0.5 active:translate-y-0',
+        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-transparent font-medium shadow-[0_10px_25px_rgba(15,23,42,0.08)] transition-[background-color,border-color,color,box-shadow] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:pointer-events-none disabled:opacity-50',
         variant === 'primary' &&
           'bg-[linear-gradient(135deg,#0f766e_0%,#0f172a_100%)] text-white hover:bg-[linear-gradient(135deg,#0d9488_0%,#0f172a_92%)]',
         variant === 'destructive' &&

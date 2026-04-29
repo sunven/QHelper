@@ -32,6 +32,18 @@ const mockChrome = {
   tabs: {
     create: vi.fn(() => Promise.resolve()),
     query: vi.fn(() => Promise.resolve([])),
+    get: vi.fn(() => Promise.resolve(undefined)),
+    sendMessage: vi.fn(() => Promise.resolve(undefined)),
+  },
+  runtime: {
+    sendMessage: vi.fn(() => Promise.resolve(undefined)),
+    onMessage: {
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    },
+  },
+  sidePanel: {
+    open: vi.fn(() => Promise.resolve()),
   },
 };
 

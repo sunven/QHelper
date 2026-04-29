@@ -8,6 +8,10 @@ export function popupUrl(extensionId: string): string {
   return `chrome-extension://${extensionId}/popup.html`;
 }
 
+export function sidepanelUrl(extensionId: string): string {
+  return `chrome-extension://${extensionId}/sidepanel.html`;
+}
+
 export async function openToolPage(
   context: BrowserContext,
   extensionId: string,

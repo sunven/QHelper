@@ -7,7 +7,7 @@ export default defineConfig({
     name: 'QHelper前端助手',
     description: 'json解析',
     version: '1.2',
-    permissions: ['cookies', 'tabs', 'storage'],
+    permissions: ['cookies', 'tabs', 'storage', 'activeTab', 'sidePanel', 'contextMenus'],
     host_permissions: ['<all_urls>'],
     icons: {
       16: '/icons/q-16.png',

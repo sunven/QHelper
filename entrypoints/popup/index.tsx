@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { TOOL_CATEGORIES } from '@/constants/tools'
 import { removeAll } from '@/lib/chrome/cookies'
 import { create } from '@/lib/chrome/tabs'
+import type { OpenWebSummaryResponse } from '@/types/web-summary'
 import { toolRegistry } from '@/lib/registry/ToolRegistry'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import {
@@ -50,7 +51,7 @@ type PopupTool = {
   name: string
   description: string
   url: string
-  type: 'jump' | 'clearCookie'
+  type: 'jump' | 'clearCookie' | 'openWebSummary'
   category: ToolCategory
   searchText: string
 }
@@ -92,6 +93,7 @@ const toolIconMap: Record<string, LucideIcon> = {
   svgoptimizer: Image,
   cron: Clock,
   toml: FileJson,
+  'web-summary-launch': Bot,
   jsonschema: Shield,
   xmlformatter: FileCode,
 }
@@ -108,27 +110,61 @@ const categoryIconMap: Record<ToolCategory | typeof ALL_CATEGORY, LucideIcon> = 
   [ToolCategory.OTHER]: Wrench,
 }
 
-const specialTools: PopupTool[] = [
-  {
-    id: 'clear-cookie',
-    name: '清除 Cookie',
-    description: '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
-    url: '',
-    type: 'clearCookie',
-    category: ToolCategory.OTHER,
-    searchText: 'clear cookie browser auth session login cache clean',
-  },
-]
+const webSummaryTool: PopupTool = {
+  id: 'web-summary-launch',
+  name: '网页总结',
+  description: '在当前网页旁边打开侧边栏，生成可选联网 AI 摘要。',
+  url: '',
+  type: 'openWebSummary',
+  category: ToolCategory.AI,
+  searchText: 'web summary sidepanel ai article reading summarize webpage',
+}
+
+const clearCookieTool: PopupTool = {
+  id: 'clear-cookie',
+  name: '清除 Cookie',
+  description: '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
+  url: '',
+  type: 'clearCookie',
+  category: ToolCategory.OTHER,
+  searchText: 'clear cookie browser auth session login cache clean',
+}
+
+const specialTools: PopupTool[] = [webSummaryTool, clearCookieTool]
+
+async function openWebSummarySidePanel() {
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  const response = await chrome.runtime.sendMessage({
+    type: 'OPEN_WEB_SUMMARY',
+    tabId: activeTab?.id,
+  }) as OpenWebSummaryResponse
+
+  if (!response?.ok) {
+    throw new Error(response?.error || '无法打开网页总结侧边栏')
+  }
+}
 
 async function handleToolClick(tool: PopupTool) {
-  if (tool.type === 'jump') {
-    await trackToolUsage(tool.id, tool.name)
-    await create(tool.url)
-    return
-  }
+  try {
+    if (tool.type === 'jump') {
+      await trackToolUsage(tool.id, tool.name)
+      await create(tool.url)
+      return
+    }
 
-  await removeAll()
-  alert('Cookie 已清除')
+    if (tool.type === 'openWebSummary') {
+      await openWebSummarySidePanel()
+      void trackToolUsage(tool.id, tool.name)
+      window.close()
+      return
+    }
+
+    await removeAll()
+    alert('Cookie 已清除')
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '操作失败'
+    alert(message)
+  }
 }
 
 function getToolIcon(toolId: string) {
@@ -347,6 +383,43 @@ function App() {
               <div>{query ? `匹配 ${queryMatchedTools.length} 个工具` : '按关键词、格式名或用途快速过滤'}</div>
               <div className="rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] text-slate-600">
                 {getCategoryLabel(activeCategory)}
+              </div>
+            </div>
+          </section>
+
+          <section
+            data-testid="web-summary-quick-entry"
+            className="rounded-[16px] border border-emerald-200/80 bg-[linear-gradient(135deg,rgba(16,185,129,0.10),rgba(255,255,255,0.96))] p-3 shadow-[0_10px_24px_rgba(16,185,129,0.08)]"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-emerald-700">
+                  <Bot className="h-4 w-4" />
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.22em]">Quick entry</span>
+                </div>
+                <div className="text-sm font-semibold text-slate-900">网页总结</div>
+                <p className="text-[12px] leading-5 text-slate-600">
+                  在当前网页旁边打开 Side Panel，边看原文边生成摘要。
+                </p>
+              </div>
+
+              <div className="rounded-full border border-emerald-200 bg-white/90 px-2 py-1 text-[10px] font-medium text-emerald-700">
+                Side Panel
+              </div>
+            </div>
+
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <Button
+                type="button"
+                data-testid="web-summary-quick-open"
+                onClick={() => handleToolClick(webSummaryTool)}
+                className="h-9 rounded-lg bg-emerald-600 px-3 text-sm font-medium text-white hover:bg-emerald-700"
+              >
+                总结当前网页
+              </Button>
+
+              <div className="max-w-[240px] text-right text-[11px] leading-5 text-slate-500">
+                也可在普通网页里右键，选择“使用 QHelper 总结当前网页”
               </div>
             </div>
           </section>
