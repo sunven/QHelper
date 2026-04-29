@@ -15,6 +15,7 @@ declare module "wxt/browser" {
     | "/cron.html"
     | "/csstool.html"
     | "/csv2json.html"
+    | "/filemerge.html"
     | "/htmlformat.html"
     | "/icons/q-128.png"
     | "/icons/q-16.png"

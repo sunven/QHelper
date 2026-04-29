@@ -238,6 +238,22 @@ export const tools: ToolMetadata[] = [
   },
 
   {
+    id: 'filemerge',
+    name: 'JS 文件合并',
+    nameEn: 'JS File Merge',
+    category: ToolCategory.WEB_FORMAT,
+    icon: 'FileCode',
+    description: '合并多个远程 JavaScript 文件',
+    descriptionEn: 'Merge multiple remote JavaScript files',
+    keywords: ['js', 'javascript', '文件', '合并', 'script', 'merge'],
+    tags: ['js', 'javascript', 'script', 'merge', 'download'],
+    entry: 'filemerge.html',
+    version: '1.0.0',
+    features: [ToolFeature.SINGLE_INPUT, ToolFeature.EXPORT],
+    status: ToolStatus.STABLE,
+  },
+
+  {
     id: 'csstool',
     name: 'CSS 工具',
     nameEn: 'CSS Tool',
