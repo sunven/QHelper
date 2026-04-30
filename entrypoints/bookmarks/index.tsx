@@ -78,10 +78,10 @@ function BookmarksTool() {
   }, [])
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-900">
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+    <main className="h-screen overflow-hidden bg-slate-50 p-4 text-slate-900">
+      <section className="flex h-full min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
         {error && <div className="border-b border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        <TreeTable data={bookmarks} columns={columns} />
+        <TreeTable data={bookmarks} columns={columns} className="min-h-0 flex-1" />
       </section>
     </main>
   )

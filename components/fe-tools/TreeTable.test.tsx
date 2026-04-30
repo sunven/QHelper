@@ -45,6 +45,22 @@ describe('fe-tools/TreeTable', () => {
     }
   })
 
+  it('allows callers to constrain the scroll container', () => {
+    render(<TreeTable data={data} columns={columns} className="min-h-0 flex-1" />)
+
+    expect(screen.getByRole('table').parentElement).toHaveClass('overflow-auto', 'min-h-0', 'flex-1')
+  })
+
+  it('keeps table headers sticky inside the scroll container', () => {
+    render(<TreeTable data={data} columns={columns} />)
+
+    expect(screen.getByRole('columnheader', { name: 'Title' }).closest('thead')).toHaveClass(
+      'sticky',
+      'top-0',
+      'z-10',
+    )
+  })
+
   it('renders nested children expanded by default and toggles them', async () => {
     const user = userEvent.setup()
     render(<TreeTable data={data} columns={columns} />)

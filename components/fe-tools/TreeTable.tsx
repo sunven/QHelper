@@ -17,6 +17,7 @@ export type TreeColumn = {
 export type TreeTableProps = {
   data: TreeData[] | undefined
   columns: TreeColumn[]
+  className?: string
 }
 
 function renderCell(
@@ -75,11 +76,11 @@ function TreeNode({
   )
 }
 
-export function TreeTable({ data, columns }: TreeTableProps) {
+export function TreeTable({ data, columns, className }: TreeTableProps) {
   return (
-    <div className="overflow-auto">
+    <div className={`overflow-auto ${className ?? ''}`}>
       <table className="w-full table-fixed divide-y divide-slate-200">
-        <thead className="bg-slate-50">
+        <thead className="sticky top-0 z-10 bg-slate-50">
           <tr>
             {columns.map((column) => (
               <th
