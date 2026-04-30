@@ -62,15 +62,14 @@ function TransRadixTool() {
 
   return (
     <ToolPageShell toolId="trans-radix">
-      <div className="mx-auto w-full max-w-[420px]">
+      <div className="mx-auto w-full max-w-[920px]">
         <Card>
-        <CardHeader>
-          <CardTitle className="text-center">进制转换</CardTitle>
+        <CardHeader className="pb-1">
+          <CardTitle className="text-sm">进制转换</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
-          {/* 第一行：选择进制和输入值 */}
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
+        <CardContent className="grid items-end gap-2 pt-2 lg:grid-cols-[1fr_auto_1fr]">
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-x-2 gap-y-1">
               {RADIX_OPTIONS.map((r) => (
                 <label key={r.value} className="flex items-center gap-1.5 cursor-pointer">
                   <input
@@ -98,7 +97,7 @@ function TransRadixTool() {
                   setRadixSelect1(val ? Number(val) : undefined);
                   if (val) setRadixRadio1(-1);
                 }}
-                className="w-24 rounded-xl border border-input bg-white/75 px-3 py-2 text-sm dark:bg-slate-900/58"
+                className="h-9 w-24 rounded-md border border-input bg-white/75 px-2 text-sm dark:bg-slate-900/58"
               >
                 <option value="">自定义</option>
                 {Array.from({ length: 35 }, (_, i) => (
@@ -117,8 +116,7 @@ function TransRadixTool() {
             </div>
           </div>
 
-          {/* 转换按钮 */}
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center gap-2 pb-0.5 lg:flex-col">
             <Button onClick={convertValue1To2} size="icon" className="rounded-full">
               <ArrowRight className="w-4 h-4" />
             </Button>
@@ -127,9 +125,8 @@ function TransRadixTool() {
             </Button>
           </div>
 
-          {/* 第二行：选择进制和显示结果 */}
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
+          <div className="space-y-2">
+            <div className="flex flex-wrap gap-x-2 gap-y-1">
               {RADIX_OPTIONS.map((r) => (
                 <label key={r.value} className="flex items-center gap-1.5 cursor-pointer">
                   <input
@@ -157,7 +154,7 @@ function TransRadixTool() {
                   setRadixSelect2(val ? Number(val) : undefined);
                   if (val) setRadixRadio2(-1);
                 }}
-                className="w-24 rounded-xl border border-input bg-white/75 px-3 py-2 text-sm dark:bg-slate-900/58"
+                className="h-9 w-24 rounded-md border border-input bg-white/75 px-2 text-sm dark:bg-slate-900/58"
               >
                 <option value="">自定义</option>
                 {Array.from({ length: 35 }, (_, i) => (

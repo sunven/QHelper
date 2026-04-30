@@ -96,17 +96,17 @@ function HtmlFormatter() {
 
 
     <ToolPageShell toolId="htmlformat">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[1520px]">
 
         {/* 操作栏 */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
-          <div className="flex flex-wrap items-center gap-4">
+        <div className="mb-2 rounded-md border border-slate-200 bg-white/90 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex flex-wrap items-center gap-2">
             {/* 模式切换 */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={() => setState((prev) => ({ ...prev, mode: 'beautify' }))}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors ${
                   state.mode === 'beautify'
                     ? 'bg-emerald-600 text-white'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -118,7 +118,7 @@ function HtmlFormatter() {
               <button
                 type="button"
                 onClick={() => setState((prev) => ({ ...prev, mode: 'minify' }))}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors ${
                   state.mode === 'minify'
                     ? 'bg-emerald-600 text-white'
                     : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -130,15 +130,15 @@ function HtmlFormatter() {
             </div>
 
             {/* 分隔线 */}
-            <div className="w-px h-8 bg-slate-200 dark:bg-slate-600" />
+            <div className="h-6 w-px bg-slate-200 dark:bg-slate-600" />
 
             {/* 设置 */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Settings2 className="w-4 h-4 text-slate-500" />
               <select
                 value={state.indentSize}
                 onChange={(e) => setState((prev) => ({ ...prev, indentSize: Number(e.target.value) }))}
-                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300"
+                className="h-8 rounded-md bg-slate-100 px-2 text-sm text-slate-700 dark:bg-slate-700 dark:text-slate-300"
               >
                 <option value={2}>2 空格</option>
                 <option value={4}>4 空格</option>
@@ -148,7 +148,7 @@ function HtmlFormatter() {
               <select
                 value={state.indentChar}
                 onChange={(e) => setState((prev) => ({ ...prev, indentChar: e.target.value as 'space' | 'tab' }))}
-                className="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-300"
+                className="h-8 rounded-md bg-slate-100 px-2 text-sm text-slate-700 dark:bg-slate-700 dark:text-slate-300"
               >
                 <option value="space">空格缩进</option>
                 <option value="tab">Tab 缩进</option>
@@ -158,11 +158,11 @@ function HtmlFormatter() {
         </div>
 
         {/* 编辑器区域 */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid min-h-[calc(100vh-12rem)] grid-cols-1 gap-2 lg:grid-cols-2">
           {/* 输入区域 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-700 px-4 py-2 border-b border-slate-200 dark:border-slate-600">
-              <h2 className="font-semibold text-slate-700 dark:text-slate-200">输入 HTML</h2>
+          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">输入 HTML</h2>
               <button
                 type="button"
                 onClick={handleClear}
@@ -174,23 +174,23 @@ function HtmlFormatter() {
             <textarea
               value={state.input}
               onChange={(e) => handleInputChange(e.target.value)}
-              className="w-full h-[500px] p-4 resize-none focus:outline-none font-mono text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              className="h-full min-h-[360px] w-full resize-none bg-white p-2.5 font-mono text-sm text-slate-900 focus:outline-none dark:bg-slate-800 dark:text-slate-100 lg:min-h-0"
               placeholder="输入 HTML 代码..."
               spellCheck={false}
             />
           </div>
 
           {/* 输出区域 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-700 px-4 py-2 border-b border-slate-200 dark:border-slate-600">
-              <h2 className="font-semibold text-slate-700 dark:text-slate-200">
+          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 {state.mode === 'beautify' ? '格式化结果' : '压缩结果'}
               </h2>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <button
                   type="button"
                   onClick={handleCopy}
-                  className="flex items-center gap-1 px-3 py-1 bg-slate-600 hover:bg-slate-700 text-white rounded-lg text-sm transition-colors"
+                  className="flex h-7 items-center gap-1 rounded-md bg-slate-600 px-2 text-xs text-white transition-colors hover:bg-slate-700"
                 >
                   <Copy className="w-3 h-3" />
                   复制
@@ -198,7 +198,7 @@ function HtmlFormatter() {
                 <button
                   type="button"
                   onClick={handleDownload}
-                  className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm transition-colors"
+                  className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-2 text-xs text-white transition-colors hover:bg-emerald-700"
                 >
                   <Download className="w-3 h-3" />
                   下载
@@ -208,13 +208,13 @@ function HtmlFormatter() {
             <textarea
               value={state.output}
               readOnly
-              className="w-full h-[500px] p-4 resize-none focus:outline-none font-mono text-sm bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100"
+              className="h-full min-h-[360px] w-full resize-none bg-slate-50 p-2.5 font-mono text-sm text-slate-900 focus:outline-none dark:bg-slate-900 dark:text-slate-100 lg:min-h-0"
             />
           </div>
         </div>
 
         {/* 统计信息 */}
-        <div className="mt-4 flex gap-4 text-sm text-slate-600 dark:text-slate-400">
+        <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-600 dark:text-slate-400">
           <span>输入字符: {state.input.length}</span>
           <span>输出字符: {state.output.length}</span>
           <span>压缩率: {state.input.length > 0 ? Math.round((1 - state.output.length / state.input.length) * 100) : 0}%</span>
@@ -222,16 +222,16 @@ function HtmlFormatter() {
 
         {/* 历史记录 */}
         {history.length > 0 && (
-          <div className="mt-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4">
-            <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">历史记录</h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="mt-2 rounded-md border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <h3 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">历史记录</h3>
+            <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
               {history.map((item, index) => (
                 <div
                   key={index}
-                  className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors"
+                  className="cursor-pointer rounded-md bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
                   onClick={() => handleInputChange((item as HtmlFormatState).input)}
                 >
-                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                  <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
                     {(item as HtmlFormatState).input.slice(0, 100)}...
                   </div>
                 </div>

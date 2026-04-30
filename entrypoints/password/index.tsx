@@ -100,19 +100,19 @@ function PasswordGenerator() {
 
   return (
     <ToolPageShell toolId="password">
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto grid max-w-[1200px] gap-2 lg:grid-cols-[minmax(0,1fr)_360px]">
         {/* 密码显示 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">生成的密码</CardTitle>
+        <Card className="lg:col-span-2">
+          <CardHeader className="border-b border-border/70">
+            <CardTitle className="text-sm">生成的密码</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5">
                 <Input
                   value={password}
                   readOnly
-                  className="font-mono text-lg"
+                  className="font-mono text-base"
                   placeholder="点击生成按钮创建密码"
                 />
                 <Button onClick={generatePassword} variant="outline" size="icon">
@@ -123,14 +123,14 @@ function PasswordGenerator() {
 
               {/* 密码强度指示 */}
               {password && (
-                <div className="flex items-center gap-3">
-                  <strength.icon className={`w-5 h-5 ${strength.color}`} />
+                <div className="flex items-center gap-2">
+                  <strength.icon className={`h-4 w-4 ${strength.color}`} />
                   <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`text-sm font-medium ${strength.color}`}>{strength.label}</span>
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className={`text-xs font-medium ${strength.color}`}>{strength.label}</span>
                       <span className="text-xs text-muted-foreground">{password.length} 位</span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-700">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-700">
                       <div
                         className={`h-full transition-all ${
                           strength.level === 1
@@ -150,15 +150,15 @@ function PasswordGenerator() {
 
         {/* 配置选项 */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">配置</CardTitle>
+          <CardHeader className="border-b border-border/70">
+            <CardTitle className="text-sm">配置</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-3">
             {/* 长度滑块 */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <Label>密码长度</Label>
-                <span className="text-sm font-mono bg-muted px-2 py-1 rounded">{length}</span>
+                <span className="rounded bg-muted px-2 py-0.5 font-mono text-xs">{length}</span>
               </div>
               <Slider
                 value={[length]}
@@ -171,9 +171,9 @@ function PasswordGenerator() {
             </div>
 
             {/* 字符类型选项 */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label>字符类型</Label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="uppercase"
@@ -221,9 +221,9 @@ function PasswordGenerator() {
             </div>
 
             {/* 排除选项 */}
-            <div className="space-y-3">
+            <div className="space-y-2">
               <Label>排除字符</Label>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="excludeSimilar"

@@ -117,12 +117,12 @@ function SvgOptimizer() {
 
 
     <ToolPageShell toolId="svgoptimizer">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[1520px]">
 
         {/* 文件上传 */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <label className="flex cursor-pointer items-center gap-3 rounded-lg bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-700">
+        <div className="mb-2 rounded-md border border-slate-200 bg-white/90 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="flex items-center justify-between gap-2">
+            <label className="flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 text-sm text-white transition-colors hover:bg-emerald-700">
               <Upload className="w-4 h-4" />
               <span>上传 SVG 文件</span>
               <input
@@ -133,7 +133,7 @@ function SvgOptimizer() {
               />
             </label>
             {state.error && (
-              <div className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+              <div className="flex min-w-0 items-center gap-1.5 truncate text-xs text-red-600 dark:text-red-400">
                 <Zap className="w-4 h-4" />
                 {state.error}
               </div>
@@ -142,13 +142,13 @@ function SvgOptimizer() {
         </div>
 
         {/* 编辑器区域 */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid min-h-[calc(100vh-14rem)] grid-cols-1 gap-2 lg:grid-cols-2">
           {/* 输入区域 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-700 px-4 py-2 border-b border-slate-200 dark:border-slate-600">
-              <div className="flex items-center gap-2">
+          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
+              <div className="flex items-center gap-1.5">
                 <Image className="w-4 h-4 text-purple-600" />
-                <h2 className="font-semibold text-slate-700 dark:text-slate-200">原始 SVG</h2>
+                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">原始 SVG</h2>
               </div>
               <button
                 type="button"
@@ -161,25 +161,25 @@ function SvgOptimizer() {
             <textarea
               value={state.input}
               onChange={(e) => handleInputChange(e.target.value)}
-              className="w-full h-[450px] p-4 resize-none focus:outline-none font-mono text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              className="h-full min-h-[340px] w-full resize-none bg-white p-2.5 font-mono text-sm text-slate-900 focus:outline-none dark:bg-slate-800 dark:text-slate-100 lg:min-h-0"
               placeholder="输入或粘贴 SVG 代码..."
               spellCheck={false}
             />
           </div>
 
           {/* 输出区域 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="flex items-center justify-between bg-slate-100 dark:bg-slate-700 px-4 py-2 border-b border-slate-200 dark:border-slate-600">
-              <div className="flex items-center gap-2">
+          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
+              <div className="flex items-center gap-1.5">
                 <Zap className="w-4 h-4 text-green-600" />
-                <h2 className="font-semibold text-slate-700 dark:text-slate-200">优化后 SVG</h2>
+                <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">优化后 SVG</h2>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1.5">
                 <button
                   type="button"
                   onClick={handleCopy}
                   disabled={!state.output}
-                  className="flex items-center gap-1 px-3 py-1 bg-slate-600 hover:bg-slate-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
+                  className="flex h-7 items-center gap-1 rounded-md bg-slate-600 px-2 text-xs text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
                 >
                   <Copy className="w-3 h-3" />
                   复制
@@ -188,7 +188,7 @@ function SvgOptimizer() {
                   type="button"
                   onClick={handleDownload}
                   disabled={!state.output}
-                  className="flex items-center gap-1 px-3 py-1 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 disabled:cursor-not-allowed text-white rounded-lg text-sm transition-colors"
+                  className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-2 text-xs text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
                 >
                   <Download className="w-3 h-3" />
                   下载
@@ -198,7 +198,7 @@ function SvgOptimizer() {
             <textarea
               value={state.error ? state.error : state.output}
               readOnly
-              className={`w-full h-[450px] p-4 resize-none focus:outline-none font-mono text-sm ${
+              className={`h-full min-h-[340px] w-full resize-none p-2.5 font-mono text-sm focus:outline-none lg:min-h-0 ${
                 state.error
                   ? 'bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-200'
                   : 'bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100'
@@ -209,8 +209,8 @@ function SvgOptimizer() {
 
         {/* 统计信息 */}
         {!state.error && state.output && (
-          <div className="mt-4 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4">
-            <div className="flex flex-wrap items-center gap-6 text-sm">
+          <div className="mt-2 rounded-md border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="flex flex-wrap items-center gap-3 text-xs">
               <div className="flex items-center gap-2">
                 <span className="text-slate-600 dark:text-slate-400">原始大小:</span>
                 <span className="font-semibold text-slate-900 dark:text-white">{state.originalSize} B</span>
@@ -233,16 +233,16 @@ function SvgOptimizer() {
 
         {/* 历史记录 */}
         {history.length > 0 && (
-          <div className="mt-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4">
-            <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">历史记录</h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="mt-2 rounded-md border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <h3 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">历史记录</h3>
+            <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
               {history.map((item, index) => (
                 <div
                   key={index}
-                  className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors"
+                  className="cursor-pointer rounded-md bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
                   onClick={() => handleInputChange((item as SvgState).input)}
                 >
-                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                  <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
                     {(item as SvgState).input.slice(0, 100)}...
                   </div>
                 </div>

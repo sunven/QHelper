@@ -62,16 +62,13 @@ function UglifyTool() {
 
   return (
     <ToolPageShell toolId="uglify" description="通过 UglifyJS 压缩、保留或混淆 JavaScript 输出，适合快速试验压缩策略。">
-      <div className="mx-auto max-w-6xl space-y-6">
-        {/* 选项区域 */}
+      <div className="mx-auto max-w-[1440px] space-y-2">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Zap className="w-4 h-4" />
+          <CardContent className="flex flex-wrap items-center gap-3 pt-3">
+            <div className="flex items-center gap-1.5 text-sm font-semibold">
+              <Zap className="h-4 w-4" />
               选项
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap items-center gap-6">
+            </div>
             <label className="flex items-center gap-2 cursor-pointer">
               <Checkbox
                 checked={mangle}
@@ -88,18 +85,16 @@ function UglifyTool() {
               <span className="text-sm">Compress（去除空格和注释）</span>
             </label>
 
-            <Button onClick={doUglify} className="ml-auto">
+            <Button onClick={doUglify} size="sm" className="ml-auto">
               <Play className="w-4 h-4 mr-2" />
               执行压缩
             </Button>
           </CardContent>
         </Card>
 
-        {/* 代码区域 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* 源代码 */}
+        <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
           <Card className="h-full">
-            <CardHeader>
+            <CardHeader className="pb-1">
               <CardTitle className="text-base">源代码</CardTitle>
             </CardHeader>
             <CardContent>
@@ -107,19 +102,18 @@ function UglifyTool() {
                 value={source}
                 onChange={(e) => setSource(e.target.value)}
                 placeholder="在这里粘贴需要进行压缩的 JavaScript 代码"
-                className="h-[400px] font-mono text-sm"
+                className="h-[min(62vh,620px)] font-mono text-sm"
               />
             </CardContent>
           </Card>
 
-          {/* 结果代码 */}
           <Card className="h-full">
-            <CardHeader>
+            <CardHeader className="pb-1">
               <CardTitle className="text-base">压缩结果</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {error && (
-                <div className="p-3 bg-destructive/10 text-destructive rounded-md text-sm">
+                <div className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">
                   {error}
                 </div>
               )}
@@ -127,10 +121,10 @@ function UglifyTool() {
                 value={output}
                 readOnly
                 placeholder="压缩结果将显示在这里"
-                className="h-[340px] font-mono text-sm bg-muted/50"
+                className="h-[min(58vh,580px)] bg-muted/50 font-mono text-sm"
               />
               {output && (
-                <Button onClick={handleCopy} variant="outline" className="w-full">
+                <Button onClick={handleCopy} variant="outline" size="sm" className="w-full">
                   <Copy className="w-4 h-4 mr-2" />
                   复制结果
                 </Button>

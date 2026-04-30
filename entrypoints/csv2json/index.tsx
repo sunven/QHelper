@@ -122,12 +122,11 @@ function CSVToJSON() {
 
   return (
     <ToolPageShell toolId="csv2json">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {/* 左侧：CSV 输入 */}
-          <div className="space-y-4">
+      <div className="mx-auto max-w-[1440px] space-y-2">
+        <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(420px,1fr)_minmax(420px,1fr)]">
+          <div className="space-y-2">
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-1">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base flex items-center gap-2">
                   <FileText className="w-4 h-4" />
@@ -148,17 +147,13 @@ function CSVToJSON() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="请输入 CSV 格式数据..."
-                className="font-mono text-sm min-h-[400px]"
+                className="min-h-[min(58vh,600px)] font-mono text-sm"
               />
             </CardContent>
           </Card>
 
-          {/* 选项 */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base">选项</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="flex flex-wrap items-center gap-3 pt-3">
               <div className="flex items-center gap-2">
                 <Checkbox
                   id="hasHeader"
@@ -181,16 +176,15 @@ function CSVToJSON() {
                 </Label>
               </div>
 
-              <Button onClick={handleConvert} className="w-full">
+              <Button onClick={handleConvert} size="sm" className="ml-auto">
                 转换
               </Button>
             </CardContent>
           </Card>
         </div>
 
-        {/* 右侧：JSON 输出 */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <div className="flex items-center justify-between">
               <CardTitle className="text-base flex items-center gap-2">
                 <FileJson className="w-4 h-4" />
@@ -214,23 +208,22 @@ function CSVToJSON() {
                 value={output}
                 readOnly
                 placeholder="JSON 结果将显示在这里..."
-                className="font-mono text-sm min-h-[400px] bg-muted/50"
+                className="min-h-[min(58vh,600px)] bg-muted/50 font-mono text-sm"
               />
               )}
             </CardContent>
           </Card>
         </div>
 
-        {/* 使用说明 */}
         <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p className="font-medium text-foreground">使用说明：</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>支持逗号分隔的 CSV 格式</li>
-                <li>支持双引号包裹的字段</li>
-                <li>可以自动识别第一行作为字段名</li>
-                <li>支持转换为对象数组或二维数组</li>
+          <CardContent className="pt-3">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <span className="font-medium text-foreground">使用说明：</span>
+              <ul className="flex flex-wrap gap-x-4 gap-y-1">
+                <li>支持逗号分隔 CSV</li>
+                <li>支持双引号字段</li>
+                <li>第一行可作为字段名</li>
+                <li>可输出对象数组或二维数组</li>
               </ul>
             </div>
           </CardContent>

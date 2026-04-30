@@ -90,16 +90,14 @@ address:
 
 
     <ToolPageShell toolId="yaml">
-      <div className="mx-auto max-w-6xl space-y-6">
+      <div className="mx-auto max-w-[1520px] space-y-2">
         {/* 模式切换 */}
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">转换模式</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-center gap-4">
+          <CardContent className="py-2">
+            <div className="flex items-center justify-center gap-1.5">
               <Button
                 variant={mode === 'yaml2json' ? 'default' : 'outline'}
+                size="sm"
                 onClick={() => {
                   if (mode !== 'yaml2json') {
                     setMode('yaml2json');
@@ -110,7 +108,7 @@ address:
                 }}
                 className="flex-1"
               >
-                <FileCode className="w-4 h-4 mr-2" />
+                <FileCode className="mr-1 h-4 w-4" />
                 YAML → JSON
               </Button>
               <Button variant="outline" size="icon" onClick={switchMode}>
@@ -118,6 +116,7 @@ address:
               </Button>
               <Button
                 variant={mode === 'json2yaml' ? 'default' : 'outline'}
+                size="sm"
                 onClick={() => {
                   if (mode !== 'json2yaml') {
                     setMode('json2yaml');
@@ -128,22 +127,22 @@ address:
                 }}
                 className="flex-1"
               >
-                <FileJson className="w-4 h-4 mr-2" />
+                <FileJson className="mr-1 h-4 w-4" />
                 JSON → YAML
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid min-h-[calc(100vh-14rem)] grid-cols-1 gap-2 lg:grid-cols-2">
           {/* 输入区域 */}
-          <Card>
-            <CardHeader>
+          <Card className="min-h-0 overflow-hidden">
+            <CardHeader className="border-b border-border/70">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">
+                <CardTitle className="text-sm">
                   {mode === 'yaml2json' ? 'YAML 输入' : 'JSON 输入'}
                 </CardTitle>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <Button variant="outline" size="sm" onClick={handleSample}>
                     示例
                   </Button>
@@ -153,21 +152,21 @@ address:
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex min-h-0 flex-1">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder={mode === 'yaml2json' ? '请输入 YAML 格式...' : '请输入 JSON 格式...'}
-                className="font-mono text-sm min-h-[400px]"
+                className="min-h-[340px] flex-1 resize-none font-mono text-sm lg:min-h-0"
               />
             </CardContent>
           </Card>
 
           {/* 输出区域 */}
-          <Card>
-            <CardHeader>
+          <Card className="min-h-0 overflow-hidden">
+            <CardHeader className="border-b border-border/70">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">
+                <CardTitle className="text-sm">
                   {mode === 'yaml2json' ? 'JSON 输出' : 'YAML 输出'}
                 </CardTitle>
                 {output && (
@@ -180,7 +179,7 @@ address:
             </CardHeader>
             <CardContent>
               {error ? (
-                <div className="p-4 bg-destructive/10 text-destructive rounded-md min-h-[400px]">
+                <div className="min-h-[340px] rounded-md bg-destructive/10 p-2.5 text-sm text-destructive">
                   {error}
                 </div>
               ) : (
@@ -188,7 +187,7 @@ address:
                   value={output}
                   readOnly
                   placeholder="转换结果将显示在这里..."
-                  className="font-mono text-sm min-h-[400px] bg-muted/50"
+                  className="min-h-[340px] resize-none bg-muted/50 font-mono text-sm lg:min-h-0"
                 />
               )}
             </CardContent>
@@ -197,10 +196,10 @@ address:
 
         {/* 使用说明 */}
         <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p className="font-medium text-foreground">YAML 特性：</p>
-              <ul className="list-disc list-inside space-y-1">
+          <CardContent className="py-2">
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <p className="font-medium text-foreground">YAML 特性</p>
+              <ul className="grid list-inside list-disc gap-x-4 gap-y-0.5 sm:grid-cols-2 lg:grid-cols-3">
                 <li>使用缩进表示层级关系（推荐使用 2 空格）</li>
                 <li>支持注释（使用 # 开头）</li>
                 <li>支持多行字符串（使用 | 或 &gt;）</li>

@@ -326,20 +326,18 @@ function App() {
       style={{ fontFamily: '"IBM Plex Sans", "SF Pro Text", "Segoe UI", sans-serif' }}
     >
       <div className="relative">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.14),transparent_24%),radial-gradient(circle_at_top_right,rgba(59,130,246,0.10),transparent_20%),linear-gradient(180deg,#fcfcf9_0%,#f3f5ef_100%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#fcfcf9_0%,#f3f5ef_100%)]" />
 
         <div className="relative space-y-2 p-2">
-          <section className="relative overflow-hidden rounded-[18px] border border-slate-200/90 bg-white/90 p-2.5 shadow-[0_12px_30px_rgba(15,23,42,0.08)] backdrop-blur">
-            <div className="absolute -right-6 -top-6 h-16 w-16 rounded-full bg-emerald-200/50 blur-2xl" />
-
+          <section className="relative overflow-hidden rounded-md border border-slate-200/90 bg-white/92 p-2 shadow-sm backdrop-blur">
             <div className="relative flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-100 bg-emerald-50 text-emerald-700">
+                <div className="flex h-7 w-7 items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 text-emerald-700">
                   <Wrench className="h-4.5 w-4.5" />
                 </div>
                 <div>
-                  <h1 className="text-base font-semibold tracking-tight text-slate-900">QHelper</h1>
-                  <div className="text-[11px] text-slate-500">开发工具面板</div>
+                  <h1 className="text-sm font-semibold tracking-tight text-slate-900">QHelper</h1>
+                  <div className="text-[10px] text-slate-500">开发工具面板</div>
                 </div>
               </div>
 
@@ -356,7 +354,7 @@ function App() {
               </div>
             </div>
 
-            <div className="relative mt-2">
+            <div className="relative mt-1.5">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 value={searchQuery}
@@ -376,7 +374,7 @@ function App() {
               )}
             </div>
 
-            <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-slate-500">
+            <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-slate-500">
               <div>{query ? `匹配 ${queryMatchedTools.length} 个工具` : '按关键词、格式名或用途快速过滤'}</div>
               <button
                 type="button"
@@ -390,7 +388,7 @@ function App() {
           </section>
 
           {recentDisplayTools.length > 0 && (
-            <section className="rounded-[16px] border border-slate-200/90 bg-white/85 p-2 backdrop-blur">
+            <section className="rounded-md border border-slate-200/90 bg-white/85 p-2 backdrop-blur">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">最近使用</div>
                 <Button
@@ -457,8 +455,8 @@ function App() {
           </section>
 
           {filteredTools.length === 0 ? (
-            <section className="rounded-[16px] border border-dashed border-slate-200 bg-white/70 p-4 text-center">
-              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
+            <section className="rounded-lg border border-dashed border-slate-200 bg-white/70 p-3 text-center">
+              <div className="mx-auto flex h-8 w-8 items-center justify-center rounded-md bg-slate-100 text-slate-500">
                 <Search className="h-4.5 w-4.5" />
               </div>
               <div className="mt-3 text-sm font-semibold text-slate-900">没有匹配结果</div>

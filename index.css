@@ -124,16 +124,12 @@
     font-family: var(--font-sans);
     min-height: 100vh;
     background-image:
-      radial-gradient(circle at 0% 0%, rgba(45, 212, 191, 0.16), transparent 24rem),
-      radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.12), transparent 22rem),
-      linear-gradient(180deg, #fcfcf9 0%, #eef3ef 100%);
+      linear-gradient(180deg, #f8faf7 0%, #eef3ef 100%);
     background-attachment: fixed;
   }
 
   .dark body {
     background-image:
-      radial-gradient(circle at 0% 0%, rgba(20, 184, 166, 0.18), transparent 22rem),
-      radial-gradient(circle at 100% 0%, rgba(59, 130, 246, 0.16), transparent 20rem),
       linear-gradient(180deg, #020617 0%, #0f172a 100%);
   }
 
@@ -148,8 +144,8 @@
   }
 
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
@@ -165,6 +161,33 @@
 
   .dark ::-webkit-scrollbar-thumb {
     background-color: rgba(148, 163, 184, 0.24);
+  }
+
+  .tool-page-shell .space-y-6 > :not([hidden]) ~ :not([hidden]) {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
+  }
+
+  .tool-page-shell .gap-6 {
+    gap: 0.5rem;
+  }
+
+  .tool-page-shell .rounded-2xl,
+  .tool-page-shell .rounded-xl,
+  .tool-page-shell .rounded-\[24px\],
+  .tool-page-shell .rounded-\[28px\] {
+    border-radius: 0.5rem;
+  }
+
+  .tool-page-shell .shadow-lg {
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.1);
+  }
+
+  .tool-page-shell textarea.h-\[500px\],
+  .tool-page-shell textarea.h-\[600px\] {
+    min-height: min(56vh, 30rem);
+    height: auto;
   }
 
   @media (prefers-reduced-motion: reduce) {

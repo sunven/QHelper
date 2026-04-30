@@ -186,129 +186,125 @@ function ConvertTool() {
 
   return (
     <ToolPageShell toolId="convert">
-      <div className="mx-auto max-w-4xl space-y-6">
-        <p className="rounded-2xl border border-border/70 bg-white/55 px-4 py-3 text-sm text-muted-foreground dark:bg-slate-900/45">
-          源自：
-          {' '}
+      <div className="mx-auto max-w-[1520px] space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/70 bg-white/70 px-2.5 py-1.5 text-xs text-muted-foreground dark:bg-slate-900/55">
+          <span>字符串编解码工作台</span>
           <a
             href="https://www.baidufe.com/fehelper/endecode.html"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-medium text-primary hover:underline"
+            className="truncate font-medium text-primary hover:underline"
           >
-            https://www.baidufe.com/fehelper/endecode.html
+            来源参考
           </a>
-        </p>
+        </div>
 
-        {/* 输入区域 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">输入</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={srcText}
-              onChange={(e) => setSrcText(e.target.value)}
-              placeholder="粘贴需要进行编解码的字符串"
-              className="h-32 font-mono text-sm"
-            />
-          </CardContent>
-        </Card>
+        <div className="grid min-h-[calc(100vh-10rem)] gap-2 lg:grid-cols-[minmax(0,1fr)_240px_minmax(0,1fr)]">
+          <Card className="min-h-0 overflow-hidden">
+            <CardHeader className="border-b border-border/70">
+              <CardTitle className="text-sm">输入</CardTitle>
+            </CardHeader>
+            <CardContent className="flex min-h-0 flex-1">
+              <Textarea
+                value={srcText}
+                onChange={(e) => setSrcText(e.target.value)}
+                placeholder="粘贴需要进行编解码的字符串"
+                className="min-h-[300px] flex-1 resize-none font-mono text-sm lg:min-h-0"
+              />
+            </CardContent>
+          </Card>
 
-        {/* 编码按钮 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ArrowRight className="w-4 h-4" />
-              编码
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {encodeButtons.map((item) => (
-                <Button
-                  key={item.type}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleEncode(item.type)}
-                  className="gap-1.5"
-                >
-                  {item.icon}
-                  {item.label}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+          <Card className="self-start">
+            <CardHeader className="border-b border-border/70">
+              <CardTitle className="text-sm">操作</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2">
+              <div>
+                <div className="mb-1 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                  <ArrowRight className="h-3.5 w-3.5" />
+                  编码
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-1">
+                  {encodeButtons.map((item) => (
+                    <Button
+                      key={item.type}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleEncode(item.type)}
+                      className="justify-start gap-1.5"
+                    >
+                      {item.icon}
+                      {item.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
 
-        {/* 解码按钮 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ArrowLeft className="w-4 h-4" />
-              解码
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {decodeButtons.map((item) => (
-                <Button
-                  key={item.type}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleDecode(item.type)}
-                  className="gap-1.5"
-                >
-                  {item.icon}
-                  {item.label}
-                </Button>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+              <div>
+                <div className="mb-1 flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                  <ArrowLeft className="h-3.5 w-3.5" />
+                  解码
+                </div>
+                <div className="grid grid-cols-2 gap-1.5 lg:grid-cols-1">
+                  {decodeButtons.map((item) => (
+                    <Button
+                      key={item.type}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDecode(item.type)}
+                      className="justify-start gap-1.5"
+                    >
+                      {item.icon}
+                      {item.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* 结果区域 */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-base">结果</CardTitle>
-              {result && <CopyButton content={result} label="复制结果" size="sm" />}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Textarea
-              value={result}
-              readOnly
-              placeholder="结果将显示在这里"
-              className="h-32 font-mono text-sm bg-muted/50"
-            />
-          </CardContent>
-        </Card>
+          <Card className="min-h-0 overflow-hidden">
+            <CardHeader className="border-b border-border/70">
+              <div className="flex items-center justify-between gap-2">
+                <CardTitle className="text-sm">结果</CardTitle>
+                {result && <CopyButton content={result} label="复制结果" size="sm" />}
+              </div>
+            </CardHeader>
+            <CardContent className="flex min-h-0 flex-1">
+              <Textarea
+                value={result}
+                readOnly
+                placeholder="结果将显示在这里"
+                className="min-h-[300px] flex-1 resize-none bg-muted/50 font-mono text-sm lg:min-h-0"
+              />
+            </CardContent>
+          </Card>
+        </div>
 
         {/* 历史记录 */}
         {history.length > 0 && (
-          <Card>
-            <CardHeader>
+          <Card className="overflow-hidden">
+            <CardHeader className="border-b border-border/70">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base">历史记录</CardTitle>
+                <CardTitle className="text-sm">历史记录</CardTitle>
                 <Button variant="outline" size="sm" onClick={clearHistory}>
                   清除历史 ({history.length})
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2 max-h-64 overflow-y-auto">
+              <div className="grid max-h-48 grid-cols-1 gap-1.5 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
                 {history.slice(-10).reverse().map((entry) => (
                   <div
                     key={entry.id}
-                    className="cursor-pointer rounded-2xl border border-border/70 bg-muted/55 p-3 text-sm transition-colors hover:bg-muted/80"
+                    className="cursor-pointer rounded-md border border-border/70 bg-muted/55 p-2 text-xs transition-colors hover:bg-muted/80"
                     onClick={() => restoreHistory(entry.input)}
                   >
-                    <div className="flex items-center justify-between mb-1">
+                    <div className="mb-1 flex items-center justify-between gap-2">
                       <span className="text-muted-foreground">
                         {new Date(entry.timestamp).toLocaleString()}
                       </span>
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
+                      <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
                         {entry.metadata?.type as string || '未知'}
                       </span>
                     </div>

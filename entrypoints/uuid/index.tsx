@@ -68,15 +68,15 @@ function UUIDGenerator() {
 
   return (
     <ToolPageShell toolId="uuid">
-      <div className="mx-auto max-w-4xl space-y-6">
-        {/* 配置区域 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">配置</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
+      <div className="mx-auto grid max-w-[1200px] gap-2 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <div className="space-y-2">
+          {/* 配置区域 */}
+          <Card>
+            <CardHeader className="border-b border-border/70">
+              <CardTitle className="text-sm">配置</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-3">
+              <div className="grid gap-2">
                 <Label htmlFor="count">生成数量</Label>
                 <Input
                   id="count"
@@ -85,11 +85,10 @@ function UUIDGenerator() {
                   max={100}
                   value={count}
                   onChange={(e) => setCount(Math.min(100, Math.max(1, parseInt(e.target.value) || 1)))}
-                  className="mt-1"
                 />
               </div>
 
-              <div className="flex flex-col gap-4 mt-6">
+              <div className="grid gap-2">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="uppercase"
@@ -112,26 +111,41 @@ function UUIDGenerator() {
                   </Label>
                 </div>
               </div>
-            </div>
 
-            <div className="flex gap-2">
-              <Button onClick={handleGenerate} className="gap-1.5">
-                <RefreshCw className="w-4 h-4" />
-                生成
-              </Button>
-              <Button variant="outline" onClick={handleClear} className="gap-1.5">
-                <Trash2 className="w-4 h-4" />
-                清空
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex gap-1.5">
+                <Button onClick={handleGenerate} className="gap-1.5">
+                  <RefreshCw className="w-4 h-4" />
+                  生成
+                </Button>
+                <Button variant="outline" onClick={handleClear} className="gap-1.5">
+                  <Trash2 className="w-4 h-4" />
+                  清空
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 说明 */}
+          <Card>
+            <CardContent className="py-2">
+              <div className="space-y-1 text-xs text-muted-foreground">
+                <p>
+                  <strong>UUID v4</strong> 基于随机数生成：
+                </p>
+                <span className="block rounded-md bg-muted px-2 py-1 font-mono text-[11px]">
+                  xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
+                </span>
+                <p>4xxx 表示版本，y 表示变体。</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* 结果区域 */}
-        <Card>
-          <CardHeader>
+        <Card className="min-h-[calc(100vh-11rem)] overflow-hidden">
+          <CardHeader className="border-b border-border/70">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">生成结果 ({uuids.filter((u) => u).length})</CardTitle>
+              <CardTitle className="text-sm">生成结果 ({uuids.filter((u) => u).length})</CardTitle>
               {uuids.some((u) => u) && (
                 <Button variant="outline" size="sm" onClick={handleCopyAll} className="gap-1.5">
                   <Copy className="w-4 h-4" />
@@ -141,11 +155,11 @@ function UUIDGenerator() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
+            <div className="grid gap-1.5">
               {uuids.map((uuid, index) => (
                 <div
                   key={index}
-                  className="group flex items-center gap-2 rounded-2xl border border-border/70 bg-muted/50 px-4 py-3"
+                  className="group flex items-center gap-2 rounded-md border border-border/70 bg-muted/50 px-2.5 py-1.5"
                 >
                   <code className="flex-1 font-mono text-sm">{uuid || '点击生成按钮创建 UUID'}</code>
                   {uuid && (
@@ -160,24 +174,6 @@ function UUIDGenerator() {
                   )}
                 </div>
               ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 说明 */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p>
-                <strong>UUID v4</strong> 是基于随机数生成的通用唯一标识符，格式为：
-              </p>
-              <code className="block rounded-xl bg-muted px-3 py-2 text-xs">
-                xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-              </code>
-              <p className="text-xs">
-                • x: 随机十六进制数字<br />
-                • y: 表示版本和变体的固定值（4xxx 表示 v4）
-              </p>
             </div>
           </CardContent>
         </Card>

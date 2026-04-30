@@ -214,18 +214,18 @@ export function App() {
       className="h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)] text-slate-900"
       style={{ fontFamily: '"IBM Plex Sans", "SF Pro Text", "Segoe UI", sans-serif' }}
     >
-      <div className="mx-auto flex h-full max-w-[960px] flex-col p-3">
-        <Card className="relative h-full gap-2 overflow-hidden border-slate-200/80 bg-white/92 py-3">
-          <CardHeader className="gap-1 border-b border-slate-100 px-4 !pb-2">
+      <div className="mx-auto flex h-full max-w-[1040px] flex-col p-1.5">
+        <Card className="relative h-full gap-1.5 overflow-hidden rounded-lg border-slate-200/80 bg-white/92 py-2">
+          <CardHeader className="gap-1 border-b border-slate-100 px-2.5 !pb-1.5">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex items-center gap-2">
-                <div className="flex h-5 shrink-0 items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                <div className="flex h-5 shrink-0 items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
                   <PanelsTopLeft className="h-2.5 w-2.5" />
                   <span>Side Panel</span>
                 </div>
                 <CardTitle className="truncate pt-0.5 text-base">网页总结</CardTitle>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <Button
                   type="button"
                   variant="ghost"
@@ -233,11 +233,11 @@ export function App() {
                   data-testid="web-summary-config-toggle"
                   aria-label="打开联网配置抽屉"
                   onClick={() => setIsConfigOpen(true)}
-                  className="h-7 w-7 rounded-lg border border-slate-200 bg-white/90"
+                  className="h-7 w-7 rounded-md border border-slate-200 bg-white/90"
                 >
                   <Settings2 className="h-3.5 w-3.5" />
                 </Button>
-                <div className="shrink-0 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
+                <div className="shrink-0 rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
                   可选联网 AI
                 </div>
               </div>
@@ -246,8 +246,8 @@ export function App() {
               边看边读：在当前网页旁边生成摘要。
             </p>
           </CardHeader>
-          <CardContent className="flex min-h-0 flex-1 flex-col gap-2 px-4 pt-2">
-            <div className="flex min-h-0 flex-1 flex-col gap-2">
+          <CardContent className="flex min-h-0 flex-1 flex-col gap-1.5 px-2.5 pt-1.5">
+            <div className="flex min-h-0 flex-1 flex-col gap-1.5">
               <div className="flex items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
                   <Button
                     data-testid="web-summary-summarize"
@@ -303,8 +303,8 @@ export function App() {
                   </Button>
               </div>
 
-              <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-slate-200 bg-white">
-                <div className="shrink-0 border-b border-slate-100 px-3 py-2.5">
+              <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white">
+                <div className="shrink-0 border-b border-slate-100 px-2.5 py-1.5">
                   <div className="flex items-center gap-2">
                     <div className="shrink-0 text-sm font-semibold text-slate-900">摘要结果</div>
                     <div
@@ -315,15 +315,15 @@ export function App() {
                     </div>
                   </div>
                 </div>
-                <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3 py-3">
+                <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2">
                   {summaryMarkdown ? (
                     <article
                       data-testid="web-summary-output"
-                      className="prose prose-slate max-w-none break-words text-[13px] leading-6 [overflow-wrap:anywhere] prose-headings:mb-2 prose-headings:text-slate-900 prose-p:my-2 prose-p:text-slate-700 prose-strong:text-slate-900 prose-li:my-1 prose-li:text-slate-700 prose-code:text-emerald-700 prose-pre:bg-slate-950 prose-pre:text-slate-100 [&_a]:break-all [&_code]:break-words [&_li]:break-words [&_p]:break-words [&_pre]:overflow-x-hidden [&_pre]:whitespace-pre-wrap [&_pre]:break-words"
+                      className="prose prose-slate max-w-none break-words text-[13px] leading-5 [overflow-wrap:anywhere] prose-headings:mb-1.5 prose-headings:text-slate-900 prose-p:my-1.5 prose-p:text-slate-700 prose-strong:text-slate-900 prose-li:my-0.5 prose-li:text-slate-700 prose-code:text-emerald-700 prose-pre:bg-slate-950 prose-pre:text-slate-100 [&_a]:break-all [&_code]:break-words [&_li]:break-words [&_p]:break-words [&_pre]:overflow-x-hidden [&_pre]:whitespace-pre-wrap [&_pre]:break-words"
                       dangerouslySetInnerHTML={{ __html: summaryHtml }}
                     />
                   ) : (
-                    <div className="flex h-full min-h-full items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50/70 px-4 text-center text-sm leading-6 text-slate-500">
+                    <div className="flex h-full min-h-full items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/70 px-3 text-center text-sm leading-5 text-slate-500">
                       点击右上角设置按钮打开联网配置抽屉，配置 endpoint / model / API Key 后，点击“开始总结”，摘要会在这里实时生成。
                     </div>
                   )}
@@ -354,12 +354,12 @@ export function App() {
             data-testid="web-summary-config-drawer"
             aria-hidden={!isConfigOpen}
             className={cn(
-              'pointer-events-none absolute inset-y-0 right-0 z-30 flex w-full max-w-[380px] translate-x-full transition-transform duration-200 ease-out',
+              'pointer-events-none absolute inset-y-0 right-0 z-30 flex w-full max-w-[360px] translate-x-full transition-transform duration-200 ease-out',
               isConfigOpen && 'pointer-events-auto translate-x-0',
             )}
           >
-            <Card className="h-full w-full rounded-none rounded-l-[22px] border-y-0 border-r-0 border-l border-slate-200 bg-white/98 shadow-[-20px_0_50px_rgba(15,23,42,0.14)]">
-              <CardHeader className="gap-1.5 border-b border-slate-100 pb-4">
+            <Card className="h-full w-full rounded-none rounded-l-lg border-y-0 border-r-0 border-l border-slate-200 bg-white/98 shadow-[-12px_0_28px_rgba(15,23,42,0.12)]">
+              <CardHeader className="gap-1 border-b border-slate-100 pb-2">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <CardTitle className="text-sm">联网配置</CardTitle>
@@ -373,13 +373,13 @@ export function App() {
                     size="icon"
                     aria-label="关闭联网配置抽屉"
                     onClick={() => setIsConfigOpen(false)}
-                    className="h-8 w-8 rounded-lg border border-slate-200 bg-white/90"
+                    className="h-7 w-7 rounded-md border border-slate-200 bg-white/90"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3 pt-4">
+              <CardContent className="space-y-2 pt-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="web-summary-endpoint" className="text-[13px]">接口地址</Label>
                   <Input
@@ -388,7 +388,7 @@ export function App() {
                     value={config.endpoint}
                     onChange={(event) => updateConfigField('endpoint', event.target.value)}
                     placeholder="https://api.openai.com/v1/chat/completions"
-                    className="h-9 rounded-lg px-3 text-sm"
+                    className="h-8 rounded-md px-2.5 text-sm"
                   />
                 </div>
 
@@ -400,7 +400,7 @@ export function App() {
                     value={config.model}
                     onChange={(event) => updateConfigField('model', event.target.value)}
                     placeholder="gpt-4.1-mini / 自定义兼容模型"
-                    className="h-9 rounded-lg px-3 text-sm"
+                    className="h-8 rounded-md px-2.5 text-sm"
                   />
                 </div>
 
@@ -414,7 +414,7 @@ export function App() {
                       value={config.apiKey}
                       onChange={(event) => updateConfigField('apiKey', event.target.value)}
                       placeholder="sk-..."
-                      className="h-9 rounded-lg px-3 pr-10 text-sm"
+                      className="h-8 rounded-md px-2.5 pr-9 text-sm"
                     />
                     <button
                       type="button"
@@ -422,14 +422,14 @@ export function App() {
                       aria-label={isApiKeyVisible ? '隐藏 API Key 明文' : '显示 API Key 明文'}
                       aria-pressed={isApiKeyVisible}
                       onClick={() => setIsApiKeyVisible((visible) => !visible)}
-                      className="absolute inset-y-0 right-0 flex w-9 items-center justify-center rounded-r-lg text-slate-500 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/45"
+                      className="absolute inset-y-0 right-0 flex w-8 items-center justify-center rounded-r-md text-slate-500 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/45"
                     >
                       {isApiKeyVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-[11px] leading-5 text-slate-500">
+                <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-2 text-[11px] leading-5 text-slate-500">
                   配置会保存在 <code>chrome.storage.local</code> 的 <code>webSummaryConfig</code> 键下，仅保存在本机浏览器，不会自动同步到云端。
                 </div>
               </CardContent>

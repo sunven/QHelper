@@ -87,37 +87,36 @@ function ImageBase64Tool() {
 
   return (
     <ToolPageShell toolId="imagebase64" description="将图片快速编码为可复制、可嵌入的 Data URI 字符串。">
-      <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-2">
-        {/* 左侧：预览和上传 */}
+      <div className="mx-auto grid max-w-[1320px] grid-cols-1 gap-2 md:grid-cols-[minmax(320px,0.8fr)_minmax(520px,1.2fr)]">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <ImageIcon className="w-4 h-4" />
               图片预览
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2">
             {preview ? (
               <img
                 src={preview}
                 alt="预览"
-                className="h-auto w-full rounded-2xl border border-border/70"
+                className="max-h-[min(56vh,560px)] w-full rounded-lg border border-border/70 object-contain"
               />
             ) : (
-              <div className="flex h-48 items-center justify-center rounded-2xl border-2 border-dashed border-border text-muted-foreground">
+              <div className="flex h-[min(42vh,420px)] items-center justify-center rounded-lg border-2 border-dashed border-border text-muted-foreground">
                 <span className="text-sm">图片预览区域</span>
               </div>
             )}
 
-            <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full"
+                size="sm"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 选择图片
               </Button>
-              <p className="text-xs text-muted-foreground text-center">
+              <p className="text-xs text-muted-foreground">
                 支持拖拽或 Ctrl + V 粘贴
               </p>
             </div>
@@ -132,39 +131,37 @@ function ImageBase64Tool() {
           </CardContent>
         </Card>
 
-        {/* 右侧：结果 */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <FileType className="w-4 h-4" />
               Base64 结果
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-2">
             <Textarea
               value={result}
               readOnly
               placeholder="Base64 结果将显示在这里"
-              className="h-48 font-mono text-xs"
+              className="h-[min(56vh,560px)] font-mono text-xs"
             />
 
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="space-y-1">
+            <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-3 text-sm">
+              <div>
                 <span className="text-muted-foreground">原始大小</span>
                 <div className="font-medium">{formatFileSize(sizeOri)}</div>
               </div>
-              <div className="space-y-1">
+              <div>
                 <span className="text-muted-foreground">Base64 大小</span>
                 <div className="font-medium">{formatFileSize(sizeBase)}</div>
               </div>
+              {result && (
+                <Button onClick={handleCopy} size="sm">
+                  <Copy className="w-4 h-4 mr-2" />
+                  复制
+                </Button>
+              )}
             </div>
-
-            {result && (
-              <Button onClick={handleCopy} className="w-full">
-                <Copy className="w-4 h-4 mr-2" />
-                复制到剪贴板
-              </Button>
-            )}
           </CardContent>
         </Card>
       </div>

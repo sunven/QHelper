@@ -190,10 +190,9 @@ function PictureSplicingTool() {
 
   return (
     <ToolPageShell toolId="pictureSplicing" description="上传、排序并生成拼接图，适合快速合并截图、海报或长图素材。">
-      <div className="mx-auto max-w-4xl space-y-6">
-        {/* 上传区域 */}
+      <div className="mx-auto grid max-w-[1320px] gap-2 lg:grid-cols-[minmax(360px,0.78fr)_minmax(520px,1.22fr)]">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <Upload className="w-4 h-4" />
               上传图片
@@ -208,59 +207,28 @@ function PictureSplicingTool() {
               onChange={handleFileSelect}
               className="hidden"
             />
-            <Button onClick={() => fileInputRef.current?.click()} className="w-full">
+            <Button onClick={() => fileInputRef.current?.click()} size="sm" className="w-full">
               <Upload className="w-4 h-4 mr-2" />
               选择图片
             </Button>
-            <p className="text-xs text-muted-foreground text-center mt-2">
+            <p className="mt-1.5 text-center text-xs text-muted-foreground">
               支持拖拽或 Ctrl + V 粘贴
             </p>
           </CardContent>
-        </Card>
 
-        {/* 图片排序区域 */}
-        {images.length > 0 && !canvasUrl && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ImageIcon className="w-4 h-4" />
-                图片列表 ({images.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                <SortableContext items={images.map((img) => img.id)} strategy={verticalListSortingStrategy}>
-                  <div className="flex gap-3 flex-wrap">
-                    {images.map((img) => (
-                      <SortableItem key={img.id} id={img.id} src={img.src} onRemove={removeImage} />
-                    ))}
-                  </div>
-                </SortableContext>
-              </DndContext>
-              <p className="text-xs text-muted-foreground mt-3">
-                拖拽图片可以调整顺序
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* 设置面板 */}
-        {images.length > 0 && !canvasUrl && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Settings className="w-4 h-4" />
+          {images.length > 0 && !canvasUrl && (
+            <CardContent className="space-y-2 border-t pt-3">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Settings className="h-4 w-4" />
                 拼接设置
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              </div>
+              <div className="grid grid-cols-1 gap-2">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">拼接方向</label>
                   <select
                     value={direction}
                     onChange={(e) => setDirection(e.target.value as 'horizontal' | 'vertical')}
-                    className="w-full px-3 py-2 border rounded-md bg-background"
+                    className="h-9 w-full rounded-md border bg-background px-2 text-sm"
                   >
                     <option value="horizontal">水平拼接</option>
                     <option value="vertical">垂直拼接</option>
@@ -284,7 +252,7 @@ function PictureSplicingTool() {
                       type="color"
                       value={bgColor}
                       onChange={(e) => setBgColor(e.target.value)}
-                      className="w-10 h-10 cursor-pointer rounded-md border"
+                      className="h-9 w-10 cursor-pointer rounded-md border"
                     />
                     <Input
                       type="text"
@@ -296,31 +264,53 @@ function PictureSplicingTool() {
                 </div>
               </div>
 
-              <Button onClick={generateCanvas} className="w-full">
+              <Button onClick={generateCanvas} size="sm" className="w-full">
                 生成拼接图片
               </Button>
+            </CardContent>
+          )}
+        </Card>
+
+        {images.length > 0 && !canvasUrl && (
+          <Card>
+            <CardHeader className="pb-1">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <ImageIcon className="w-4 h-4" />
+                图片列表 ({images.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={images.map((img) => img.id)} strategy={verticalListSortingStrategy}>
+                  <div className="flex max-h-[calc(100vh-14rem)] flex-wrap gap-2 overflow-y-auto">
+                    {images.map((img) => (
+                      <SortableItem key={img.id} id={img.id} src={img.src} onRemove={removeImage} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+              <p className="mt-2 text-xs text-muted-foreground">拖拽图片可以调整顺序</p>
             </CardContent>
           </Card>
         )}
 
-        {/* 结果预览 */}
         {canvasUrl && (
           <Card>
-            <CardHeader>
+            <CardHeader className="pb-1">
               <CardTitle className="flex items-center gap-2 text-base">
                 <ImageIcon className="w-4 h-4" />
                 拼接结果
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <img src={canvasUrl} alt="拼接结果" className="w-full rounded-2xl border border-border/70" />
+            <CardContent className="space-y-2">
+              <img src={canvasUrl} alt="拼接结果" className="max-h-[calc(100vh-14rem)] w-full rounded-lg border border-border/70 object-contain" />
 
-              <div className="flex gap-3">
-                <Button onClick={downloadCanvas} className="flex-1">
+              <div className="flex gap-2">
+                <Button onClick={downloadCanvas} size="sm" className="flex-1">
                   <Download className="w-4 h-4 mr-2" />
                   下载拼接结果
                 </Button>
-                <Button onClick={clearImages} variant="outline" className="flex-1">
+                <Button onClick={clearImages} variant="outline" size="sm" className="flex-1">
                   <Trash2 className="w-4 h-4 mr-2" />
                   清除并重新开始
                 </Button>

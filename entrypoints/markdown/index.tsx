@@ -156,14 +156,14 @@ ${state.html}
 
 
     <ToolPageShell toolId="markdown" description="实时编写、预览并导出 Markdown，保留语法高亮与大篇幅编辑体验。">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[1520px]">
 
         {/* 操作按钮 */}
-        <div className="flex gap-2 mb-4">
+        <div className="mb-2 flex gap-1.5">
           <button
             type="button"
             onClick={handleCopyHtml}
-            className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-colors"
+            className="flex h-8 items-center gap-1.5 rounded-md bg-slate-700 px-2.5 text-sm text-white transition-colors hover:bg-slate-800"
           >
             <Copy className="w-4 h-4" />
             复制 HTML
@@ -171,7 +171,7 @@ ${state.html}
           <button
             type="button"
             onClick={handleExportHtml}
-            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-white transition-colors hover:bg-emerald-700"
+            className="flex h-8 items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 text-sm text-white transition-colors hover:bg-emerald-700"
           >
             <Download className="w-4 h-4" />
             导出 HTML
@@ -179,28 +179,28 @@ ${state.html}
         </div>
 
         {/* 编辑器 */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid min-h-[calc(100vh-11rem)] grid-cols-1 gap-2 lg:grid-cols-2">
           {/* 输入区域 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="bg-slate-100 dark:bg-slate-700 px-4 py-2 border-b border-slate-200 dark:border-slate-600">
-              <h2 className="font-semibold text-slate-700 dark:text-slate-200">Markdown</h2>
+          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">Markdown</h2>
             </div>
             <textarea
               value={state.input}
               onChange={(e) => handleInputChange(e.target.value)}
-              className="w-full h-[600px] p-4 resize-none focus:outline-none font-mono text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              className="h-full min-h-[380px] w-full resize-none bg-white p-2.5 font-mono text-sm text-slate-900 focus:outline-none dark:bg-slate-800 dark:text-slate-100 lg:min-h-0"
               placeholder="输入 Markdown 内容..."
               spellCheck={false}
             />
           </div>
 
           {/* 预览区域 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="bg-slate-100 dark:bg-slate-700 px-4 py-2 border-b border-slate-200 dark:border-slate-600">
-              <h2 className="font-semibold text-slate-700 dark:text-slate-200">预览</h2>
+          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <div className="border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">预览</h2>
             </div>
             <div
-              className="h-[600px] p-4 overflow-auto prose prose-slate dark:prose-invert max-w-none"
+              className="prose prose-slate h-full min-h-[380px] max-w-none overflow-auto p-2.5 text-sm dark:prose-invert lg:min-h-0"
               dangerouslySetInnerHTML={{ __html: state.html }}
             />
           </div>
@@ -208,16 +208,16 @@ ${state.html}
 
         {/* 历史记录 */}
         {history.length > 0 && (
-          <div className="mt-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4">
-            <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">历史记录</h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="mt-2 rounded-md border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+            <h3 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">历史记录</h3>
+            <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
               {history.map((item, index) => (
                 <div
                   key={index}
-                  className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors"
+                  className="cursor-pointer rounded-md bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
                   onClick={() => handleInputChange((item as MarkdownState).input)}
                 >
-                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                  <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
                     {(item as MarkdownState).input.slice(0, 100)}...
                   </div>
                 </div>

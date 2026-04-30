@@ -11,7 +11,7 @@ export function Button({ className, variant = 'default', size = 'default', ...pr
   return (
     <button
       className={cn(
-        'inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-transparent font-medium shadow-[0_10px_25px_rgba(15,23,42,0.08)] transition-[background-color,border-color,color,box-shadow] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/45 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-transparent font-medium shadow-sm transition-[background-color,border-color,color,box-shadow] duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/45 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent disabled:pointer-events-none disabled:opacity-50',
         variant === 'primary' &&
           'bg-[linear-gradient(135deg,#0f766e_0%,#0f172a_100%)] text-white hover:bg-[linear-gradient(135deg,#0d9488_0%,#0f172a_92%)]',
         variant === 'destructive' &&
@@ -24,10 +24,10 @@ export function Button({ className, variant = 'default', size = 'default', ...pr
           'border-slate-200/80 bg-slate-100/92 text-slate-800 hover:bg-slate-200/88 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700',
         variant === 'default' &&
           'bg-[linear-gradient(135deg,#111827_0%,#1f2937_45%,#0f766e_100%)] text-white hover:bg-[linear-gradient(135deg,#0f172a_0%,#1f2937_35%,#059669_100%)]',
-        size === 'sm' && 'h-9 px-3.5 text-sm',
-        size === 'lg' && 'h-11 px-8 text-[15px]',
-        size === 'icon' && 'h-10 w-10 p-0',
-        size === 'default' && 'h-10 px-4 py-2 text-sm',
+        size === 'sm' && 'h-8 px-2.5 text-[13px]',
+        size === 'lg' && 'h-10 px-5 text-sm',
+        size === 'icon' && 'h-8 w-8 p-0',
+        size === 'default' && 'h-9 px-3 py-1.5 text-sm',
         className,
       )}
       {...props}

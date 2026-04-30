@@ -72,12 +72,12 @@ function JsonStringPanel() {
   }, [selectedRequest])
 
   return (
-    <main className="grid h-screen grid-cols-[minmax(260px,40%)_1fr] bg-white text-slate-900">
+    <main className="grid h-screen grid-cols-[minmax(240px,34%)_1fr] bg-white text-slate-900">
       <section className="min-h-0 overflow-auto border-r border-slate-200">
         <table className="w-full table-fixed">
           <thead className="sticky top-0 bg-slate-50">
             <tr>
-              <th className="border-b border-slate-200 px-3 py-2 text-left text-xs font-semibold uppercase text-slate-500">
+              <th className="border-b border-slate-200 px-2 py-1.5 text-left text-[11px] font-semibold uppercase text-slate-500">
                 url
               </th>
             </tr>
@@ -89,19 +89,19 @@ function JsonStringPanel() {
                 className={`cursor-pointer border-b border-slate-100 hover:bg-slate-50 ${selectedIndex === index ? 'bg-emerald-50' : ''}`}
                 onClick={() => setSelectedIndex(index)}
               >
-                <td className="truncate px-3 py-2 text-sm text-slate-700">{request.request.url}</td>
+                <td className="truncate px-2 py-1.5 text-xs text-slate-700">{request.request.url}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </section>
-      <section className="min-h-0 overflow-auto p-3">
+      <section className="min-h-0 overflow-auto p-2">
         {preview.error ? (
-          <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700">
             {preview.error}
           </div>
         ) : (
-          <pre aria-label="JSON preview" className="whitespace-pre-wrap break-words font-mono text-sm">
+          <pre aria-label="JSON preview" className="whitespace-pre-wrap break-words font-mono text-xs leading-5">
             {preview.value}
           </pre>
         )}

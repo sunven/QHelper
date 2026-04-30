@@ -69,51 +69,51 @@ function TimestampTool() {
 
   return (
     <ToolPageShell toolId="timestamp">
-      <div className="mx-auto max-w-4xl space-y-6">
-        <p className="rounded-2xl border border-border/70 bg-white/55 px-4 py-3 text-sm text-muted-foreground dark:bg-slate-900/45">
-          源自：
-          {' '}
+      <div className="mx-auto max-w-[1200px] space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/70 bg-white/70 px-2.5 py-1.5 text-xs text-muted-foreground dark:bg-slate-900/55">
+          <span>时间戳转换工作台</span>
           <a
             href="https://github.com/zxlie/FeHelper"
             target="_blank"
             rel="noopener noreferrer"
             className="font-medium text-primary hover:underline"
           >
-            https://github.com/zxlie/FeHelper
+            来源参考
           </a>
-        </p>
+        </div>
 
           {/* 当前时间 */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5" />
+            <CardHeader className="border-b border-border/70">
+              <CardTitle className="flex items-center gap-1.5 text-sm">
+                <Clock className="h-4 w-4" />
                 当前时间
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">当地时间</label>
+            <CardContent className="grid grid-cols-1 gap-2 md:grid-cols-2">
+              <div className="space-y-1">
+                <label className="text-xs font-medium">当地时间</label>
                 <Input value={nowDate} disabled />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Unix 时间戳</label>
+              <div className="space-y-1">
+                <label className="text-xs font-medium">Unix 时间戳</label>
                 <Input value={now} disabled />
               </div>
             </CardContent>
           </Card>
 
+          <div className="grid gap-2 lg:grid-cols-2">
           {/* Unix时间戳 → 当地时间 */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+            <CardHeader className="border-b border-border/70">
+              <CardTitle className="flex items-center gap-1.5 text-sm">
                 <ArrowRight className="w-4 h-4" />
                 Unix 时间戳 → 当地时间
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col sm:flex-row gap-3 items-end">
-              <div className="flex-1 w-full space-y-2">
-                <label className="text-sm font-medium">时间戳</label>
+            <CardContent className="flex flex-col items-end gap-2">
+              <div className="w-full space-y-1">
+                <label className="text-xs font-medium">时间戳</label>
                 <Input
                   value={srcStamp}
                   onChange={(e) => setSrcStamp(e.target.value)}
@@ -123,8 +123,8 @@ function TimestampTool() {
               <Button onClick={stampToDate} variant="default">
                 转换
               </Button>
-              <div className="flex-1 w-full space-y-2">
-                <label className="text-sm font-medium">结果</label>
+              <div className="w-full space-y-1">
+                <label className="text-xs font-medium">结果</label>
                 <Input value={desDate} disabled placeholder="转换结果" />
               </div>
             </CardContent>
@@ -132,15 +132,15 @@ function TimestampTool() {
 
           {/* 当地时间 → Unix时间戳 */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+            <CardHeader className="border-b border-border/70">
+              <CardTitle className="flex items-center gap-1.5 text-sm">
                 <ArrowLeft className="w-4 h-4" />
                 当地时间 → Unix 时间戳
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col sm:flex-row gap-3 items-end">
-              <div className="flex-1 w-full space-y-2">
-                <label className="text-sm font-medium">时间</label>
+            <CardContent className="flex flex-col items-end gap-2">
+              <div className="w-full space-y-1">
+                <label className="text-xs font-medium">时间</label>
                 <Input
                   value={srcLocale}
                   onChange={(e) => setSrcLocale(e.target.value)}
@@ -150,12 +150,13 @@ function TimestampTool() {
               <Button onClick={dateToStamp} variant="default">
                 转换
               </Button>
-              <div className="flex-1 w-full space-y-2">
-                <label className="text-sm font-medium">结果</label>
+              <div className="w-full space-y-1">
+                <label className="text-xs font-medium">结果</label>
                 <Input value={desStamp} disabled placeholder="转换结果" />
               </div>
             </CardContent>
           </Card>
+          </div>
       </div>
     </ToolPageShell>
   );

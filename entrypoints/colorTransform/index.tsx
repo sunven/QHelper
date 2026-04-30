@@ -53,10 +53,9 @@ function ColorTransformTool() {
 
   return (
     <ToolPageShell toolId="colorTransform">
-      <div className="mx-auto max-w-4xl space-y-6">
-        {/* 颜色预览 */}
+      <div className="mx-auto grid max-w-[1160px] gap-2 lg:grid-cols-[minmax(260px,0.7fr)_minmax(520px,1.3fr)]">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <Palette className="w-4 h-4" />
               颜色预览
@@ -64,20 +63,20 @@ function ColorTransformTool() {
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-4">
-              <div className="h-20 flex-1 rounded-2xl border border-border/70" style={{ backgroundColor: color }} />
+              <div className="h-36 flex-1 rounded-lg border border-border/70" style={{ backgroundColor: color }} />
               <input
                 type="color"
                 value={color}
                 onChange={handleColorChange}
-                className="h-16 w-16 cursor-pointer rounded-2xl border border-border/70 bg-white/75"
+                className="h-16 w-16 cursor-pointer rounded-lg border border-border/70 bg-white/75"
               />
             </div>
           </CardContent>
         </Card>
 
-        {/* RGB → HEX */}
+        <div className="space-y-2">
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <ArrowRight className="w-4 h-4" />
               RGB → HEX
@@ -118,9 +117,8 @@ function ColorTransformTool() {
           </CardContent>
         </Card>
 
-        {/* HEX → RGB */}
         <Card>
-          <CardHeader>
+          <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
               <ArrowRight className="w-4 h-4" />
               HEX → RGB
@@ -140,6 +138,7 @@ function ColorTransformTool() {
             <Input value={desRgbB} disabled placeholder="B" className="w-20" />
           </CardContent>
         </Card>
+        </div>
       </div>
     </ToolPageShell>
   );

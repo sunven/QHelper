@@ -369,9 +369,9 @@ function JsonTool() {
 
   return (
     <ToolPageShell toolId="json" description="高密度 JSON 工作台，支持格式化、压缩、Diff 对比与历史保存。">
-      <div className="flex min-h-[720px] flex-col overflow-hidden rounded-[28px] border border-white/70 bg-white/88 shadow-[0_24px_80px_rgba(15,23,42,0.14)] backdrop-blur dark:border-white/10 dark:bg-slate-950/72">
+      <div className="flex min-h-[calc(100vh-8.5rem)] flex-col overflow-hidden rounded-lg border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
         {/* 工具栏 */}
-        <div className="flex flex-wrap items-center gap-2 border-b border-border/70 bg-muted/40 p-3">
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-border/70 bg-muted/40 p-2">
         <Button
           variant={baseview === 'formatter' ? 'default' : 'outline'}
           size="sm"
@@ -420,7 +420,7 @@ function JsonTool() {
                 历史 ({historys.length})
               </Button>
               {historys.length > 0 && (
-                <div className="absolute right-0 top-full mt-1 w-48 bg-popover border rounded-md shadow-lg p-2 z-10">
+                <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-md border bg-popover p-1.5 shadow-md">
                   {historys.map((his, index) => (
                     <div
                       key={`${his.name}-${index}`}
@@ -490,12 +490,12 @@ function JsonTool() {
             {diffResult ? (
               /* Diff 结果展示 */
               <div className="flex-1 overflow-auto">
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">
+                  <div className="p-2.5">
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="text-sm font-semibold">
                       Diff 结果
                       {diffResult.isModified && (
-                        <span className="ml-2 text-sm font-normal text-muted-foreground">
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">
                           ({diffResult.changes.length} 处变更)
                         </span>
                       )}
@@ -512,14 +512,14 @@ function JsonTool() {
                   </div>
 
                   {diffError && (
-                    <div className="p-4 bg-destructive/10 text-destructive rounded-md mb-4">
+                    <div className="mb-2 rounded-md bg-destructive/10 p-2.5 text-sm text-destructive">
                       {diffError}
                     </div>
                   )}
 
                   {!diffResult.isModified ? (
-                    <div className="p-8 text-center text-muted-foreground">
-                      <Check className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      <Check className="mx-auto mb-1 h-8 w-8 opacity-50" />
                       <p>两个 JSON 完全相同，没有发现差异</p>
                     </div>
                   ) : (
@@ -559,7 +559,7 @@ function JsonTool() {
                 )}
 
                 {!isProcessing && view === 'code' && jsonhtml && (
-                  <div className="p-4">
+                  <div className="p-2.5">
                     <ReactJsonView
                       src={jsonhtml}
                       theme="monokai"
@@ -578,8 +578,8 @@ function JsonTool() {
                 )}
 
                 {view === 'empty' && (
-                  <div className="p-8 text-center text-muted-foreground">
-                    <FileJson className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    <FileJson className="mx-auto mb-1 h-8 w-8 opacity-50" />
                     <p>请输入 JSON 字符串</p>
                   </div>
                 )}
@@ -593,7 +593,7 @@ function JsonTool() {
                 )}
 
                 {view === 'error' && (
-                  <div className="p-4 text-destructive font-mono text-sm whitespace-pre-wrap">
+                  <div className="whitespace-pre-wrap p-2.5 font-mono text-sm text-destructive">
                     {error}
                   </div>
                 )}

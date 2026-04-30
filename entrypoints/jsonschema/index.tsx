@@ -150,47 +150,43 @@ function JsonSchemaValidator() {
   }, [state.jsonData, state.jsonSchema]);
 
   return (
-
-
     <ToolPageShell toolId="jsonschema">
-      <div className="mx-auto max-w-6xl">
-
-        {/* 工具栏 */}
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 mb-4">
-          <div className="flex items-center justify-between">
+      <div className="mx-auto max-w-[1440px] space-y-2">
+        <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={handleFormatJson}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors text-sm"
+                className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1.5 text-xs transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
               >
-                <FileJson className="w-4 h-4" />
+                <FileJson className="h-3.5 w-3.5" />
                 格式化
               </button>
               <button
                 type="button"
                 onClick={handleClear}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg transition-colors text-sm"
+                className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1.5 text-xs transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
               >
-                <X className="w-4 h-4" />
+                <X className="h-3.5 w-3.5" />
                 清空
               </button>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-1.5">
               {state.jsonData && state.jsonSchema && (
-                <div className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium ${
+                <div className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium ${
                   state.isValid
                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                     : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
                 }`}>
                   {state.isValid ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="h-3.5 w-3.5" />
                       验证通过
                     </>
                   ) : (
                     <>
-                      <AlertCircle className="w-4 h-4" />
+                      <AlertCircle className="h-3.5 w-3.5" />
                       验证失败
                     </>
                   )}
@@ -199,71 +195,67 @@ function JsonSchemaValidator() {
               <button
                 type="button"
                 onClick={handleCopy}
-                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded-lg transition-colors text-sm"
+                className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-700 text-white transition-colors hover:bg-slate-800"
               >
-                <Copy className="w-4 h-4" />
+                <Copy className="h-3.5 w-3.5" />
               </button>
               <button
                 type="button"
                 onClick={handleDownload}
-                className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors text-sm"
+                className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs text-white transition-colors hover:bg-emerald-700"
               >
-                <Download className="w-4 h-4" />
+                <Download className="h-3.5 w-3.5" />
                 下载
               </button>
             </div>
           </div>
         </div>
 
-        {/* 编辑器区域 */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* JSON 数据输入 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="flex items-center bg-slate-100 dark:bg-slate-700 px-4 py-2 border-b border-slate-200 dark:border-slate-600">
-              <FileJson className="w-4 h-4 text-slate-600 dark:text-slate-400 mr-2" />
-              <h2 className="font-semibold text-slate-700 dark:text-slate-200">
+        <div className="grid gap-2 lg:grid-cols-2">
+          <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+            <div className="flex items-center border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-900">
+              <FileJson className="mr-1.5 h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 JSON 数据
               </h2>
             </div>
             <textarea
               value={state.jsonData}
               onChange={(e) => handleJsonDataChange(e.target.value)}
-              className="w-full h-[500px] p-4 resize-none focus:outline-none font-mono text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              className="h-[min(62vh,620px)] w-full resize-none bg-white p-2 font-mono text-sm text-slate-900 focus:outline-none dark:bg-slate-950 dark:text-slate-100"
               placeholder="输入要验证的 JSON 数据..."
               spellCheck={false}
             />
           </div>
 
-          {/* JSON Schema 输入 */}
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg overflow-hidden">
-            <div className="flex items-center bg-slate-100 dark:bg-slate-700 px-4 py-2 border-b border-slate-200 dark:border-slate-600">
-              <Shield className="w-4 h-4 text-slate-600 dark:text-slate-400 mr-2" />
-              <h2 className="font-semibold text-slate-700 dark:text-slate-200">
+          <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+            <div className="flex items-center border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-900">
+              <Shield className="mr-1.5 h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
+              <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 JSON Schema
               </h2>
             </div>
             <textarea
               value={state.jsonSchema}
               onChange={(e) => handleJsonSchemaChange(e.target.value)}
-              className="w-full h-[500px] p-4 resize-none focus:outline-none font-mono text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
+              className="h-[min(62vh,620px)] w-full resize-none bg-white p-2 font-mono text-sm text-slate-900 focus:outline-none dark:bg-slate-950 dark:text-slate-100"
               placeholder="输入 JSON Schema..."
               spellCheck={false}
             />
           </div>
         </div>
 
-        {/* 验证结果 */}
         {(state.errors.length > 0 || state.validationResults.length > 0) && (
-          <div className="mt-4 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4">
-            <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
+          <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+            <h3 className="mb-1.5 flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
+              <AlertCircle className="h-4 w-4" />
               验证结果
             </h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="max-h-36 space-y-1 overflow-y-auto">
               {state.errors.map((error, index) => (
                 <div
                   key={`error-${index}`}
-                  className="p-3 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-900 dark:text-red-200"
+                  className="border-l-4 border-red-500 bg-red-50 p-2 text-red-900 dark:bg-red-900/20 dark:text-red-200"
                 >
                   <div className="text-sm font-mono">{error}</div>
                 </div>
@@ -271,7 +263,7 @@ function JsonSchemaValidator() {
               {state.validationResults.map((result, index) => (
                 <div
                   key={`result-${index}`}
-                  className="p-3 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-900 dark:text-red-200"
+                  className="border-l-4 border-red-500 bg-red-50 p-2 text-red-900 dark:bg-red-900/20 dark:text-red-200"
                 >
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm font-semibold">{result.path}</span>
@@ -283,23 +275,21 @@ function JsonSchemaValidator() {
           </div>
         )}
 
-        {/* 统计信息 */}
-        <div className="mt-4 flex gap-4 text-sm text-slate-600 dark:text-slate-400">
+        <div className="flex gap-4 text-xs text-slate-600 dark:text-slate-400">
           <span>JSON 数据字符: {state.jsonData.length}</span>
           <span>Schema 字符: {state.jsonSchema.length}</span>
         </div>
 
-        {/* 历史记录 */}
         {history.length > 0 && (
-          <div className="mt-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4">
-            <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-3">历史记录</h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+          <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+            <h3 className="mb-1.5 font-semibold text-slate-700 dark:text-slate-200">历史记录</h3>
+            <div className="max-h-36 space-y-1 overflow-y-auto">
               {history.map((item, index) => {
                 const historyState = item as JsonSchemaState;
                 return (
                   <div
                     key={index}
-                    className="p-3 bg-slate-50 dark:bg-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 cursor-pointer transition-colors"
+                    className="cursor-pointer rounded-md bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
                     onClick={() => {
                       setState((prev) => ({
                         ...prev,
