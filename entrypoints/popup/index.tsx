@@ -18,6 +18,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   ArrowLeftRight,
   ArrowUpRight,
+  Bookmark,
   Calculator,
   CalendarClock,
   Clock,
@@ -49,7 +50,7 @@ type PopupTool = {
   name: string
   description: string
   url: string
-  type: 'jump' | 'clearCookie'
+  type: 'jump' | 'clearCookie' | 'webSummary'
   category: ToolCategory
   searchText: string
 }
@@ -81,6 +82,7 @@ const toolIconMap: Record<string, LucideIcon> = {
   'clear-cookie': Trash2,
   uuid: Hash,
   password: Shield,
+  bookmarks: Bookmark,
   urlparser: Link2,
   csv2json: FileJson,
   filemerge: FileCode,
@@ -118,13 +120,39 @@ const clearCookieTool: PopupTool = {
   searchText: 'clear cookie browser auth session login cache clean',
 }
 
-const specialTools: PopupTool[] = [clearCookieTool]
+const webSummaryTool: PopupTool = {
+  id: 'web-summary-launch',
+  name: '网页总结',
+  description: '打开侧边栏总结当前网页内容。',
+  url: '',
+  type: 'webSummary',
+  category: ToolCategory.AI,
+  searchText: 'web summary ai summarize page side panel',
+}
+
+const bookmarksTool: PopupTool = {
+  id: 'bookmarks',
+  name: '书签',
+  description: '查看浏览器书签树。',
+  url: 'legacy-bookmarks.html',
+  type: 'jump',
+  category: ToolCategory.OTHER,
+  searchText: 'bookmarks browser favorites tree other 书签 收藏夹',
+}
+
+const specialTools: PopupTool[] = [webSummaryTool, bookmarksTool, clearCookieTool]
 
 async function handleToolClick(tool: PopupTool) {
   try {
     if (tool.type === 'jump') {
       await trackToolUsage(tool.id, tool.name)
       await create(tool.url)
+      return
+    }
+
+    if (tool.type === 'webSummary') {
+      await trackToolUsage(tool.id, tool.name)
+      await chrome.runtime.sendMessage({ type: 'OPEN_WEB_SUMMARY' })
       return
     }
 
@@ -350,9 +378,14 @@ function App() {
 
             <div className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-slate-500">
               <div>{query ? `匹配 ${queryMatchedTools.length} 个工具` : '按关键词、格式名或用途快速过滤'}</div>
-              <div className="rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[10px] text-slate-600">
-                {getCategoryLabel(activeCategory)}
-              </div>
+              <button
+                type="button"
+                data-testid="web-summary-quick-open"
+                onClick={() => handleToolClick(webSummaryTool)}
+                className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[10px] font-medium text-emerald-700 hover:bg-emerald-100"
+              >
+                网页总结
+              </button>
             </div>
           </section>
 

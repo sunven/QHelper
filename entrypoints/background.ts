@@ -4,6 +4,11 @@ import {
   openWebSummaryPanel,
   WEB_SUMMARY_CONTEXT_MENU_ID,
 } from '@/lib/web-summary/background'
+import {
+  COPY_PAGE_TITLE_MENU_ID,
+  copyPageTitleFromContextClick,
+  ensureCopyPageTitleContextMenu,
+} from '@/lib/legacy-fe-tools/context-menu'
 import type {
   OpenWebSummaryMessage,
   OpenWebSummaryResponse,
@@ -21,14 +26,22 @@ function getErrorMessage(error: unknown): string {
 }
 
 export default defineBackground(() => {
-  const syncWebSummaryContextMenu = () => {
-    void ensureWebSummaryContextMenu().catch(() => undefined)
+  const syncContextMenus = () => {
+    void Promise.all([
+      ensureWebSummaryContextMenu(),
+      ensureCopyPageTitleContextMenu(),
+    ]).catch(() => undefined)
   }
 
-  syncWebSummaryContextMenu()
-  chrome.runtime.onInstalled.addListener(syncWebSummaryContextMenu)
-  chrome.runtime.onStartup.addListener(syncWebSummaryContextMenu)
+  syncContextMenus()
+  chrome.runtime.onInstalled.addListener(syncContextMenus)
+  chrome.runtime.onStartup.addListener(syncContextMenus)
   chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === COPY_PAGE_TITLE_MENU_ID) {
+      void copyPageTitleFromContextClick(info, tab).catch(() => undefined)
+      return
+    }
+
     if (info.menuItemId !== WEB_SUMMARY_CONTEXT_MENU_ID) {
       return
     }
