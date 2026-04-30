@@ -1,7 +1,7 @@
 import {
   REQUEST_DATA_STORAGE_KEY,
   transformJsonStringToJson,
-} from '@/lib/legacy-fe-tools/json-string'
+} from '@/lib/fe-tools/json-string'
 import { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import '../../index.css'

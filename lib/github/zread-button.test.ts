@@ -159,24 +159,24 @@ describe('syncZreadButton', () => {
 
   it('preserves existing vscode.dev links on unsupported pages', () => {
     renderGitHubHeader();
-    const legacyAnchor = document.createElement('a');
-    legacyAnchor.href = 'https://vscode.dev/github/Yeachan-Heo/oh-my-codex';
-    legacyAnchor.textContent = 'vscode.dev';
-    document.querySelector('#repository-details-container')?.append(legacyAnchor);
+    const previousAnchor = document.createElement('a');
+    previousAnchor.href = 'https://vscode.dev/github/Yeachan-Heo/oh-my-codex';
+    previousAnchor.textContent = 'vscode.dev';
+    document.querySelector('#repository-details-container')?.append(previousAnchor);
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues')).toBe(false);
 
-    expect(document.querySelector('a[href^="https://vscode.dev/github/"]')).toBe(legacyAnchor);
+    expect(document.querySelector('a[href^="https://vscode.dev/github/"]')).toBe(previousAnchor);
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
   });
 
-  it('removes legacy vscode.dev buttons on unsupported pages', () => {
+  it('removes previous vscode.dev buttons on unsupported pages', () => {
     renderGitHubHeader();
-    const legacyButton = document.createElement('a');
-    legacyButton.href = 'https://vscode.dev/github/Yeachan-Heo/oh-my-codex';
-    legacyButton.textContent = 'vscode.dev';
-    legacyButton.className = 'btn';
-    document.querySelector('#repository-details-container')?.append(legacyButton);
+    const previousButton = document.createElement('a');
+    previousButton.href = 'https://vscode.dev/github/Yeachan-Heo/oh-my-codex';
+    previousButton.textContent = 'vscode.dev';
+    previousButton.className = 'btn';
+    document.querySelector('#repository-details-container')?.append(previousButton);
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues')).toBe(false);
 
@@ -184,20 +184,20 @@ describe('syncZreadButton', () => {
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
   });
 
-  it('removes legacy vscode.dev list items from repository action lists', () => {
+  it('removes previous vscode.dev list items from repository action lists', () => {
     renderGitHubHeader();
     const actionList = document.querySelector('.pagehead-actions');
-    const legacyListItem = document.createElement('li');
-    const legacyButton = document.createElement('a');
-    legacyButton.href = 'https://vscode.dev/github/Yeachan-Heo/oh-my-codex';
-    legacyButton.textContent = 'vscode.dev';
-    legacyButton.className = 'btn';
-    legacyListItem.append(legacyButton);
-    actionList?.append(legacyListItem);
+    const previousListItem = document.createElement('li');
+    const previousButton = document.createElement('a');
+    previousButton.href = 'https://vscode.dev/github/Yeachan-Heo/oh-my-codex';
+    previousButton.textContent = 'vscode.dev';
+    previousButton.className = 'btn';
+    previousListItem.append(previousButton);
+    actionList?.append(previousListItem);
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues')).toBe(false);
 
-    expect(legacyListItem.isConnected).toBe(false);
+    expect(previousListItem.isConnected).toBe(false);
   });
 
   it('preserves unrelated vscode.dev buttons outside the repository header', () => {
@@ -276,13 +276,13 @@ describe('syncZreadButton', () => {
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
   });
 
-  it('removes legacy vscode.dev buttons before rendering the Zread button', () => {
+  it('removes previous vscode.dev buttons before rendering the Zread button', () => {
     renderGitHubHeader();
-    const legacyAnchor = document.createElement('a');
-    legacyAnchor.href = 'https://vscode.dev/github/Yeachan-Heo/oh-my-codex';
-    legacyAnchor.textContent = 'vscode.dev';
-    legacyAnchor.className = 'btn';
-    document.querySelector('#repository-details-container')?.append(legacyAnchor);
+    const previousAnchor = document.createElement('a');
+    previousAnchor.href = 'https://vscode.dev/github/Yeachan-Heo/oh-my-codex';
+    previousAnchor.textContent = 'vscode.dev';
+    previousAnchor.className = 'btn';
+    document.querySelector('#repository-details-container')?.append(previousAnchor);
 
     syncZreadButton(document, '/Yeachan-Heo/oh-my-codex');
 

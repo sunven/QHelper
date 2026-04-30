@@ -22,16 +22,16 @@ interface ModernHistoryOptions<TInput, TOutput> {
 }
 
 /**
- * 旧版历史记录配置选项（兼容旧工具页）
+ * 兼容模式历史记录配置选项
  */
-interface LegacyHistoryOptions {
-  /** 旧版最大历史记录条数配置 */
+interface CompatibilityHistoryOptions {
+  /** 兼容模式最大历史记录条数配置 */
   maxSize?: number;
-  /** 旧版存储键配置 */
+  /** 兼容模式存储键配置 */
   key?: string;
 }
 
-type HistoryOptions<TInput, TOutput> = ModernHistoryOptions<TInput, TOutput> | LegacyHistoryOptions;
+type HistoryOptions<TInput, TOutput> = ModernHistoryOptions<TInput, TOutput> | CompatibilityHistoryOptions;
 
 interface HistoryActions<TInput, TOutput> {
   loading: boolean;
@@ -54,7 +54,7 @@ type ModernHistoryReturn<TInput, TOutput> = HistoryActions<TInput, TOutput> & {
   ) => HistoryEntry<TInput, TOutput>;
 };
 
-type LegacyHistoryReturn<TState> = HistoryActions<TState, TState> & {
+type CompatibilityHistoryReturn<TState> = HistoryActions<TState, TState> & {
   history: TState[];
   addToHistory: (
     item: TState | ToolHistoryItem,
@@ -62,9 +62,9 @@ type LegacyHistoryReturn<TState> = HistoryActions<TState, TState> & {
   ) => HistoryEntry<TState, TState>;
 };
 
-function isLegacyOptions<TInput, TOutput>(
+function isCompatibilityOptions<TInput, TOutput>(
   options: HistoryOptions<TInput, TOutput>,
-): options is LegacyHistoryOptions {
+): options is CompatibilityHistoryOptions {
   return 'maxSize' in options || 'key' in options;
 }
 
@@ -95,8 +95,8 @@ function isLegacyOptions<TInput, TOutput>(
  */
 export function useToolHistory<TState = unknown>(
   toolId: string,
-  options: LegacyHistoryOptions,
-): LegacyHistoryReturn<TState>;
+  options: CompatibilityHistoryOptions,
+): CompatibilityHistoryReturn<TState>;
 export function useToolHistory<TInput = unknown, TOutput = unknown>(
   toolId: string,
   options?: ModernHistoryOptions<TInput, TOutput>,
@@ -104,13 +104,13 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
 export function useToolHistory<TInput = unknown, TOutput = unknown>(
   toolId: string,
   options: HistoryOptions<TInput, TOutput> = {},
-): ModernHistoryReturn<TInput, TOutput> | LegacyHistoryReturn<TInput> {
-  const legacyMode = isLegacyOptions(options);
-  const maxHistory = legacyMode ? options.maxSize ?? 50 : options.maxHistory ?? 50;
-  const storageKey = legacyMode ? options.key ?? 'history' : options.storageKey ?? 'history';
-  const filter = legacyMode ? undefined : options.filter;
-  const serialize = legacyMode ? undefined : options.serialize;
-  const deserialize = legacyMode ? undefined : options.deserialize;
+): ModernHistoryReturn<TInput, TOutput> | CompatibilityHistoryReturn<TInput> {
+  const compatibilityMode = isCompatibilityOptions(options);
+  const maxHistory = compatibilityMode ? options.maxSize ?? 50 : options.maxHistory ?? 50;
+  const storageKey = compatibilityMode ? options.key ?? 'history' : options.storageKey ?? 'history';
+  const filter = compatibilityMode ? undefined : options.filter;
+  const serialize = compatibilityMode ? undefined : options.serialize;
+  const deserialize = compatibilityMode ? undefined : options.deserialize;
 
   const fullStorageKey = `tool_${toolId}_${storageKey}`;
   const [history, setHistory] = useState<HistoryEntry<TInput, TOutput>[]>([]);
@@ -282,7 +282,7 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
     loading,
     /** 添加历史记录 */
     addHistory,
-    /** 兼容旧版 API 的添加历史记录方法 */
+    /** 兼容模式 API 的添加历史记录方法 */
     addToHistory,
     /** 清除所有历史记录 */
     clearHistory,
@@ -296,11 +296,11 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
     getRecent,
   };
 
-  if (legacyMode) {
+  if (compatibilityMode) {
     return {
       ...actions,
       history: history.map((entry) => entry.input as TInput),
-    } as unknown as LegacyHistoryReturn<TInput>;
+    } as unknown as CompatibilityHistoryReturn<TInput>;
   }
 
   return {

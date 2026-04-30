@@ -144,7 +144,7 @@ function findDetailRawLink(doc: Document): HTMLAnchorElement | null {
   );
 }
 
-function findLegacyDetailAnchor(doc: Document, pathname: string): HTMLAnchorElement | null {
+function findBrowseDetailAnchor(doc: Document, pathname: string): HTMLAnchorElement | null {
   const normalizedPathname = normalizeUnpkgPath(pathname);
 
   return (
@@ -176,7 +176,7 @@ function getDetailTarget(
     };
   }
 
-  const currentFileAnchor = findLegacyDetailAnchor(doc, win.location.pathname);
+  const currentFileAnchor = findBrowseDetailAnchor(doc, win.location.pathname);
   if (!currentFileAnchor) {
     return null;
   }

@@ -1,27 +1,27 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 
-export type LegacyTreeData = {
+export type TreeData = {
   id: string
-  children?: LegacyTreeData[]
+  children?: TreeData[]
   [key: string]: unknown
 }
 
-export type LegacyTreeColumn = {
+export type TreeColumn = {
   key: string
   header: string
   width?: string | number
-  render?: (value: unknown, data: LegacyTreeData, index: number, level: number) => ReactNode
+  render?: (value: unknown, data: TreeData, index: number, level: number) => ReactNode
 }
 
 export type TreeTableProps = {
-  data: LegacyTreeData[] | undefined
-  columns: LegacyTreeColumn[]
+  data: TreeData[] | undefined
+  columns: TreeColumn[]
 }
 
 function renderCell(
-  column: LegacyTreeColumn,
-  item: LegacyTreeData,
+  column: TreeColumn,
+  item: TreeData,
   index: number,
   level: number,
 ) {
@@ -34,8 +34,8 @@ function TreeNode({
   columns,
   level,
 }: {
-  item: LegacyTreeData
-  columns: LegacyTreeColumn[]
+  item: TreeData
+  columns: TreeColumn[]
   level: number
 }) {
   const [isExpanded, setIsExpanded] = useState(true)

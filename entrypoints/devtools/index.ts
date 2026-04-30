@@ -2,7 +2,7 @@ import {
   REQUEST_DATA_STORAGE_KEY,
   shouldCaptureJsonRequest,
   type JsonRequestLike,
-} from '@/lib/legacy-fe-tools/json-string'
+} from '@/lib/fe-tools/json-string'
 
 type CapturedRequest = {
   request: chrome.devtools.network.Request['request']

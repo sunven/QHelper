@@ -5,7 +5,7 @@ import {
   ensureCopyPageTitleContextMenu,
 } from './context-menu'
 
-describe('legacy-fe-tools/context-menu', () => {
+describe('fe-tools/context-menu', () => {
   it('creates the copy page title menu after removing stale state', async () => {
     const deps = {
       removeMenu: vi.fn(() => Promise.resolve()),

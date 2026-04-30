@@ -109,7 +109,7 @@ function renderBrowseDetailPage(rawHref: string): HTMLAnchorElement {
   return anchor;
 }
 
-function renderLegacyBrowseDetailPage(assetHref: string, assetLabel = 'current asset'): HTMLAnchorElement {
+function renderCurrentFileBrowseDetailPage(assetHref: string, assetLabel = 'current asset'): HTMLAnchorElement {
   document.head.innerHTML = '<base href="https://www.unpkg.com/browse/react@18.3.1/dist/" />';
   document.body.innerHTML = `
     <main>
@@ -337,7 +337,7 @@ describe('syncUnpkgCopyActions', () => {
 
   it('uses the raw-link href instead of the detail label text for copied URLs', async () => {
     const { syncUnpkgCopyActions } = await loadCopyActions();
-    renderLegacyBrowseDetailPage('/react@18.3.1/dist/styles.css', 'not-the-real-file-name.js');
+    renderCurrentFileBrowseDetailPage('/react@18.3.1/dist/styles.css', 'not-the-real-file-name.js');
 
     syncUnpkgCopyActions(
       createFakeWindow('https://www.unpkg.com/browse/react@18.3.1/dist/styles.css'),

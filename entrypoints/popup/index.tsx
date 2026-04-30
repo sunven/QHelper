@@ -134,7 +134,7 @@ const bookmarksTool: PopupTool = {
   id: 'bookmarks',
   name: '书签',
   description: '查看浏览器书签树。',
-  url: 'legacy-bookmarks.html',
+  url: 'bookmarks.html',
   type: 'jump',
   category: ToolCategory.OTHER,
   searchText: 'bookmarks browser favorites tree other 书签 收藏夹',

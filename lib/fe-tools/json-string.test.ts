@@ -5,7 +5,7 @@ import {
   transformJsonStringToJson,
 } from './json-string'
 
-describe('legacy-fe-tools/json-string', () => {
+describe('fe-tools/json-string', () => {
   it('expands nested object strings', () => {
     expect(transformJsonStringToJson({ payload: '{"a":1}' })).toEqual({
       payload: { a: 1 },

@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
-import { TreeTable, type LegacyTreeData, type TreeTableProps } from './TreeTable'
+import { TreeTable, type TreeData, type TreeTableProps } from './TreeTable'
 
 const columns: TreeTableProps['columns'] = [
   { key: 'title', header: 'Title' },
@@ -21,7 +21,7 @@ const columns: TreeTableProps['columns'] = [
   { key: 'dateGroupModified', header: 'Date Group Modified' },
 ]
 
-const data: LegacyTreeData[] = [
+const data: TreeData[] = [
   {
     id: '1',
     title: 'Folder',
@@ -36,8 +36,8 @@ const data: LegacyTreeData[] = [
   },
 ]
 
-describe('legacy-fe-tools/TreeTable', () => {
-  it('renders old bookmark headers', () => {
+describe('fe-tools/TreeTable', () => {
+  it('renders bookmark table headers', () => {
     render(<TreeTable data={data} columns={columns} />)
 
     for (const header of ['Title', 'URL', 'Date Added', 'Date Last Used', 'Date Group Modified']) {

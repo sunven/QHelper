@@ -1,7 +1,7 @@
 import { expect, test } from '../support/fixtures'
 import { PopupPage } from '../support/page-objects/popup.page'
 
-test.describe('Legacy bookmarks popup placement', () => {
+test.describe('Bookmarks popup placement', () => {
   test('shows bookmarks under other tools without Front Tools section', async ({ popupPage }) => {
     await expect(popupPage.getByLabel('Front Tools')).toHaveCount(0)
 
@@ -17,7 +17,7 @@ test.describe('Legacy bookmarks popup placement', () => {
     await popupPage.getByRole('button', { name: /其他/ }).click()
     const page = await popup.clickTool('bookmarks')
 
-    await expect(page).toHaveURL(`chrome-extension://${extensionId}/legacy-bookmarks.html`)
+    await expect(page).toHaveURL(`chrome-extension://${extensionId}/bookmarks.html`)
     await page.close()
   })
 })

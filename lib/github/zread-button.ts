@@ -1,6 +1,6 @@
 export const ZREAD_BUTTON_ID = 'qhelper-zread-button';
 export const ZREAD_WRAPPER_SELECTOR = '[data-qhelper-zread-wrapper="true"]';
-const LEGACY_VSCODE_URL_PREFIX = 'https://vscode.dev/github/';
+const PREVIOUS_VSCODE_URL_PREFIX = 'https://vscode.dev/github/';
 const REPOSITORY_NWO_META_SELECTOR = 'meta[name="octolytics-dimension-repository_nwo"]';
 const PREFERRED_ACTION_LIST_SELECTORS = [
   '#repository-details-container .pagehead-actions',
@@ -12,7 +12,7 @@ const HEADER_FALLBACK_SELECTORS = [
   '#repository-container-header',
   'main [itemprop="name"]',
 ];
-const LEGACY_VSCODE_HEADER_SELECTORS = [
+const PREVIOUS_VSCODE_HEADER_SELECTORS = [
   '#repository-details-container',
   '#repository-container-header',
   '.Header-item.mr-0.mr-md-3.flex-order-1.flex-md-order-none',
@@ -68,23 +68,23 @@ function removeInjectedZreadButton(doc: Document): void {
   });
 }
 
-function isLegacyVscodeButton(anchor: HTMLAnchorElement): boolean {
+function isPreviousVscodeButton(anchor: HTMLAnchorElement): boolean {
   return (
     anchor.classList.contains('btn') &&
     anchor.textContent?.trim() === 'vscode.dev' &&
-    anchor.href.startsWith(LEGACY_VSCODE_URL_PREFIX)
+    anchor.href.startsWith(PREVIOUS_VSCODE_URL_PREFIX)
   );
 }
 
-function isInLegacyHeaderPlacement(anchor: HTMLAnchorElement): boolean {
-  return LEGACY_VSCODE_HEADER_SELECTORS.some((selector) => anchor.closest(selector) !== null);
+function isInPreviousHeaderPlacement(anchor: HTMLAnchorElement): boolean {
+  return PREVIOUS_VSCODE_HEADER_SELECTORS.some((selector) => anchor.closest(selector) !== null);
 }
 
-export function removeLegacyVscodeButtons(doc: Document): void {
+export function removePreviousVscodeButtons(doc: Document): void {
   doc
-    .querySelectorAll<HTMLAnchorElement>(`a[href^="${LEGACY_VSCODE_URL_PREFIX}"]`)
+    .querySelectorAll<HTMLAnchorElement>(`a[href^="${PREVIOUS_VSCODE_URL_PREFIX}"]`)
     .forEach((anchor) => {
-      if (!isLegacyVscodeButton(anchor)) {
+      if (!isPreviousVscodeButton(anchor)) {
         return;
       }
 
@@ -94,7 +94,7 @@ export function removeLegacyVscodeButtons(doc: Document): void {
         return;
       }
 
-      if (isInLegacyHeaderPlacement(anchor)) {
+      if (isInPreviousHeaderPlacement(anchor)) {
         anchor.remove();
       }
     });
@@ -138,7 +138,7 @@ function findFirstMatch<T extends Element>(doc: Document, selectors: string[]): 
 }
 
 export function syncZreadButton(doc: Document, pathname: string): boolean {
-  removeLegacyVscodeButtons(doc);
+  removePreviousVscodeButtons(doc);
   removeInjectedZreadButton(doc);
 
   const repoCoordinates = getRepositoryCoordinates(doc, pathname);

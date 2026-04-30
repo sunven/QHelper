@@ -8,7 +8,7 @@ import {
   COPY_PAGE_TITLE_MENU_ID,
   copyPageTitleFromContextClick,
   ensureCopyPageTitleContextMenu,
-} from '@/lib/legacy-fe-tools/context-menu'
+} from '@/lib/fe-tools/context-menu'
 import type {
   OpenWebSummaryMessage,
   OpenWebSummaryResponse,

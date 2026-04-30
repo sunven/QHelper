@@ -1,8 +1,8 @@
 import {
   TreeTable,
-  type LegacyTreeData,
+  type TreeData,
   type TreeTableProps,
-} from '@/components/legacy-fe-tools/TreeTable'
+} from '@/components/fe-tools/TreeTable'
 import { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import '../../index.css'
@@ -52,8 +52,8 @@ const columns: TreeTableProps['columns'] = [
   },
 ]
 
-function LegacyBookmarksTool() {
-  const [bookmarks, setBookmarks] = useState<LegacyTreeData[]>([])
+function BookmarksTool() {
+  const [bookmarks, setBookmarks] = useState<TreeData[]>([])
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -63,7 +63,7 @@ function LegacyBookmarksTool() {
       .getTree()
       .then((tree) => {
         if (mounted) {
-          setBookmarks((tree[0]?.children ?? []) as unknown as LegacyTreeData[])
+          setBookmarks((tree[0]?.children ?? []) as unknown as TreeData[])
         }
       })
       .catch((err) => {
@@ -89,5 +89,5 @@ function LegacyBookmarksTool() {
 
 const root = document.getElementById('app')
 if (root) {
-  ReactDOM.createRoot(root).render(<LegacyBookmarksTool />)
+  ReactDOM.createRoot(root).render(<BookmarksTool />)
 }
