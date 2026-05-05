@@ -2,6 +2,7 @@ import { minify } from 'uglify-js';
 
 const UGLIFY_REQUEST_TYPE = 'QHELPER_UGLIFY_MINIFY';
 const UGLIFY_RESULT_TYPE = 'QHELPER_UGLIFY_RESULT';
+const UGLIFY_READY_TYPE = 'QHELPER_UGLIFY_READY';
 
 interface UglifyOptions {
   compress?:
@@ -72,3 +73,5 @@ window.addEventListener('message', (event: MessageEvent<unknown>) => {
     );
   }
 });
+
+window.parent.postMessage({ type: UGLIFY_READY_TYPE }, '*');

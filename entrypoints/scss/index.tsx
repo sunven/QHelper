@@ -9,6 +9,7 @@ import '../../index.css';
 
 const SCSS_REQUEST_TYPE = 'QHELPER_SCSS_COMPILE';
 const SCSS_RESULT_TYPE = 'QHELPER_SCSS_RESULT';
+const SCSS_READY_TYPE = 'QHELPER_SCSS_READY';
 const SANDBOX_PAGE = 'scss-worker.html';
 
 type ScssOutputStyle = 'expanded' | 'compressed';
@@ -27,6 +28,10 @@ interface ScssResultMessage {
   error?: string;
 }
 
+interface ScssReadyMessage {
+  type: typeof SCSS_READY_TYPE;
+}
+
 let sandboxFramePromise: Promise<HTMLIFrameElement> | undefined;
 
 function isScssResultMessage(value: unknown): value is ScssResultMessage {
@@ -36,6 +41,14 @@ function isScssResultMessage(value: unknown): value is ScssResultMessage {
 
   const message = value as Record<string, unknown>;
   return message.type === SCSS_RESULT_TYPE && typeof message.requestId === 'string';
+}
+
+function isScssReadyMessage(value: unknown): value is ScssReadyMessage {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  return (value as Record<string, unknown>).type === SCSS_READY_TYPE;
 }
 
 function createRequestId() {
@@ -61,11 +74,15 @@ function getSandboxFrame() {
 
     function cleanup() {
       window.clearTimeout(timeoutId);
-      iframe.removeEventListener('load', handleLoad);
       iframe.removeEventListener('error', handleError);
+      window.removeEventListener('message', handleReadyMessage);
     }
 
-    function handleLoad() {
+    function handleReadyMessage(event: MessageEvent<unknown>) {
+      if (event.source !== iframe.contentWindow || !isScssReadyMessage(event.data)) {
+        return;
+      }
+
       settled = true;
       cleanup();
       resolve(iframe);
@@ -87,10 +104,10 @@ function getSandboxFrame() {
       cleanup();
       iframe.remove();
       sandboxFramePromise = undefined;
-      reject(new Error('SCSS 编译沙箱加载超时'));
-    }, 5000);
+      reject(new Error('SCSS 编译沙箱初始化超时，请重启开发服务或重新加载扩展'));
+    }, 30000);
 
-    iframe.addEventListener('load', handleLoad);
+    window.addEventListener('message', handleReadyMessage);
     iframe.addEventListener('error', handleError);
     iframe.title = 'scss sandbox';
     iframe.hidden = true;
@@ -140,7 +157,7 @@ async function compileScssInSandbox(input: string, outputStyle: ScssOutputStyle)
     const timeoutId = window.setTimeout(() => {
       cleanup();
       reject(new Error('SCSS 编译超时'));
-    }, 15000);
+    }, 30000);
 
     window.addEventListener('message', handleMessage);
     targetWindow.postMessage(

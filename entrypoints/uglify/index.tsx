@@ -12,6 +12,7 @@ import '../../index.css';
 
 const UGLIFY_REQUEST_TYPE = 'QHELPER_UGLIFY_MINIFY';
 const UGLIFY_RESULT_TYPE = 'QHELPER_UGLIFY_RESULT';
+const UGLIFY_READY_TYPE = 'QHELPER_UGLIFY_READY';
 const SANDBOX_PAGE = 'uglify-worker.html';
 
 interface UglifyOptions {
@@ -39,6 +40,10 @@ interface UglifyResultMessage {
   error?: string;
 }
 
+interface UglifyReadyMessage {
+  type: typeof UGLIFY_READY_TYPE;
+}
+
 let sandboxFramePromise: Promise<HTMLIFrameElement> | undefined;
 
 function isUglifyResultMessage(value: unknown): value is UglifyResultMessage {
@@ -48,6 +53,14 @@ function isUglifyResultMessage(value: unknown): value is UglifyResultMessage {
 
   const message = value as Record<string, unknown>;
   return message.type === UGLIFY_RESULT_TYPE && typeof message.requestId === 'string';
+}
+
+function isUglifyReadyMessage(value: unknown): value is UglifyReadyMessage {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  return (value as Record<string, unknown>).type === UGLIFY_READY_TYPE;
 }
 
 function createRequestId() {
@@ -73,11 +86,15 @@ function getSandboxFrame() {
 
     function cleanup() {
       window.clearTimeout(timeoutId);
-      iframe.removeEventListener('load', handleLoad);
       iframe.removeEventListener('error', handleError);
+      window.removeEventListener('message', handleReadyMessage);
     }
 
-    function handleLoad() {
+    function handleReadyMessage(event: MessageEvent<unknown>) {
+      if (event.source !== iframe.contentWindow || !isUglifyReadyMessage(event.data)) {
+        return;
+      }
+
       settled = true;
       cleanup();
       resolve(iframe);
@@ -99,10 +116,10 @@ function getSandboxFrame() {
       cleanup();
       iframe.remove();
       sandboxFramePromise = undefined;
-      reject(new Error('压缩沙箱加载超时'));
-    }, 5000);
+      reject(new Error('压缩沙箱初始化超时，请重启开发服务或重新加载扩展'));
+    }, 30000);
 
-    iframe.addEventListener('load', handleLoad);
+    window.addEventListener('message', handleReadyMessage);
     iframe.addEventListener('error', handleError);
     iframe.title = 'uglify sandbox';
     iframe.hidden = true;
@@ -152,7 +169,7 @@ async function minifyInSandbox(source: string, options: UglifyOptions): Promise<
     const timeoutId = window.setTimeout(() => {
       cleanup();
       reject(new Error('压缩执行超时'));
-    }, 15000);
+    }, 30000);
 
     window.addEventListener('message', handleMessage);
     targetWindow.postMessage(

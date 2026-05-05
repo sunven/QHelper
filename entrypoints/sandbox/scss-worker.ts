@@ -2,6 +2,7 @@ import * as sass from 'sass';
 
 const SCSS_REQUEST_TYPE = 'QHELPER_SCSS_COMPILE';
 const SCSS_RESULT_TYPE = 'QHELPER_SCSS_RESULT';
+const SCSS_READY_TYPE = 'QHELPER_SCSS_READY';
 
 type ScssOutputStyle = 'expanded' | 'compressed';
 
@@ -59,3 +60,5 @@ window.addEventListener('message', (event: MessageEvent<unknown>) => {
     );
   }
 });
+
+window.parent.postMessage({ type: SCSS_READY_TYPE }, '*');
