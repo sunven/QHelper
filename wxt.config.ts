@@ -57,6 +57,12 @@ export default exports;
 
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
+  dev: {
+    server: {
+      port: 3001,
+      origin: 'localhost',
+    },
+  },
 
   vite: () => ({
     plugins: [uglifyJsBrowserPlugin()],
