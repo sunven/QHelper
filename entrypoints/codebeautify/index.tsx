@@ -7,7 +7,7 @@ import { copyToClipboard } from '../../lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Wand2, Copy, FileCode, FileJson, FileType, Database } from 'lucide-react';
+import { Copy, FileCode, FileJson, FileType, Database } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
 
 type CodeType = 'js' | 'css' | 'html' | 'xml' | 'sql';
@@ -67,25 +67,6 @@ function CodeBeautifyTool() {
   return (
     <ToolPageShell toolId="codebeautify">
       <div className="mx-auto max-w-[1440px] space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border/70 bg-white/72 px-2.5 py-1.5 text-xs text-muted-foreground shadow-sm dark:bg-slate-900/55">
-          <span>
-            源自：
-          {' '}
-            <a
-              href="https://www.baidufe.com/fehelper/codebeautify.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary hover:underline"
-            >
-              https://www.baidufe.com/fehelper/codebeautify.html
-            </a>
-          </span>
-          <div className="flex items-center gap-1.5">
-            <Wand2 className="h-3.5 w-3.5" />
-            <span>选择代码类型并美化</span>
-          </div>
-        </div>
-
         <Card>
           <CardContent className="grid gap-2 pt-3 lg:grid-cols-[1fr_auto_1fr]">
             <div className="space-y-1.5">

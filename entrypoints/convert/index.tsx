@@ -187,18 +187,6 @@ function ConvertTool() {
   return (
     <ToolPageShell toolId="convert">
       <div className="mx-auto max-w-[1520px] space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/70 bg-white/70 px-2.5 py-1.5 text-xs text-muted-foreground dark:bg-slate-900/55">
-          <span>字符串编解码工作台</span>
-          <a
-            href="https://www.baidufe.com/fehelper/endecode.html"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="truncate font-medium text-primary hover:underline"
-          >
-            来源参考
-          </a>
-        </div>
-
         <div className="grid min-h-[calc(100vh-10rem)] gap-2 lg:grid-cols-[minmax(0,1fr)_240px_minmax(0,1fr)]">
           <Card className="min-h-0 overflow-hidden">
             <CardHeader className="border-b border-border/70">

@@ -2,10 +2,17 @@ import { test, expect } from '../support/fixtures';
 import { openToolPage } from '../support/helpers/extension';
 
 test.describe('SCSS Compiler Tool', () => {
-  test('page renders without errors', async ({ context, extensionId }) => {
+  test('compiles SCSS without CSP runtime errors', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'scss');
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
 
     await expect(page.locator('#app')).toBeAttached({ timeout: 10000 });
+    await page.locator('textarea').first().fill('$color: #123456; .box { color: $color; }');
+
+    const output = page.locator('textarea').last();
+    await expect(output).toHaveValue(/color: #123456/);
+    expect(pageErrors).toEqual([]);
 
     await page.close();
   });

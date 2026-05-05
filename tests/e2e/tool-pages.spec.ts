@@ -23,9 +23,9 @@ const toolPages = [
   'password',
   'urlparser',
   'pictureSplicing',
+  'scss',
+  'uglify',
 ];
-
-const toolsWithKnownRuntimeIssue = ['uglify', 'scss'];
 
 test('tool shell uses compact header without legacy hero metadata', async ({ context, extensionId }) => {
   const page = await openToolPage(context, extensionId, 'json');
@@ -83,18 +83,6 @@ for (const toolId of toolPages) {
       const page = await openToolPage(context, extensionId, toolId);
 
       await expect(page.locator('#app').first()).toBeVisible();
-
-      await page.close();
-    });
-  });
-}
-
-for (const toolId of toolsWithKnownRuntimeIssue) {
-  test.describe(`${toolId} tool page`, () => {
-    test('page renders', async ({ context, extensionId }) => {
-      const page = await openToolPage(context, extensionId, toolId);
-
-      await expect(page.locator('#app')).toBeAttached({ timeout: 10000 });
 
       await page.close();
     });

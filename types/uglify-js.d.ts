@@ -27,6 +27,8 @@ declare module 'uglify-js' {
     minify(code: string, options?: UglifyJSOptions): UglifyJSResult;
   }
 
+  export function minify(code: string, options?: UglifyJSOptions): UglifyJSResult;
+
   const uglify: UglifyJS;
   export default uglify;
 }

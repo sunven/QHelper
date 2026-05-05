@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
-import uglify from 'uglify-js';
 import { copyToClipboard } from '../../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,21 +10,182 @@ import { Zap, Copy, Play } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
 
+const UGLIFY_REQUEST_TYPE = 'QHELPER_UGLIFY_MINIFY';
+const UGLIFY_RESULT_TYPE = 'QHELPER_UGLIFY_RESULT';
+const SANDBOX_PAGE = 'uglify-worker.html';
+
+interface UglifyOptions {
+  compress?:
+    | boolean
+    | {
+        drop_console?: boolean;
+        drop_debugger?: boolean;
+      };
+  mangle?:
+    | boolean
+    | {
+        reserved?: string[];
+      };
+  output?: {
+    beautify?: boolean;
+    comments?: boolean;
+  };
+}
+
+interface UglifyResultMessage {
+  type: typeof UGLIFY_RESULT_TYPE;
+  requestId: string;
+  code?: string;
+  error?: string;
+}
+
+let sandboxFramePromise: Promise<HTMLIFrameElement> | undefined;
+
+function isUglifyResultMessage(value: unknown): value is UglifyResultMessage {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const message = value as Record<string, unknown>;
+  return message.type === UGLIFY_RESULT_TYPE && typeof message.requestId === 'string';
+}
+
+function createRequestId() {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function getSandboxUrl() {
+  if (!chrome?.runtime?.getURL) {
+    throw new Error('当前环境不支持扩展沙箱');
+  }
+
+  return chrome.runtime.getURL(SANDBOX_PAGE);
+}
+
+function getSandboxFrame() {
+  if (sandboxFramePromise) {
+    return sandboxFramePromise;
+  }
+
+  sandboxFramePromise = new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    let settled = false;
+
+    function cleanup() {
+      window.clearTimeout(timeoutId);
+      iframe.removeEventListener('load', handleLoad);
+      iframe.removeEventListener('error', handleError);
+    }
+
+    function handleLoad() {
+      settled = true;
+      cleanup();
+      resolve(iframe);
+    }
+
+    function handleError() {
+      settled = true;
+      cleanup();
+      iframe.remove();
+      sandboxFramePromise = undefined;
+      reject(new Error('压缩沙箱加载失败'));
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      if (settled) {
+        return;
+      }
+
+      cleanup();
+      iframe.remove();
+      sandboxFramePromise = undefined;
+      reject(new Error('压缩沙箱加载超时'));
+    }, 5000);
+
+    iframe.addEventListener('load', handleLoad);
+    iframe.addEventListener('error', handleError);
+    iframe.title = 'uglify sandbox';
+    iframe.hidden = true;
+    iframe.src = getSandboxUrl();
+    document.body.appendChild(iframe);
+  });
+
+  return sandboxFramePromise;
+}
+
+async function minifyInSandbox(source: string, options: UglifyOptions): Promise<string> {
+  const iframe = await getSandboxFrame();
+  const targetWindow = iframe.contentWindow;
+
+  if (!targetWindow) {
+    sandboxFramePromise = undefined;
+    throw new Error('压缩沙箱不可用');
+  }
+
+  const requestId = createRequestId();
+
+  return new Promise((resolve, reject) => {
+    function cleanup() {
+      window.clearTimeout(timeoutId);
+      window.removeEventListener('message', handleMessage);
+    }
+
+    function handleMessage(event: MessageEvent<unknown>) {
+      if (event.source !== targetWindow || !isUglifyResultMessage(event.data)) {
+        return;
+      }
+
+      if (event.data.requestId !== requestId) {
+        return;
+      }
+
+      cleanup();
+
+      if (event.data.error) {
+        reject(new Error(event.data.error));
+        return;
+      }
+
+      resolve(event.data.code ?? '');
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error('压缩执行超时'));
+    }, 15000);
+
+    window.addEventListener('message', handleMessage);
+    targetWindow.postMessage(
+      {
+        type: UGLIFY_REQUEST_TYPE,
+        requestId,
+        source,
+        options,
+      },
+      '*',
+    );
+  });
+}
+
 function UglifyTool() {
   const [source, setSource] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
   const [mangle, setMangle] = useState(true);
   const [compress, setCompress] = useState(true);
+  const [isRunning, setIsRunning] = useState(false);
 
-  function doUglify() {
+  async function doUglify() {
     if (!source.trim()) {
       setError('请输入代码');
       return;
     }
 
+    setIsRunning(true);
+    setError('');
+
     try {
-      const result = uglify(source, {
+      const code = await minifyInSandbox(source, {
         compress: {
           drop_console: false,
           drop_debugger: false,
@@ -41,16 +201,12 @@ function UglifyTool() {
         },
       });
 
-      if (result.error) {
-        setError(result.error.message);
-        setOutput('');
-      } else {
-        setError('');
-        setOutput(result.code);
-      }
+      setOutput(code);
     } catch (e) {
       setError(e instanceof Error ? e.message : '未知错误');
       setOutput('');
+    } finally {
+      setIsRunning(false);
     }
   }
 
@@ -85,9 +241,9 @@ function UglifyTool() {
               <span className="text-sm">Compress（去除空格和注释）</span>
             </label>
 
-            <Button onClick={doUglify} size="sm" className="ml-auto">
+            <Button onClick={doUglify} size="sm" className="ml-auto" disabled={isRunning}>
               <Play className="w-4 h-4 mr-2" />
-              执行压缩
+              {isRunning ? '压缩中' : '执行压缩'}
             </Button>
           </CardContent>
         </Card>

@@ -1,6 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
-import * as sass from 'sass';
 import { Copy, Download, FileJson, FileCode, Zap } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
@@ -8,11 +7,152 @@ import type { ToolHistoryItem } from '../../types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
 import '../../index.css';
 
+const SCSS_REQUEST_TYPE = 'QHELPER_SCSS_COMPILE';
+const SCSS_RESULT_TYPE = 'QHELPER_SCSS_RESULT';
+const SANDBOX_PAGE = 'scss-worker.html';
+
+type ScssOutputStyle = 'expanded' | 'compressed';
+
 interface ScssState {
   input: string;
   output: string;
-  outputStyle: 'expanded' | 'compressed';
+  outputStyle: ScssOutputStyle;
   error: string | null;
+}
+
+interface ScssResultMessage {
+  type: typeof SCSS_RESULT_TYPE;
+  requestId: string;
+  css?: string;
+  error?: string;
+}
+
+let sandboxFramePromise: Promise<HTMLIFrameElement> | undefined;
+
+function isScssResultMessage(value: unknown): value is ScssResultMessage {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const message = value as Record<string, unknown>;
+  return message.type === SCSS_RESULT_TYPE && typeof message.requestId === 'string';
+}
+
+function createRequestId() {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function getSandboxUrl() {
+  if (!chrome?.runtime?.getURL) {
+    throw new Error('当前环境不支持扩展沙箱');
+  }
+
+  return chrome.runtime.getURL(SANDBOX_PAGE);
+}
+
+function getSandboxFrame() {
+  if (sandboxFramePromise) {
+    return sandboxFramePromise;
+  }
+
+  sandboxFramePromise = new Promise((resolve, reject) => {
+    const iframe = document.createElement('iframe');
+    let settled = false;
+
+    function cleanup() {
+      window.clearTimeout(timeoutId);
+      iframe.removeEventListener('load', handleLoad);
+      iframe.removeEventListener('error', handleError);
+    }
+
+    function handleLoad() {
+      settled = true;
+      cleanup();
+      resolve(iframe);
+    }
+
+    function handleError() {
+      settled = true;
+      cleanup();
+      iframe.remove();
+      sandboxFramePromise = undefined;
+      reject(new Error('SCSS 编译沙箱加载失败'));
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      if (settled) {
+        return;
+      }
+
+      cleanup();
+      iframe.remove();
+      sandboxFramePromise = undefined;
+      reject(new Error('SCSS 编译沙箱加载超时'));
+    }, 5000);
+
+    iframe.addEventListener('load', handleLoad);
+    iframe.addEventListener('error', handleError);
+    iframe.title = 'scss sandbox';
+    iframe.hidden = true;
+    iframe.src = getSandboxUrl();
+    document.body.appendChild(iframe);
+  });
+
+  return sandboxFramePromise;
+}
+
+async function compileScssInSandbox(input: string, outputStyle: ScssOutputStyle): Promise<string> {
+  const iframe = await getSandboxFrame();
+  const targetWindow = iframe.contentWindow;
+
+  if (!targetWindow) {
+    sandboxFramePromise = undefined;
+    throw new Error('SCSS 编译沙箱不可用');
+  }
+
+  const requestId = createRequestId();
+
+  return new Promise((resolve, reject) => {
+    function cleanup() {
+      window.clearTimeout(timeoutId);
+      window.removeEventListener('message', handleMessage);
+    }
+
+    function handleMessage(event: MessageEvent<unknown>) {
+      if (event.source !== targetWindow || !isScssResultMessage(event.data)) {
+        return;
+      }
+
+      if (event.data.requestId !== requestId) {
+        return;
+      }
+
+      cleanup();
+
+      if (event.data.error) {
+        reject(new Error(event.data.error));
+        return;
+      }
+
+      resolve(event.data.css ?? '');
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error('SCSS 编译超时'));
+    }, 15000);
+
+    window.addEventListener('message', handleMessage);
+    targetWindow.postMessage(
+      {
+        type: SCSS_REQUEST_TYPE,
+        requestId,
+        input,
+        outputStyle,
+      },
+      '*',
+    );
+  });
 }
 
 function ScssCompiler() {
@@ -41,16 +181,33 @@ $font-size: 16px;
 
   // 编译 SCSS
   useEffect(() => {
-    try {
-      const result = sass.compileString(state.input, {
-        style: state.outputStyle === 'compressed' ? 'compressed' : 'expanded',
-        syntax: 'scss',
-      });
-      setState((prev) => ({ ...prev, output: result.css, error: null }));
-    } catch (err) {
-      const message = err instanceof Error ? err.message : '未知错误';
-      setState((prev) => ({ ...prev, error: message, output: '' }));
+    if (!state.input.trim()) {
+      setState((prev) => ({ ...prev, output: '', error: null }));
+      return;
     }
+
+    let active = true;
+
+    compileScssInSandbox(state.input, state.outputStyle)
+      .then((css) => {
+        if (!active) {
+          return;
+        }
+
+        setState((prev) => ({ ...prev, output: css, error: null }));
+      })
+      .catch((err) => {
+        if (!active) {
+          return;
+        }
+
+        const message = err instanceof Error ? err.message : '未知错误';
+        setState((prev) => ({ ...prev, error: message, output: '' }));
+      });
+
+    return () => {
+      active = false;
+    };
   }, [state.input, state.outputStyle]);
 
   const handleInputChange = useCallback((value: string) => {
@@ -95,7 +252,7 @@ $font-size: 16px;
               <label className="text-xs text-slate-600 dark:text-slate-400">输出格式</label>
               <select
                 value={state.outputStyle}
-                onChange={(e) => setState((prev) => ({ ...prev, outputStyle: e.target.value as 'expanded' | 'compressed' }))}
+                onChange={(e) => setState((prev) => ({ ...prev, outputStyle: e.target.value as ScssOutputStyle }))}
                 className="h-8 rounded-md bg-slate-100 px-2 text-sm text-slate-700 dark:bg-slate-700 dark:text-slate-300"
               >
                 <option value="expanded">展开格式</option>

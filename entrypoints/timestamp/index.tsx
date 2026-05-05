@@ -70,18 +70,6 @@ function TimestampTool() {
   return (
     <ToolPageShell toolId="timestamp">
       <div className="mx-auto max-w-[1200px] space-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-border/70 bg-white/70 px-2.5 py-1.5 text-xs text-muted-foreground dark:bg-slate-900/55">
-          <span>时间戳转换工作台</span>
-          <a
-            href="https://github.com/zxlie/FeHelper"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-primary hover:underline"
-          >
-            来源参考
-          </a>
-        </div>
-
           {/* 当前时间 */}
           <Card>
             <CardHeader className="border-b border-border/70">
