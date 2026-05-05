@@ -60,6 +60,9 @@ export default defineConfig({
 
   vite: () => ({
     plugins: [uglifyJsBrowserPlugin()],
+    server: {
+      cors: true,
+    },
     optimizeDeps: {
       exclude: ['uglify-js'],
     },

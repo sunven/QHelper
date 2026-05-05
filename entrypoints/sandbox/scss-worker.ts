@@ -1,5 +1,3 @@
-import * as sass from 'sass';
-
 const SCSS_REQUEST_TYPE = 'QHELPER_SCSS_COMPILE';
 const SCSS_RESULT_TYPE = 'QHELPER_SCSS_RESULT';
 const SCSS_READY_TYPE = 'QHELPER_SCSS_READY';
@@ -12,6 +10,10 @@ interface ScssRequestMessage {
   input: string;
   outputStyle: ScssOutputStyle;
 }
+
+type SassModule = typeof import('sass');
+
+let sassModulePromise: Promise<SassModule> | undefined;
 
 function isScssRequestMessage(value: unknown): value is ScssRequestMessage {
   if (!value || typeof value !== 'object') {
@@ -27,7 +29,12 @@ function isScssRequestMessage(value: unknown): value is ScssRequestMessage {
   );
 }
 
-window.addEventListener('message', (event: MessageEvent<unknown>) => {
+function getSassModule() {
+  sassModulePromise ??= import('sass');
+  return sassModulePromise;
+}
+
+window.addEventListener('message', async (event: MessageEvent<unknown>) => {
   if (event.source !== window.parent || !isScssRequestMessage(event.data)) {
     return;
   }
@@ -36,6 +43,7 @@ window.addEventListener('message', (event: MessageEvent<unknown>) => {
   const targetOrigin = event.origin === 'null' ? '*' : event.origin;
 
   try {
+    const sass = await getSassModule();
     const result = sass.compileString(input, {
       style: outputStyle,
       syntax: 'scss',

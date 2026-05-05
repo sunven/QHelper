@@ -1,5 +1,3 @@
-import { minify } from 'uglify-js';
-
 const UGLIFY_REQUEST_TYPE = 'QHELPER_UGLIFY_MINIFY';
 const UGLIFY_RESULT_TYPE = 'QHELPER_UGLIFY_RESULT';
 const UGLIFY_READY_TYPE = 'QHELPER_UGLIFY_READY';
@@ -29,6 +27,10 @@ interface UglifyRequestMessage {
   options?: UglifyOptions;
 }
 
+type UglifyModule = typeof import('uglify-js');
+
+let uglifyModulePromise: Promise<UglifyModule> | undefined;
+
 function isUglifyRequestMessage(value: unknown): value is UglifyRequestMessage {
   if (!value || typeof value !== 'object') {
     return false;
@@ -42,7 +44,12 @@ function isUglifyRequestMessage(value: unknown): value is UglifyRequestMessage {
   );
 }
 
-window.addEventListener('message', (event: MessageEvent<unknown>) => {
+function getUglifyModule() {
+  uglifyModulePromise ??= import('uglify-js');
+  return uglifyModulePromise;
+}
+
+window.addEventListener('message', async (event: MessageEvent<unknown>) => {
   if (event.source !== window.parent || !isUglifyRequestMessage(event.data)) {
     return;
   }
@@ -51,6 +58,7 @@ window.addEventListener('message', (event: MessageEvent<unknown>) => {
   const targetOrigin = event.origin === 'null' ? '*' : event.origin;
 
   try {
+    const { minify } = await getUglifyModule();
     const result = minify(source, options);
 
     window.parent.postMessage(
