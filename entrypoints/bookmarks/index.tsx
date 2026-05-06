@@ -4,14 +4,22 @@ import {
   type TreeTableProps,
 } from '@/components/fe-tools/TreeTable'
 import {
+  checkBookmarkUrls,
+  collectBookmarkUrlTargets,
+  type BookmarkLinkCheckResult,
+  type BookmarkLinkCheckStatus,
+} from '@/lib/bookmarks/dead-link-checker'
+import {
   Check,
   ChevronsDownUp,
   ChevronsUpDown,
   Copy,
+  Link,
+  Loader2,
   Search,
   X,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import '../../index.css'
 
@@ -97,6 +105,85 @@ function renderDate(value: unknown) {
   }
 
   return value ? new Date(value).toLocaleString() : ''
+}
+
+type BookmarkLinkCheckState = {
+  completed: number
+  isChecking: boolean
+  results: Record<string, BookmarkLinkCheckResult>
+  total: number
+}
+
+const initialLinkCheckState: BookmarkLinkCheckState = {
+  completed: 0,
+  isChecking: false,
+  results: {},
+  total: 0,
+}
+
+const statusLabel: Record<BookmarkLinkCheckStatus, string> = {
+  blocked: 'Blocked',
+  broken: 'Broken',
+  error: 'Error',
+  ok: 'OK',
+  pending: 'Checking',
+  skipped: 'Skipped',
+  unchecked: 'Unchecked',
+}
+
+const statusClassName: Record<BookmarkLinkCheckStatus, string> = {
+  blocked: 'border-amber-200 bg-amber-50 text-amber-700',
+  broken: 'border-red-200 bg-red-50 text-red-700',
+  error: 'border-red-200 bg-red-50 text-red-700',
+  ok: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  pending: 'border-blue-200 bg-blue-50 text-blue-700',
+  skipped: 'border-slate-200 bg-slate-50 text-slate-500',
+  unchecked: 'border-slate-200 bg-slate-50 text-slate-500',
+}
+
+function getBookmarkLinkStatusSummary(
+  results: Record<string, BookmarkLinkCheckResult>,
+) {
+  const summary: Record<BookmarkLinkCheckStatus, number> = {
+    blocked: 0,
+    broken: 0,
+    error: 0,
+    ok: 0,
+    pending: 0,
+    skipped: 0,
+    unchecked: 0,
+  }
+
+  for (const result of Object.values(results)) {
+    summary[result.status] += 1
+  }
+
+  return summary
+}
+
+function BookmarkLinkStatusCell({
+  result,
+  status,
+}: {
+  result: BookmarkLinkCheckResult | undefined
+  status: BookmarkLinkCheckStatus
+}) {
+  const detail = result
+    ? result.statusCode
+      ? `${statusLabel[status]} ${result.statusCode}`
+      : result.reason
+        ? `${statusLabel[status]}: ${result.reason}`
+        : statusLabel[status]
+    : statusLabel[status]
+
+  return (
+    <span
+      className={`inline-flex max-w-full items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${statusClassName[status]}`}
+      title={detail}
+    >
+      <span className="truncate">{detail}</span>
+    </span>
+  )
 }
 
 function BookmarkCopyButton({
@@ -193,7 +280,10 @@ function BookmarkUrlCell({
   )
 }
 
-function buildColumns(searchQuery: string): TreeTableProps['columns'] {
+function buildColumns(
+  searchQuery: string,
+  linkCheck: BookmarkLinkCheckState,
+): TreeTableProps['columns'] {
   return [
     {
       key: 'title',
@@ -218,6 +308,22 @@ function buildColumns(searchQuery: string): TreeTableProps['columns'] {
         const url = String(value)
 
         return <BookmarkUrlCell searchQuery={searchQuery} url={url} />
+      },
+    },
+    {
+      key: 'linkStatus',
+      header: 'Status',
+      width: '130px',
+      render(_value, data) {
+        if (!data.url) {
+          return ''
+        }
+
+        const result = linkCheck.results[data.id]
+        const status =
+          result?.status ?? (linkCheck.isChecking ? 'pending' : 'unchecked')
+
+        return <BookmarkLinkStatusCell result={result} status={status} />
       },
     },
     {
@@ -247,6 +353,10 @@ function BookmarksTool() {
   const [expandSignal, setExpandSignal] = useState(0)
   const [collapseSignal, setCollapseSignal] = useState(0)
   const [error, setError] = useState('')
+  const [linkCheck, setLinkCheck] = useState<BookmarkLinkCheckState>(
+    initialLinkCheckState,
+  )
+  const linkCheckRunId = useRef(0)
   const normalizedSearchQuery = normalizeSearchQuery(searchQuery)
   const filteredBookmarks = useMemo(
     () => filterBookmarkTree(bookmarks, searchQuery),
@@ -257,8 +367,75 @@ function BookmarksTool() {
     [filteredBookmarks],
   )
   const totalNodeCount = useMemo(() => countTreeNodes(bookmarks), [bookmarks])
-  const columns = useMemo(() => buildColumns(searchQuery), [searchQuery])
+  const linkTargets = useMemo(
+    () => collectBookmarkUrlTargets(filteredBookmarks),
+    [filteredBookmarks],
+  )
+  const linkStatusSummary = useMemo(
+    () => getBookmarkLinkStatusSummary(linkCheck.results),
+    [linkCheck.results],
+  )
+  const problemCount =
+    linkStatusSummary.blocked +
+    linkStatusSummary.broken +
+    linkStatusSummary.error
+  const columns = useMemo(
+    () => buildColumns(searchQuery, linkCheck),
+    [linkCheck, searchQuery],
+  )
   const hasSearch = normalizedSearchQuery.length > 0
+
+  const handleCheckDeadLinks = useCallback(async () => {
+    const currentRunId = linkCheckRunId.current + 1
+    linkCheckRunId.current = currentRunId
+
+    const pendingResults = Object.fromEntries(
+      linkTargets.map((target) => [
+        target.id,
+        {
+          checkedAt: Date.now(),
+          id: target.id,
+          status: 'pending' as const,
+          url: target.url,
+        },
+      ]),
+    )
+
+    setLinkCheck({
+      completed: 0,
+      isChecking: linkTargets.length > 0,
+      results: pendingResults,
+      total: linkTargets.length,
+    })
+
+    if (linkTargets.length === 0) {
+      return
+    }
+
+    await checkBookmarkUrls(linkTargets, {
+      onProgress(result) {
+        if (linkCheckRunId.current !== currentRunId) {
+          return
+        }
+
+        setLinkCheck((current) => ({
+          ...current,
+          completed: current.completed + 1,
+          results: {
+            ...current.results,
+            [result.id]: result,
+          },
+        }))
+      },
+    })
+
+    if (linkCheckRunId.current === currentRunId) {
+      setLinkCheck((current) => ({
+        ...current,
+        isChecking: false,
+      }))
+    }
+  }, [linkTargets])
 
   useEffect(() => {
     let mounted = true
@@ -316,6 +493,20 @@ function BookmarksTool() {
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
+              aria-label="Check dead links"
+              title="Check dead links"
+              onClick={() => void handleCheckDeadLinks()}
+              disabled={linkCheck.isChecking}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 disabled:pointer-events-none disabled:opacity-60"
+            >
+              {linkCheck.isChecking ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Link className="h-4 w-4" />
+              )}
+            </button>
+            <button
+              type="button"
               aria-label="Expand all bookmarks"
               title="Expand all"
               onClick={() => setExpandSignal((value) => value + 1)}
@@ -333,12 +524,18 @@ function BookmarksTool() {
               <ChevronsDownUp className="h-4 w-4" />
             </button>
             <div
-              className="min-w-16 text-right text-xs text-slate-500"
+              className="min-w-28 text-right text-xs text-slate-500"
               aria-live="polite"
             >
-              {hasSearch
-                ? `${filteredNodeCount} shown`
-                : `${totalNodeCount} items`}
+              {linkCheck.isChecking
+                ? `${linkCheck.completed}/${linkCheck.total} checked`
+                : linkCheck.total > 0
+                  ? problemCount > 0
+                    ? `${problemCount} issues`
+                    : `${linkCheck.total} checked`
+                  : hasSearch
+                    ? `${filteredNodeCount} shown`
+                    : `${totalNodeCount} items`}
             </div>
           </div>
         </div>

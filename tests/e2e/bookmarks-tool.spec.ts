@@ -199,7 +199,7 @@ test.describe('Bookmarks tool', () => {
           value: {
             writeText: (value: string) =>
               (
-                window as Window & {
+                window as unknown as Window & {
                   captureCopiedBookmarkText: (copiedValue: string) => Promise<void>
                 }
               ).captureCopiedBookmarkText(value),
@@ -271,6 +271,60 @@ test.describe('Bookmarks tool', () => {
 
       await page.getByRole('button', { name: 'Expand all bookmarks' }).click()
       await expect(page.getByText('QHelper expand collapse child')).toBeVisible()
+    } finally {
+      if (testFolderId) {
+        await page.evaluate((folderId) => chrome.bookmarks.removeTree(folderId), testFolderId)
+      }
+
+      await page.close()
+    }
+  })
+
+  test('checks visible bookmark URLs for dead links', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    let testFolderId = ''
+    const targetUrl = 'https://example.com/qhelper-dead-link-check'
+
+    await page.route(targetUrl, async (route) => {
+      await route.fulfill({
+        status: 404,
+        body: 'missing',
+      })
+    })
+
+    await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
+
+    try {
+      testFolderId = await page.evaluate(async (url) => {
+        const root = await chrome.bookmarks.getTree()
+        const parentId = root[0]?.children?.[0]?.id
+
+        if (!parentId) {
+          throw new Error('No writable bookmarks parent found')
+        }
+
+        const folder = await chrome.bookmarks.create({
+          parentId,
+          title: 'QHelper dead link check folder',
+        })
+
+        await chrome.bookmarks.create({
+          parentId: folder.id,
+          title: 'QHelper dead link check target',
+          url,
+        })
+
+        return folder.id
+      }, targetUrl)
+
+      await page.reload()
+      await page
+        .getByRole('searchbox', { name: 'Search bookmarks' })
+        .fill('dead link check target')
+      await page.getByRole('button', { name: 'Check dead links' }).click()
+
+      await expect(page.getByText('Broken 404')).toBeVisible()
+      await expect(page.getByText('1 issues')).toBeVisible()
     } finally {
       if (testFolderId) {
         await page.evaluate((folderId) => chrome.bookmarks.removeTree(folderId), testFolderId)
