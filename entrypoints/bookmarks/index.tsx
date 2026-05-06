@@ -17,6 +17,7 @@ import {
   Link,
   Loader2,
   Search,
+  Trash2,
   X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -60,6 +61,57 @@ function countTreeNodes(items: TreeData[]): number {
     (total, item) => total + 1 + countTreeNodes(item.children ?? []),
     0,
   )
+}
+
+function removeBookmarkFromTree(items: TreeData[], id: string): TreeData[] {
+  return items.flatMap((item) => {
+    if (item.id === id) {
+      return []
+    }
+
+    if (!item.children) {
+      return [item]
+    }
+
+    return [{ ...item, children: removeBookmarkFromTree(item.children, id) }]
+  })
+}
+
+function findBookmarkInTree(
+  items: TreeData[],
+  id: string,
+): TreeData | undefined {
+  for (const item of items) {
+    if (item.id === id) {
+      return item
+    }
+
+    const childMatch = findBookmarkInTree(item.children ?? [], id)
+
+    if (childMatch) {
+      return childMatch
+    }
+  }
+
+  return undefined
+}
+
+function removeBookmarkLinkResults(
+  results: Record<string, BookmarkLinkCheckResult>,
+  item: TreeData,
+): Record<string, BookmarkLinkCheckResult> {
+  const nextResults = { ...results }
+
+  function visit(node: TreeData) {
+    delete nextResults[node.id]
+
+    for (const child of node.children ?? []) {
+      visit(child)
+    }
+  }
+
+  visit(item)
+  return nextResults
 }
 
 function renderHighlightedText(value: string, query: string) {
@@ -280,9 +332,40 @@ function BookmarkUrlCell({
   )
 }
 
+function BookmarkActionsCell({
+  deleting,
+  item,
+  onDelete,
+}: {
+  deleting: boolean
+  item: TreeData
+  onDelete: (item: TreeData) => void
+}) {
+  const title = String(item.title || item.url || 'bookmark')
+
+  return (
+    <button
+      type="button"
+      aria-label={`Delete bookmark ${title}`}
+      title={`Delete ${title}`}
+      onClick={() => onDelete(item)}
+      disabled={deleting}
+      className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:pointer-events-none disabled:opacity-60"
+    >
+      {deleting ? (
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      ) : (
+        <Trash2 className="h-3.5 w-3.5" />
+      )}
+    </button>
+  )
+}
+
 function buildColumns(
   searchQuery: string,
   linkCheck: BookmarkLinkCheckState,
+  deletingBookmarkId: string | null,
+  onDeleteBookmark: (item: TreeData) => void,
 ): TreeTableProps['columns'] {
   return [
     {
@@ -344,6 +427,20 @@ function buildColumns(
       width: '200px',
       render: renderDate,
     },
+    {
+      key: 'actions',
+      header: 'Actions',
+      width: '88px',
+      render(_value, data) {
+        return (
+          <BookmarkActionsCell
+            deleting={deletingBookmarkId === data.id}
+            item={data}
+            onDelete={onDeleteBookmark}
+          />
+        )
+      },
+    },
   ]
 }
 
@@ -355,6 +452,9 @@ function BookmarksTool() {
   const [error, setError] = useState('')
   const [linkCheck, setLinkCheck] = useState<BookmarkLinkCheckState>(
     initialLinkCheckState,
+  )
+  const [deletingBookmarkId, setDeletingBookmarkId] = useState<string | null>(
+    null,
   )
   const linkCheckRunId = useRef(0)
   const normalizedSearchQuery = normalizeSearchQuery(searchQuery)
@@ -379,11 +479,63 @@ function BookmarksTool() {
     linkStatusSummary.blocked +
     linkStatusSummary.broken +
     linkStatusSummary.error
-  const columns = useMemo(
-    () => buildColumns(searchQuery, linkCheck),
-    [linkCheck, searchQuery],
-  )
   const hasSearch = normalizedSearchQuery.length > 0
+
+  const handleDeleteBookmark = useCallback(
+    async (item: TreeData) => {
+      const fullItem = findBookmarkInTree(bookmarks, item.id) ?? item
+      const title = String(fullItem.title || fullItem.url || 'bookmark')
+      const isFolder = Boolean(fullItem.children)
+      const confirmed = window.confirm(
+        isFolder
+          ? `Delete bookmark folder "${title}" and all of its contents?`
+          : `Delete bookmark "${title}"?`,
+      )
+
+      if (!confirmed) {
+        return
+      }
+
+      setDeletingBookmarkId(fullItem.id)
+      setError('')
+
+      try {
+        if (isFolder) {
+          await chrome.bookmarks.removeTree(fullItem.id)
+        } else {
+          await chrome.bookmarks.remove(fullItem.id)
+        }
+
+        linkCheckRunId.current += 1
+        setBookmarks((current) => removeBookmarkFromTree(current, fullItem.id))
+        setLinkCheck((current) => ({
+          ...current,
+          isChecking: false,
+          results: removeBookmarkLinkResults(current.results, fullItem),
+        }))
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : 'Failed to delete bookmark',
+        )
+      } finally {
+        setDeletingBookmarkId((current) =>
+          current === fullItem.id ? null : current,
+        )
+      }
+    },
+    [bookmarks],
+  )
+
+  const columns = useMemo(
+    () =>
+      buildColumns(
+        searchQuery,
+        linkCheck,
+        deletingBookmarkId,
+        handleDeleteBookmark,
+      ),
+    [deletingBookmarkId, handleDeleteBookmark, linkCheck, searchQuery],
+  )
 
   const handleCheckDeadLinks = useCallback(async () => {
     const currentRunId = linkCheckRunId.current + 1

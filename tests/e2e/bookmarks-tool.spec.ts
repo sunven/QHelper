@@ -5,7 +5,15 @@ test.describe('Bookmarks tool', () => {
     const page = await context.newPage()
     await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
 
-    for (const header of ['Title', 'URL', 'Date Added', 'Date Last Used', 'Date Group Modified']) {
+    for (const header of [
+      'Title',
+      'URL',
+      'Status',
+      'Date Added',
+      'Date Last Used',
+      'Date Group Modified',
+      'Actions',
+    ]) {
       await expect(page.getByRole('columnheader', { name: header })).toBeVisible()
     }
 
@@ -328,6 +336,82 @@ test.describe('Bookmarks tool', () => {
     } finally {
       if (testFolderId) {
         await page.evaluate((folderId) => chrome.bookmarks.removeTree(folderId), testFolderId)
+      }
+
+      await page.close()
+    }
+  })
+
+  test('deletes a bookmark from the actions column', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    let testFolderId = ''
+    let bookmarkId = ''
+    const targetTitle = 'QHelper delete action target'
+
+    await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
+
+    try {
+      const created = await page.evaluate(async (title) => {
+        const root = await chrome.bookmarks.getTree()
+        const parentId = root[0]?.children?.[0]?.id
+
+        if (!parentId) {
+          throw new Error('No writable bookmarks parent found')
+        }
+
+        const folder = await chrome.bookmarks.create({
+          parentId,
+          title: 'QHelper delete action folder',
+        })
+
+        const bookmark = await chrome.bookmarks.create({
+          parentId: folder.id,
+          title,
+          url: 'https://example.com/delete-action-target',
+        })
+
+        return {
+          bookmarkId: bookmark.id,
+          folderId: folder.id,
+        }
+      }, targetTitle)
+      testFolderId = created.folderId
+      bookmarkId = created.bookmarkId
+
+      await page.reload()
+      await expect(page.getByText(targetTitle)).toBeVisible()
+
+      page.once('dialog', async (dialog) => {
+        expect(dialog.message()).toContain(targetTitle)
+        await dialog.accept()
+      })
+
+      await page
+        .getByRole('button', { name: `Delete bookmark ${targetTitle}` })
+        .click()
+
+      await expect(page.getByText(targetTitle)).toHaveCount(0)
+      await expect
+        .poll(() =>
+          page.evaluate(async (id) => {
+            try {
+              await chrome.bookmarks.get(id)
+              return true
+            } catch {
+              return false
+            }
+          }, bookmarkId),
+        )
+        .toBe(false)
+    } finally {
+      if (testFolderId) {
+        await page.evaluate(async (folderId) => {
+          try {
+            await chrome.bookmarks.removeTree(folderId)
+          } catch {
+            // The delete action may already have removed the test tree.
+          }
+        }, testFolderId)
       }
 
       await page.close()
