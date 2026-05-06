@@ -3,7 +3,14 @@ import {
   type TreeData,
   type TreeTableProps,
 } from '@/components/fe-tools/TreeTable'
-import { ChevronsDownUp, ChevronsUpDown, Search, X } from 'lucide-react'
+import {
+  Check,
+  ChevronsDownUp,
+  ChevronsUpDown,
+  Copy,
+  Search,
+  X,
+} from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import '../../index.css'
@@ -92,13 +99,112 @@ function renderDate(value: unknown) {
   return value ? new Date(value).toLocaleString() : ''
 }
 
+function BookmarkCopyButton({
+  copiedLabel,
+  copyLabel,
+  text,
+  title,
+}: {
+  copiedLabel: string
+  copyLabel: string
+  text: string
+  title: string
+}) {
+  const [copied, setCopied] = useState(false)
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1500)
+    } catch (error) {
+      console.error(`Failed to copy bookmark ${title}:`, error)
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      aria-label={copied ? copiedLabel : copyLabel}
+      title={copied ? `Copied ${title}` : `Copy ${title}`}
+      onClick={() => void handleCopy()}
+      className="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:pointer-events-none disabled:opacity-70"
+      disabled={copied}
+    >
+      {copied ? (
+        <Check className="h-3.5 w-3.5 text-emerald-600" />
+      ) : (
+        <Copy className="h-3.5 w-3.5" />
+      )}
+    </button>
+  )
+}
+
+function BookmarkTitleCell({
+  searchQuery,
+  title,
+}: {
+  searchQuery: string
+  title: string
+}) {
+  if (!title) {
+    return ''
+  }
+
+  return (
+    <div className="flex min-w-0 items-center gap-1.5">
+      <span className="min-w-0 truncate">
+        {renderHighlightedText(title, searchQuery)}
+      </span>
+      <BookmarkCopyButton
+        copiedLabel="Bookmark title copied"
+        copyLabel={`Copy bookmark title ${title}`}
+        text={title}
+        title="title"
+      />
+    </div>
+  )
+}
+
+function BookmarkUrlCell({
+  searchQuery,
+  url,
+}: {
+  searchQuery: string
+  url: string
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-1.5">
+      <a
+        href={url}
+        target="_blank"
+        rel="noreferrer"
+        className="min-w-0 truncate text-blue-600 underline"
+      >
+        {renderHighlightedText(url, searchQuery)}
+      </a>
+      <BookmarkCopyButton
+        copiedLabel="Bookmark URL copied"
+        copyLabel={`Copy bookmark URL ${url}`}
+        text={url}
+        title="URL"
+      />
+    </div>
+  )
+}
+
 function buildColumns(searchQuery: string): TreeTableProps['columns'] {
   return [
     {
       key: 'title',
       header: 'Title',
       render(value) {
-        return renderHighlightedText(String(value ?? ''), searchQuery)
+        return (
+          <BookmarkTitleCell
+            searchQuery={searchQuery}
+            title={String(value ?? '')}
+          />
+        )
       },
     },
     {
@@ -111,16 +217,7 @@ function buildColumns(searchQuery: string): TreeTableProps['columns'] {
 
         const url = String(value)
 
-        return (
-          <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-blue-600 underline"
-          >
-            {renderHighlightedText(url, searchQuery)}
-          </a>
-        )
+        return <BookmarkUrlCell searchQuery={searchQuery} url={url} />
       },
     },
     {

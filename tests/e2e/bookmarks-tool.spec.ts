@@ -157,6 +157,81 @@ test.describe('Bookmarks tool', () => {
     }
   })
 
+  test('copies bookmark titles and URLs from table cells', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    let testFolderId = ''
+    const targetTitle = 'QHelper copy text target'
+    const targetUrl = 'https://example.com/copy-bookmark-url'
+
+    await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
+
+    try {
+      testFolderId = await page.evaluate(async ({ title, url }) => {
+        const root = await chrome.bookmarks.getTree()
+        const parentId = root[0]?.children?.[0]?.id
+
+        if (!parentId) {
+          throw new Error('No writable bookmarks parent found')
+        }
+
+        const folder = await chrome.bookmarks.create({
+          parentId,
+          title: 'QHelper copy URL folder',
+        })
+
+        await chrome.bookmarks.create({
+          parentId: folder.id,
+          title,
+          url,
+        })
+
+        return folder.id
+      }, { title: targetTitle, url: targetUrl })
+
+      await page.reload()
+      const copiedTexts: string[] = []
+      await page.exposeFunction('captureCopiedBookmarkText', (value: string) => {
+        copiedTexts.push(value)
+      })
+      await page.evaluate(() => {
+        Object.defineProperty(navigator, 'clipboard', {
+          configurable: true,
+          value: {
+            writeText: (value: string) =>
+              (
+                window as Window & {
+                  captureCopiedBookmarkText: (copiedValue: string) => Promise<void>
+                }
+              ).captureCopiedBookmarkText(value),
+          },
+        })
+      })
+
+      await page
+        .getByRole('button', { name: `Copy bookmark title ${targetTitle}` })
+        .click()
+
+      await expect(
+        page.getByRole('button', { name: 'Bookmark title copied' }),
+      ).toBeVisible()
+
+      await page
+        .getByRole('button', { name: `Copy bookmark URL ${targetUrl}` })
+        .click()
+
+      await expect(
+        page.getByRole('button', { name: 'Bookmark URL copied' }),
+      ).toBeVisible()
+      await expect.poll(() => copiedTexts).toEqual([targetTitle, targetUrl])
+    } finally {
+      if (testFolderId) {
+        await page.evaluate((folderId) => chrome.bookmarks.removeTree(folderId), testFolderId)
+      }
+
+      await page.close()
+    }
+  })
+
   test('expands and collapses all bookmark folders', async ({ context, extensionId }) => {
     const page = await context.newPage()
     let testFolderId = ''
