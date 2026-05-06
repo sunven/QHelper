@@ -155,6 +155,22 @@ export const tools: ToolMetadata[] = [
     status: ToolStatus.STABLE,
   },
 
+  {
+    id: 'downloads',
+    name: '下载清理',
+    nameEn: 'Downloads Cleanup',
+    category: ToolCategory.OTHER,
+    icon: 'Trash2',
+    description: '清理原始文件已删除的下载历史记录',
+    descriptionEn: 'Clean download history records whose original files are missing',
+    keywords: ['下载', '清理', '历史', 'downloads', 'cleanup', 'history'],
+    tags: ['downloads', 'cleanup', 'history', 'browser'],
+    entry: 'downloads.html',
+    version: '1.0.0',
+    features: [ToolFeature.HISTORY],
+    status: ToolStatus.BETA,
+  },
+
   // ===== 安全与加密 =====
   {
     id: 'uuid',

@@ -79,6 +79,7 @@ const toolIconMap: Record<string, LucideIcon> = {
   pictureSplicing: ImagePlus,
   timestamp: CalendarClock,
   colorTransform: Palette,
+  downloads: Trash2,
   'clear-cookie': Trash2,
   uuid: Hash,
   password: Shield,

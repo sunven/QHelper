@@ -17,6 +17,7 @@ declare module "wxt/browser" {
     | "/csstool.html"
     | "/csv2json.html"
     | "/devtools.html"
+    | "/downloads.html"
     | "/filemerge.html"
     | "/htmlformat.html"
     | "/icons/q-128.png"

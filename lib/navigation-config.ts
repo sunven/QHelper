@@ -197,6 +197,12 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
         path: '/colorTransform.html',
         description: 'RGB、HEX、HSL 颜色格式转换',
       },
+      {
+        key: 'downloads',
+        name: '下载清理',
+        path: '/downloads.html',
+        description: '清理原始文件已删除的下载历史记录',
+      },
     ],
   },
 ];
