@@ -54,11 +54,9 @@ describe('fe-tools/TreeTable', () => {
   it('keeps table headers sticky inside the scroll container', () => {
     render(<TreeTable data={data} columns={columns} />)
 
-    expect(screen.getByRole('columnheader', { name: 'Title' }).closest('thead')).toHaveClass(
-      'sticky',
-      'top-0',
-      'z-10',
-    )
+    const titleHeader = screen.getByRole('columnheader', { name: 'Title' })
+    expect(titleHeader.closest('thead')).toHaveClass('sticky', 'top-0', 'z-10')
+    expect(titleHeader).toHaveClass('font-bold')
   })
 
   it('renders nested children expanded by default and toggles them', async () => {
@@ -69,6 +67,18 @@ describe('fe-tools/TreeTable', () => {
     await user.click(screen.getByRole('button', { name: 'Collapse row' }))
     expect(screen.queryByText('Child')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Expand row' }))
+    expect(screen.getByText('Child')).toBeVisible()
+  })
+
+  it('expands and collapses all rows from caller signals', () => {
+    const { rerender } = render(<TreeTable data={data} columns={columns} collapseSignal={0} expandSignal={0} />)
+
+    expect(screen.getByText('Child')).toBeVisible()
+
+    rerender(<TreeTable data={data} columns={columns} collapseSignal={1} expandSignal={0} />)
+    expect(screen.queryByText('Child')).not.toBeInTheDocument()
+
+    rerender(<TreeTable data={data} columns={columns} collapseSignal={1} expandSignal={1} />)
     expect(screen.getByText('Child')).toBeVisible()
   })
 

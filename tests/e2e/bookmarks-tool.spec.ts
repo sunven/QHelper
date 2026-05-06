@@ -76,4 +76,132 @@ test.describe('Bookmarks tool', () => {
       await page.close()
     }
   })
+
+  test('filters bookmarks by title and URL while preserving folder context', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    let testFolderId = ''
+
+    await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
+
+    try {
+      testFolderId = await page.evaluate(async () => {
+        const root = await chrome.bookmarks.getTree()
+        const parentId = root[0]?.children?.[0]?.id
+
+        if (!parentId) {
+          throw new Error('No writable bookmarks parent found')
+        }
+
+        const folder = await chrome.bookmarks.create({
+          parentId,
+          title: 'QHelper search regression folder',
+        })
+
+        await chrome.bookmarks.create({
+          parentId: folder.id,
+          title: 'QHelper Alpha Search Target',
+          url: 'https://example.com/alpha-search-target',
+        })
+
+        await chrome.bookmarks.create({
+          parentId: folder.id,
+          title: 'QHelper Beta Bookmark',
+          url: 'https://example.com/beta-url-target',
+        })
+
+        await chrome.bookmarks.create({
+          parentId: folder.id,
+          title: 'QHelper Unrelated Bookmark',
+          url: 'https://example.com/unrelated',
+        })
+
+        return folder.id
+      })
+
+      await page.reload()
+
+      const search = page.getByRole('searchbox', { name: 'Search bookmarks' })
+
+      await search.fill('alpha search')
+      await expect(page.getByText('QHelper search regression folder')).toBeVisible()
+      await expect(page.getByText('QHelper Alpha Search Target')).toBeVisible()
+      await expect(page.locator('mark').filter({ hasText: 'Alpha Search' })).toBeVisible()
+      await expect(page.getByText('QHelper Beta Bookmark')).toHaveCount(0)
+      await expect(page.getByText('QHelper Unrelated Bookmark')).toHaveCount(0)
+
+      await search.fill('beta-url-target')
+      await expect(page.getByText('QHelper search regression folder')).toBeVisible()
+      await expect(page.getByText('QHelper Beta Bookmark')).toBeVisible()
+      await expect(page.locator('mark').filter({ hasText: 'beta-url-target' })).toBeVisible()
+      await expect(page.getByText('QHelper Alpha Search Target')).toHaveCount(0)
+      await expect(page.getByText('QHelper Unrelated Bookmark')).toHaveCount(0)
+
+      await search.fill('search regression folder')
+      await expect(page.getByText('QHelper search regression folder')).toBeVisible()
+      await expect(page.getByText('QHelper Alpha Search Target')).toHaveCount(0)
+      await expect(page.getByText('QHelper Beta Bookmark')).toHaveCount(0)
+      await expect(page.getByText('QHelper Unrelated Bookmark')).toHaveCount(0)
+
+      await page.getByRole('button', { name: 'Clear bookmark search' }).click()
+      await expect(search).toHaveValue('')
+      await expect(page.locator('mark')).toHaveCount(0)
+      await expect(page.getByText('QHelper Alpha Search Target')).toBeVisible()
+      await expect(page.getByText('QHelper Beta Bookmark')).toBeVisible()
+      await expect(page.getByText('QHelper Unrelated Bookmark')).toBeVisible()
+    } finally {
+      if (testFolderId) {
+        await page.evaluate((folderId) => chrome.bookmarks.removeTree(folderId), testFolderId)
+      }
+
+      await page.close()
+    }
+  })
+
+  test('expands and collapses all bookmark folders', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    let testFolderId = ''
+
+    await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
+
+    try {
+      testFolderId = await page.evaluate(async () => {
+        const root = await chrome.bookmarks.getTree()
+        const parentId = root[0]?.children?.[0]?.id
+
+        if (!parentId) {
+          throw new Error('No writable bookmarks parent found')
+        }
+
+        const folder = await chrome.bookmarks.create({
+          parentId,
+          title: 'QHelper expand collapse folder',
+        })
+
+        await chrome.bookmarks.create({
+          parentId: folder.id,
+          title: 'QHelper expand collapse child',
+          url: 'https://example.com/expand-collapse-child',
+        })
+
+        return folder.id
+      })
+
+      await page.reload()
+
+      await expect(page.getByText('QHelper expand collapse child')).toBeVisible()
+
+      await page.getByRole('button', { name: 'Collapse all bookmarks' }).click()
+      await expect(page.getByText('QHelper expand collapse folder')).toBeVisible()
+      await expect(page.getByText('QHelper expand collapse child')).toHaveCount(0)
+
+      await page.getByRole('button', { name: 'Expand all bookmarks' }).click()
+      await expect(page.getByText('QHelper expand collapse child')).toBeVisible()
+    } finally {
+      if (testFolderId) {
+        await page.evaluate((folderId) => chrome.bookmarks.removeTree(folderId), testFolderId)
+      }
+
+      await page.close()
+    }
+  })
 })

@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 
 export type TreeData = {
   id: string
@@ -18,6 +18,8 @@ export type TreeTableProps = {
   data: TreeData[] | undefined
   columns: TreeColumn[]
   className?: string
+  expandSignal?: number
+  collapseSignal?: number
 }
 
 function renderCell(
@@ -34,13 +36,17 @@ function TreeNode({
   item,
   columns,
   level,
+  expandedRows,
+  setExpandedRows,
 }: {
   item: TreeData
   columns: TreeColumn[]
   level: number
+  expandedRows: Record<string, boolean>
+  setExpandedRows: Dispatch<SetStateAction<Record<string, boolean>>>
 }) {
-  const [isExpanded, setIsExpanded] = useState(true)
   const hasChildren = Boolean(item.children?.length)
+  const isExpanded = expandedRows[item.id] ?? true
 
   return (
     <>
@@ -55,7 +61,12 @@ function TreeNode({
                     <button
                       type="button"
                       aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
-                      onClick={() => setIsExpanded((value) => !value)}
+                      onClick={() =>
+                        setExpandedRows((current) => ({
+                          ...current,
+                          [item.id]: !isExpanded,
+                        }))
+                      }
                       className="mr-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                     >
                       {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
@@ -70,13 +81,50 @@ function TreeNode({
       </tr>
       {isExpanded &&
         item.children?.map((child) => (
-          <TreeNode key={child.id} item={child} columns={columns} level={level + 1} />
+          <TreeNode
+            key={child.id}
+            item={child}
+            columns={columns}
+            level={level + 1}
+            expandedRows={expandedRows}
+            setExpandedRows={setExpandedRows}
+          />
         ))}
     </>
   )
 }
 
-export function TreeTable({ data, columns, className }: TreeTableProps) {
+function collectExpansionState(items: TreeData[] | undefined, expanded: boolean): Record<string, boolean> {
+  const state: Record<string, boolean> = {}
+
+  function visit(nodes: TreeData[] | undefined) {
+    for (const node of nodes ?? []) {
+      if (node.children?.length) {
+        state[node.id] = expanded
+        visit(node.children)
+      }
+    }
+  }
+
+  visit(items)
+  return state
+}
+
+export function TreeTable({ data, columns, className, expandSignal, collapseSignal }: TreeTableProps) {
+  const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({})
+
+  useEffect(() => {
+    if (expandSignal) {
+      setExpandedRows(collectExpansionState(data, true))
+    }
+  }, [data, expandSignal])
+
+  useEffect(() => {
+    if (collapseSignal) {
+      setExpandedRows(collectExpansionState(data, false))
+    }
+  }, [data, collapseSignal])
+
   return (
     <div className={`overflow-auto ${className ?? ''}`}>
       <table className="w-full table-fixed divide-y divide-slate-200">
@@ -86,7 +134,7 @@ export function TreeTable({ data, columns, className }: TreeTableProps) {
               <th
                 key={column.key}
                 scope="col"
-                className="px-2.5 py-1.5 text-left text-[11px] font-medium uppercase tracking-wider text-slate-600"
+                className="px-2.5 py-1.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-600"
                 style={{ width: column.width }}
               >
                 {column.header}
@@ -96,7 +144,14 @@ export function TreeTable({ data, columns, className }: TreeTableProps) {
         </thead>
         <tbody className="divide-y divide-slate-200 bg-white">
           {data?.map((item) => (
-            <TreeNode key={item.id} item={item} columns={columns} level={0} />
+            <TreeNode
+              key={item.id}
+              item={item}
+              columns={columns}
+              level={0}
+              expandedRows={expandedRows}
+              setExpandedRows={setExpandedRows}
+            />
           ))}
         </tbody>
       </table>
