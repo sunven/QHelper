@@ -302,17 +302,17 @@ describe('chrome/storage', () => {
       chromeStorage.onChanged(callback);
       window.dispatchEvent(
         new StorageEvent('storage', {
-          key: 'recent_tools',
-          oldValue: '[{"toolId":"json"}]',
-          newValue: '[{"toolId":"yaml"}]',
+          key: 'settings',
+          oldValue: '{"theme":"light"}',
+          newValue: '{"theme":"dark"}',
         }),
       );
 
       expect(callback).toHaveBeenCalledWith(
         {
-          recent_tools: {
-            oldValue: [{ toolId: 'json' }],
-            newValue: [{ toolId: 'yaml' }],
+          settings: {
+            oldValue: { theme: 'light' },
+            newValue: { theme: 'dark' },
           },
         },
         'local',
@@ -366,7 +366,7 @@ describe('chrome/storage', () => {
       (global as any).chrome = {};
 
       chromeStorage.onChanged(callback);
-      window.dispatchEvent(new StorageEvent('storage', { key: 'recent_tools', oldValue: '1', newValue: '1' }));
+      window.dispatchEvent(new StorageEvent('storage', { key: 'settings', oldValue: '1', newValue: '1' }));
       window.dispatchEvent(new StorageEvent('storage', { key: null, oldValue: '1', newValue: '2' }));
 
       expect(callback).not.toHaveBeenCalled();

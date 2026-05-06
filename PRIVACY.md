@@ -73,7 +73,6 @@ QHelper 提供一个 **可选联网** 的“网页总结”功能：
 
 **用途**: 存储用户偏好和网页总结配置
 
-- 存储最近使用的工具记录
 - 存储网页总结配置 `webSummaryConfig`
 - `webSummaryConfig` 包含：`endpoint`、`model`、`apiKey`
 - 所有这些数据默认存储在浏览器本地存储（`chrome.storage.local`）
@@ -99,7 +98,6 @@ QHelper 提供一个 **可选联网** 的“网页总结”功能：
 
 所有配置和本地数据都保存在您的浏览器环境中：
 
-- 最近使用工具记录：存储在浏览器本地存储中
 - 网页总结配置 `webSummaryConfig`：存储在浏览器本地存储中
 - 不会自动同步到 QHelper 自建服务器（QHelper 没有此类服务器）
 - 是否同步到浏览器厂商账户，取决于浏览器本身如何处理 `chrome.storage.local`

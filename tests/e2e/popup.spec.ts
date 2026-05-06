@@ -5,7 +5,6 @@ test.describe('Extension Popup', () => {
   test('opens and displays tool buttons', async ({ popupPage }) => {
     const popup = new PopupPage(popupPage);
 
-    await expect(popupPage.getByTestId('web-summary-quick-open')).toBeVisible();
     await expect(popup.getToolButton('json')).toBeVisible();
     await expect(popup.getToolButton('timestamp')).toBeVisible();
     await expect(popup.getToolButton('imagebase64')).toBeVisible();

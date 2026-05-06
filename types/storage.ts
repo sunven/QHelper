@@ -13,7 +13,6 @@ export interface HistoryEntry<TInput = unknown, TOutput = unknown> {
 export interface GlobalSettings {
   theme: 'light' | 'dark' | 'auto';
   favoriteTools: string[];
-  recentTools: string[];
   pinnedTools: string[];
   language: 'zh-CN';
   aiProvider?: 'openai' | 'anthropic' | 'custom';
