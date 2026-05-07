@@ -2,6 +2,12 @@ export const ZREAD_BUTTON_ID = 'qhelper-zread-button';
 export const ZREAD_WRAPPER_SELECTOR = '[data-qhelper-zread-wrapper="true"]';
 const PREVIOUS_VSCODE_URL_PREFIX = 'https://vscode.dev/github/';
 const REPOSITORY_NWO_META_SELECTOR = 'meta[name="octolytics-dimension-repository_nwo"]';
+const GLOBAL_HEADER_TARGET_SELECTORS = [
+  '.AppHeader-actions',
+  '.AppHeader-globalBar-end',
+  'header [data-testid="app-header-actions"]',
+  'header .Header-item:last-child',
+];
 const PREFERRED_ACTION_LIST_SELECTORS = [
   '#repository-details-container .pagehead-actions',
   '#repository-container-header .pagehead-actions',
@@ -34,7 +40,7 @@ function normalizePathname(pathname: string): string {
 export function parseRepoCoordinates(pathname: string): RepoCoordinates | null {
   const segments = normalizePathname(pathname).split('/').filter(Boolean);
 
-  if (segments.length !== 2) {
+  if (segments.length < 2) {
     return null;
   }
 
@@ -118,6 +124,14 @@ function createActionListItem(doc: Document, href: string): HTMLLIElement {
   return listItem;
 }
 
+function createGlobalHeaderItem(doc: Document, href: string): HTMLDivElement {
+  const wrapper = doc.createElement('div');
+  wrapper.dataset.qhelperZreadWrapper = 'true';
+  wrapper.className = 'AppHeader-actions-item';
+  wrapper.append(createZreadAnchor(doc, href));
+  return wrapper;
+}
+
 function createHeaderFallback(doc: Document, href: string): HTMLDivElement {
   const wrapper = doc.createElement('div');
   wrapper.dataset.qhelperZreadWrapper = 'true';
@@ -147,6 +161,12 @@ export function syncZreadButton(doc: Document, pathname: string): boolean {
   }
 
   const href = buildZreadUrl(repoCoordinates);
+  const globalHeaderTarget = findFirstMatch<HTMLElement>(doc, GLOBAL_HEADER_TARGET_SELECTORS);
+  if (globalHeaderTarget) {
+    globalHeaderTarget.insertBefore(createGlobalHeaderItem(doc, href), globalHeaderTarget.firstElementChild);
+    return true;
+  }
+
   const actionList = findFirstMatch<HTMLElement>(doc, PREFERRED_ACTION_LIST_SELECTORS);
 
   if (actionList) {

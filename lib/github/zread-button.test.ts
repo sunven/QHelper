@@ -33,6 +33,27 @@ function renderGitHubHeader(hasActionList = true): void {
   `;
 }
 
+function renderGitHubGlobalHeader(pathname = '/Yeachan-Heo/oh-my-codex/blob/main/README.md'): void {
+  const [, owner, repo] = pathname.split('/');
+  document.head.innerHTML = `
+    <meta
+      name="octolytics-dimension-repository_nwo"
+      content="${owner}/${repo}"
+    />
+  `;
+  document.body.innerHTML = `
+    <header>
+      <div class="AppHeader-actions">
+        <button type="button" id="create-menu">Create</button>
+        <button type="button" id="profile-menu">Profile</button>
+      </div>
+    </header>
+    <main>
+      <article>README</article>
+    </main>
+  `;
+}
+
 function renderRepositoryMeta(owner = 'Yeachan-Heo', repo = 'oh-my-codex'): void {
   document.head.innerHTML = `
     <meta
@@ -108,13 +129,20 @@ describe('parseRepoCoordinates', () => {
     });
   });
 
-  it('rejects GitHub root paths', () => {
-    expect(parseRepoCoordinates('/')).toBeNull();
+  it('parses repository subpage paths from the first two segments', () => {
+    expect(parseRepoCoordinates('/Yeachan-Heo/oh-my-codex/issues')).toEqual({
+      owner: 'Yeachan-Heo',
+      repo: 'oh-my-codex',
+    });
+    expect(parseRepoCoordinates('/Yeachan-Heo/oh-my-codex/blob/main/README.md')).toEqual({
+      owner: 'Yeachan-Heo',
+      repo: 'oh-my-codex',
+    });
   });
 
-  it('rejects GitHub repository subpages', () => {
-    expect(parseRepoCoordinates('/Yeachan-Heo/oh-my-codex/issues')).toBeNull();
-    expect(parseRepoCoordinates('/Yeachan-Heo/oh-my-codex/blob/main/README.md')).toBeNull();
+  it('rejects GitHub root paths', () => {
+    expect(parseRepoCoordinates('/')).toBeNull();
+    expect(parseRepoCoordinates('/Yeachan-Heo')).toBeNull();
   });
 });
 
@@ -142,11 +170,18 @@ describe('syncZreadButton', () => {
     expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
   });
 
-  it('does not render on repository subpages', () => {
-    renderGitHubHeader();
+  it('renders a Zread button in the global header on repository subpages', () => {
+    renderGitHubGlobalHeader('/abhigyanpatwari/GitNexus/blob/main/README.md');
 
-    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues')).toBe(false);
-    expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
+    expect(syncZreadButton(document, '/abhigyanpatwari/GitNexus/blob/main/README.md')).toBe(true);
+
+    const button = document.querySelector<HTMLAnchorElement>(`#${ZREAD_BUTTON_ID}`);
+    expect(button).not.toBeNull();
+    expect(button?.href).toBe('https://zread.ai/abhigyanpatwari/GitNexus');
+    expect(document.querySelector('.AppHeader-actions > [data-qhelper-zread-wrapper="true"]')).not.toBeNull();
+    expect(document.querySelector('.AppHeader-actions')?.firstElementChild).toBe(
+      document.querySelector('[data-qhelper-zread-wrapper="true"]'),
+    );
   });
 
   it('does not render on non-repository two-segment paths', () => {
@@ -164,7 +199,7 @@ describe('syncZreadButton', () => {
     previousAnchor.textContent = 'vscode.dev';
     document.querySelector('#repository-details-container')?.append(previousAnchor);
 
-    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues')).toBe(false);
+    expect(syncZreadButton(document, '/Yeachan-Heo/different-repo/issues')).toBe(false);
 
     expect(document.querySelector('a[href^="https://vscode.dev/github/"]')).toBe(previousAnchor);
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
@@ -178,7 +213,7 @@ describe('syncZreadButton', () => {
     previousButton.className = 'btn';
     document.querySelector('#repository-details-container')?.append(previousButton);
 
-    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues')).toBe(false);
+    expect(syncZreadButton(document, '/Yeachan-Heo/different-repo/issues')).toBe(false);
 
     expect(document.querySelector('a[href^="https://vscode.dev/github/"]')).toBeNull();
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
@@ -195,7 +230,7 @@ describe('syncZreadButton', () => {
     previousListItem.append(previousButton);
     actionList?.append(previousListItem);
 
-    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues')).toBe(false);
+    expect(syncZreadButton(document, '/Yeachan-Heo/different-repo/issues')).toBe(false);
 
     expect(previousListItem.isConnected).toBe(false);
   });
@@ -209,7 +244,7 @@ describe('syncZreadButton', () => {
     outsideButton.className = 'btn';
     document.body.append(outsideButton);
 
-    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues')).toBe(false);
+    expect(syncZreadButton(document, '/Yeachan-Heo/different-repo/issues')).toBe(false);
 
     expect(document.querySelector('#outside')).toBe(outsideButton);
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
@@ -299,13 +334,24 @@ describe('syncZreadButton', () => {
     expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
   });
 
-  it('removes the injected Zread button after leaving the repository root page', () => {
+  it('keeps the injected Zread button after navigating from a repository root to a repository subpage', () => {
     renderGitHubHeader();
 
     syncZreadButton(document, '/Yeachan-Heo/oh-my-codex');
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).not.toBeNull();
 
     syncZreadButton(document, '/Yeachan-Heo/oh-my-codex/issues');
+
+    expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).not.toBeNull();
+  });
+
+  it('removes the injected Zread button after leaving the repository', () => {
+    renderGitHubHeader();
+
+    syncZreadButton(document, '/Yeachan-Heo/oh-my-codex');
+    expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).not.toBeNull();
+
+    syncZreadButton(document, '/Yeachan-Heo/different-repo/issues');
 
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
   });
@@ -336,10 +382,10 @@ describe('installGitHubZreadButton', () => {
     document.dispatchEvent(new Event('turbo:load'));
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).not.toBeNull();
 
-    fakeWindow.setPathname('/Yeachan-Heo/oh-my-codex/issues');
+    fakeWindow.setPathname('/Yeachan-Heo/oh-my-codex/blob/main/README.md');
     document.dispatchEvent(new Event('pjax:end'));
 
-    expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).toBeNull();
+    expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).not.toBeNull();
   });
 
   it('retries rendering repository roots when GitHub has not mounted the header yet', () => {
