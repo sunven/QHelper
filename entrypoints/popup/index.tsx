@@ -1,10 +1,3 @@
-import { useEffect, useMemo, useState } from 'react'
-import ReactDOM from 'react-dom/client'
-import { TOOL_CATEGORIES } from '@/constants/tools'
-import { removeAll } from '@/lib/chrome/cookies'
-import { create } from '@/lib/chrome/tabs'
-import { toolRegistry } from '@/lib/registry/ToolRegistry'
-import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import type { LucideIcon } from 'lucide-react'
 import {
   ArrowLeftRight,
@@ -21,7 +14,6 @@ import {
   Hash,
   Image,
   ImagePlus,
-  Key,
   LayoutGrid,
   Link2,
   Palette,
@@ -32,6 +24,13 @@ import {
   Wrench,
   Zap,
 } from 'lucide-react'
+import { useEffect, useMemo } from 'react'
+import ReactDOM from 'react-dom/client'
+import { TOOL_CATEGORIES } from '@/constants/tools'
+import { removeAll } from '@/lib/chrome/cookies'
+import { create } from '@/lib/chrome/tabs'
+import { ToolCategory } from '@/lib/registry/ToolMetadata'
+import { toolRegistry } from '@/lib/registry/ToolRegistry'
 import '../../index.css'
 
 type PopupTool = {
@@ -87,22 +86,24 @@ const toolIconMap: Record<string, LucideIcon> = {
   xmlformatter: FileCode,
 }
 
-const categoryIconMap: Record<ToolCategory | typeof ALL_CATEGORY, LucideIcon> = {
-  all: LayoutGrid,
-  [ToolCategory.COMMON]: Sparkles,
-  [ToolCategory.ENCODING]: ArrowLeftRight,
-  [ToolCategory.IMAGE]: Image,
-  [ToolCategory.SECURITY]: Shield,
-  [ToolCategory.WEB_FORMAT]: Link2,
-  [ToolCategory.DATA_FORMAT]: FileJson,
-  [ToolCategory.AI]: Sparkles,
-  [ToolCategory.OTHER]: Wrench,
-}
+const categoryIconMap: Record<ToolCategory | typeof ALL_CATEGORY, LucideIcon> =
+  {
+    all: LayoutGrid,
+    [ToolCategory.COMMON]: Sparkles,
+    [ToolCategory.ENCODING]: ArrowLeftRight,
+    [ToolCategory.IMAGE]: Image,
+    [ToolCategory.SECURITY]: Shield,
+    [ToolCategory.WEB_FORMAT]: Link2,
+    [ToolCategory.DATA_FORMAT]: FileJson,
+    [ToolCategory.AI]: Sparkles,
+    [ToolCategory.OTHER]: Wrench,
+  }
 
 const clearCookieTool: PopupTool = {
   id: 'clear-cookie',
   name: '清除 Cookie',
-  description: '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
+  description:
+    '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
   url: '',
   type: 'clearCookie',
   category: ToolCategory.OTHER,
@@ -126,7 +127,11 @@ const bookmarksTool: PopupTool = {
   category: ToolCategory.OTHER,
 }
 
-const specialTools: PopupTool[] = [webSummaryTool, bookmarksTool, clearCookieTool]
+const specialTools: PopupTool[] = [
+  webSummaryTool,
+  bookmarksTool,
+  clearCookieTool,
+]
 
 async function handleToolClick(tool: PopupTool) {
   try {
@@ -162,8 +167,6 @@ function getCategoryLabel(categoryId: ToolCategory | typeof ALL_CATEGORY) {
 }
 
 function App() {
-  const [activeCategory, setActiveCategory] = useState<typeof ALL_CATEGORY | ToolCategory>(ALL_CATEGORY)
-
   useEffect(() => {
     const bodyStyle = document.body.style
     const previousBodyMargin = bodyStyle.margin
@@ -194,47 +197,17 @@ function App() {
     return [...registryTools, ...specialTools]
   }, [])
 
-  const categoryCounts = useMemo(() => {
-    const counts = new Map<ToolCategory, number>()
-
-    for (const tool of allTools) {
-      counts.set(tool.category, (counts.get(tool.category) || 0) + 1)
-    }
-
-    return counts
-  }, [allTools])
-
-  const filteredTools = useMemo(() => {
-    if (activeCategory === ALL_CATEGORY) {
-      return allTools
-    }
-
-    return allTools.filter((tool) => tool.category === activeCategory)
-  }, [activeCategory, allTools])
-
   const groupedTools = useMemo(() => {
     const groups = new Map<ToolCategory, PopupTool[]>()
 
-    for (const tool of filteredTools) {
+    for (const tool of allTools) {
       const items = groups.get(tool.category) || []
       items.push(tool)
       groups.set(tool.category, items)
     }
 
     return groups
-  }, [filteredTools])
-
-  const visibleCategories = useMemo(
-    () =>
-      CATEGORY_ORDER.filter((categoryId) => {
-        if (categoryId === ALL_CATEGORY) {
-          return allTools.length > 0
-        }
-
-        return (categoryCounts.get(categoryId) || 0) > 0
-      }),
-    [allTools.length, categoryCounts],
-  )
+  }, [allTools])
 
   const renderToolCard = (tool: PopupTool) => (
     <button
@@ -242,13 +215,15 @@ function App() {
       type="button"
       data-testid={`tool-${tool.id}`}
       onClick={() => handleToolClick(tool)}
-      className="group flex min-h-[46px] cursor-pointer items-center justify-between gap-1.5 rounded-xl border border-slate-200 bg-white px-2 py-1.5 text-left transition-[border-color,background-color,box-shadow] duration-200 hover:border-emerald-400/60 hover:bg-emerald-50/50 hover:shadow-[0_10px_24px_rgba(16,185,129,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+      className="group flex min-h-8 cursor-pointer items-center justify-between gap-1 rounded-md border border-slate-200 bg-white p-1 text-left transition-[border-color,background-color,box-shadow] duration-200 hover:border-emerald-400/60 hover:bg-emerald-50/50 hover:shadow-[0_10px_24px_rgba(16,185,129,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
     >
       <div className="flex min-w-0 items-center gap-1.5">
         <div className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-100 text-slate-700">
           {getToolIcon(tool.id)}
         </div>
-        <div className="line-clamp-1 text-[12px] font-semibold leading-4 text-slate-900">{tool.name}</div>
+        <div className="line-clamp-1 text-[12px] font-semibold leading-4 text-slate-900">
+          {tool.name}
+        </div>
       </div>
 
       <div className="flex shrink-0 items-center gap-1">
@@ -259,69 +234,18 @@ function App() {
 
   return (
     <div
-      className="w-[520px] overflow-hidden bg-[#f6f7f3] text-slate-900"
-      style={{ fontFamily: '"IBM Plex Sans", "SF Pro Text", "Segoe UI", sans-serif' }}
+      className="w-130 overflow-hidden text-slate-900"
+      style={{
+        fontFamily: '"IBM Plex Sans", "SF Pro Text", "Segoe UI", sans-serif',
+      }}
     >
       <div className="relative">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,#fcfcf9_0%,#f3f5ef_100%)]" />
+        <div className="pointer-events-none absolute inset-0" />
 
         <div className="relative space-y-2 p-2">
-          <section className="relative overflow-hidden rounded-md border border-slate-200/90 bg-white/92 p-2 shadow-sm backdrop-blur">
-            <div className="relative flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-md border border-emerald-100 bg-emerald-50 text-emerald-700">
-                  <Wrench className="h-4.5 w-4.5" />
-                </div>
-                <div>
-                  <h1 className="text-sm font-semibold tracking-tight text-slate-900">QHelper</h1>
-                  <div className="text-[10px] text-slate-500">开发工具面板</div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1 text-[10px]">
-                <div className="rounded-md border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-slate-600">
-                  {allTools.length} 工具
-                </div>
-                <div className="rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-emerald-700">
-                  {toolRegistry.getCategories().length + 1} 分类
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section className="space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <div className="text-[11px] font-medium uppercase tracking-[0.18em] text-slate-500">分类</div>
-              <div className="text-[11px] text-slate-500">优先展示更多工具，减少空白</div>
-            </div>
-
-            <div className="flex flex-wrap gap-1">
-              {visibleCategories.map((categoryId) => {
-                const Icon = categoryIconMap[categoryId]
-                const isActive = activeCategory === categoryId
-                const count = categoryId === ALL_CATEGORY ? allTools.length : categoryCounts.get(categoryId) || 0
-
-                return (
-                  <button
-                    key={categoryId}
-                    type="button"
-                    onClick={() => setActiveCategory(categoryId)}
-                    className={`flex cursor-pointer items-center gap-1 rounded-full border px-2 py-1 text-[11px] font-medium transition-colors duration-200 ${
-                      isActive
-                        ? 'border-emerald-300 bg-emerald-50 text-emerald-700'
-                        : 'border-slate-200 bg-white/80 text-slate-600 hover:border-slate-300 hover:bg-white hover:text-slate-900'
-                    }`}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    <span>{getCategoryLabel(categoryId)}</span>
-                    <span className="rounded-full bg-slate-100 px-1 py-0.5 text-[10px] text-slate-500">{count}</span>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-
-          {CATEGORY_ORDER.filter((categoryId) => categoryId !== ALL_CATEGORY).map((categoryId) => {
+          {CATEGORY_ORDER.filter(
+            (categoryId) => categoryId !== ALL_CATEGORY,
+          ).map((categoryId) => {
             const tools = groupedTools.get(categoryId)
             if (!tools || tools.length === 0) {
               return null
@@ -337,13 +261,19 @@ function App() {
                       <Icon className="h-3.5 w-3.5" />
                     </div>
                     <div className="flex items-baseline gap-1.5">
-                      <div className="text-[13px] font-semibold text-slate-900">{getCategoryLabel(categoryId)}</div>
-                      <div className="text-[11px] text-slate-500">{tools.length} 个工具</div>
+                      <div className="text-[13px] font-semibold text-slate-900">
+                        {getCategoryLabel(categoryId)}
+                      </div>
+                      <div className="text-[11px] text-slate-500">
+                        {tools.length} 个工具
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-1.5">{tools.map(renderToolCard)}</div>
+                <div className="grid grid-cols-3 gap-1">
+                  {tools.map(renderToolCard)}
+                </div>
               </section>
             )
           })}

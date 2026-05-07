@@ -1,15 +1,4 @@
 import {
-  TreeTable,
-  type TreeData,
-  type TreeTableProps,
-} from '@/components/fe-tools/TreeTable'
-import {
-  checkBookmarkUrls,
-  collectBookmarkUrlTargets,
-  type BookmarkLinkCheckResult,
-  type BookmarkLinkCheckStatus,
-} from '@/lib/bookmarks/dead-link-checker'
-import {
   Check,
   ChevronsDownUp,
   ChevronsUpDown,
@@ -22,6 +11,17 @@ import {
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactDOM from 'react-dom/client'
+import {
+  type TreeData,
+  TreeTable,
+  type TreeTableProps,
+} from '@/components/fe-tools/TreeTable'
+import {
+  type BookmarkLinkCheckResult,
+  type BookmarkLinkCheckStatus,
+  checkBookmarkUrls,
+  collectBookmarkUrlTargets,
+} from '@/lib/bookmarks/dead-link-checker'
 import '../../index.css'
 
 function normalizeSearchQuery(value: string) {
