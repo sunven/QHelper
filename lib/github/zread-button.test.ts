@@ -167,6 +167,12 @@ describe('syncZreadButton', () => {
     expect(button).not.toBeNull();
     expect(button?.textContent).toBe('Zread');
     expect(button?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
+    expect(button?.className).toContain('d-inline-flex');
+    expect(button?.className).toContain('flex-items-center');
+    expect(button?.querySelector('img')?.src).toBe('https://zread.ai/favicon.ico');
+    expect(button?.querySelector('img')?.alt).toBe('');
+    expect(button?.querySelector('img')?.width).toBe(16);
+    expect(button?.querySelector('img')?.height).toBe(16);
     expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
   });
 

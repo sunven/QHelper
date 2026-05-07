@@ -1,5 +1,6 @@
 export const ZREAD_BUTTON_ID = 'qhelper-zread-button';
 export const ZREAD_WRAPPER_SELECTOR = '[data-qhelper-zread-wrapper="true"]';
+const ZREAD_FAVICON_URL = 'https://zread.ai/favicon.ico';
 const PREVIOUS_VSCODE_URL_PREFIX = 'https://vscode.dev/github/';
 const REPOSITORY_NWO_META_SELECTOR = 'meta[name="octolytics-dimension-repository_nwo"]';
 const GLOBAL_HEADER_TARGET_SELECTORS = [
@@ -112,8 +113,20 @@ function createZreadAnchor(doc: Document, href: string): HTMLAnchorElement {
   anchor.href = href;
   anchor.target = '_blank';
   anchor.rel = 'noopener noreferrer';
-  anchor.className = 'btn-sm btn';
-  anchor.textContent = 'Zread';
+  anchor.className = 'btn-sm btn d-inline-flex flex-items-center gap-1';
+
+  const icon = doc.createElement('img');
+  icon.src = ZREAD_FAVICON_URL;
+  icon.alt = '';
+  icon.width = 16;
+  icon.height = 16;
+  icon.loading = 'lazy';
+  icon.decoding = 'async';
+
+  const label = doc.createElement('span');
+  label.textContent = 'Zread';
+
+  anchor.append(icon, label);
   return anchor;
 }
 
