@@ -629,7 +629,7 @@ function BookmarksTool() {
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search bookmarks"
-              className="h-9 w-full rounded-md border border-slate-300 bg-white pl-8 pr-9 text-sm text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              className="h-9 w-full rounded-md border border-slate-300 bg-white pl-8 pr-9 text-sm text-slate-900 outline-none transition [&::-webkit-search-cancel-button]:appearance-none [&::-webkit-search-decoration]:appearance-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
             />
             {searchQuery && (
               <button
