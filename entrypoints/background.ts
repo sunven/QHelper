@@ -9,6 +9,7 @@ import {
   copyPageTitleFromContextClick,
   ensureCopyPageTitleContextMenu,
 } from '@/lib/fe-tools/context-menu'
+import { handleDictionaryFetchMessage } from '@/lib/dictionary/background'
 import type {
   OpenWebSummaryMessage,
   OpenWebSummaryResponse,
@@ -56,6 +57,10 @@ export default defineBackground(() => {
   })
 
   chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+    if (handleDictionaryFetchMessage(message, sendResponse)) {
+      return true
+    }
+
     if ((message as OpenWebSummaryMessage | undefined)?.type === 'OPEN_WEB_SUMMARY') {
       void openWebSummaryPanel(
         message as OpenWebSummaryMessage,

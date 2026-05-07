@@ -1,0 +1,129 @@
+import { createRoot, type Root } from 'react-dom/client'
+import { DictionaryOverlay } from '@/components/dictionary/DictionaryOverlay'
+import '@/components/dictionary/styles.css'
+import { ballStore, panelStore } from './stores'
+import { createDictionaryFetchMessage, createYoudaoUrl } from './youdao'
+import type { DictionaryData } from './types'
+
+const ROOT_ID = 'qhelper-dictionary-root'
+const ENGLISH_SELECTION_RE = /\b[a-zA-Z]{2,}\b/gm
+
+type RuntimeLike = {
+  sendMessage: (
+    message: unknown,
+    callback?: (response: unknown) => void,
+  ) => void | Promise<unknown>
+}
+
+export type DictionarySelectionDeps = {
+  runtime?: RuntimeLike
+  createRoot?: (container: Element | DocumentFragment) => Root
+}
+
+function isInDictPanel(element: Node | EventTarget | null): boolean {
+  if (!element) {
+    return false
+  }
+
+  const start = element instanceof Node ? element : null
+  for (let node: Node | null = start; node; node = node.parentNode) {
+    if (node instanceof Element && node.classList.contains('cranberry-panel')) {
+      return true
+    }
+  }
+
+  return false
+}
+
+function ensureRoot(documentRef: Document, createRootFn: (container: Element) => Root) {
+  const existing = documentRef.getElementById(ROOT_ID)
+  if (existing) {
+    return existing
+  }
+
+  const rootElement = documentRef.createElement('div')
+  rootElement.id = ROOT_ID
+  rootElement.className = 'cranberry-panel'
+  documentRef.documentElement.appendChild(rootElement)
+  createRootFn(rootElement).render(<DictionaryOverlay />)
+  return rootElement
+}
+
+function parseDictionaryData(response: unknown): DictionaryData | undefined {
+  if (typeof response !== 'string') {
+    return undefined
+  }
+
+  return JSON.parse(response) as DictionaryData
+}
+
+export function installDictionarySelectionLookup(
+  windowRef: Window,
+  documentRef: Document,
+  deps: DictionarySelectionDeps = {},
+) {
+  const runtime = deps.runtime || chrome.runtime
+  ensureRoot(documentRef, deps.createRoot || createRoot)
+
+  const handleMouseUp = () => {
+    const selection = windowRef.getSelection()
+    const text = selection?.toString().trim() || ''
+    ENGLISH_SELECTION_RE.lastIndex = 0
+    if (!text || !ENGLISH_SELECTION_RE.test(text)) {
+      ballStore.setBall({ show: false, onActive: () => undefined })
+      return
+    }
+
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : undefined
+    if (!range) {
+      ballStore.setBall({ show: false, onActive: () => undefined })
+      return
+    }
+
+    const rect = range.getBoundingClientRect()
+    const x = rect.right
+    const y = rect.top || 0
+
+    ballStore.setBall({
+      show: true,
+      x,
+      y: y - 16,
+      onActive: () => {
+        ballStore.close()
+        panelStore.mergeData({
+          show: true,
+          x,
+          y: y - 80,
+          query: text,
+          data: undefined,
+          range,
+        })
+
+        runtime.sendMessage(
+          createDictionaryFetchMessage(createYoudaoUrl(text)),
+          (response: unknown) => {
+            const data = parseDictionaryData(response)
+            if (data) {
+              panelStore.mergeData({ data })
+            }
+          },
+        )
+      },
+    })
+  }
+
+  const handleMouseDown = (event: MouseEvent) => {
+    if (isInDictPanel(event.target)) {
+      return
+    }
+    panelStore.mergeData({ show: false })
+  }
+
+  documentRef.addEventListener('mouseup', handleMouseUp)
+  documentRef.addEventListener('mousedown', handleMouseDown)
+
+  return () => {
+    documentRef.removeEventListener('mouseup', handleMouseUp)
+    documentRef.removeEventListener('mousedown', handleMouseDown)
+  }
+}
