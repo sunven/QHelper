@@ -1,6 +1,6 @@
 export const ZREAD_BUTTON_ID = 'qhelper-zread-button';
 export const ZREAD_WRAPPER_SELECTOR = '[data-qhelper-zread-wrapper="true"]';
-const ZREAD_ICON_PATH = 'icons/q-16.png';
+const ZREAD_ICON_PATH = 'icons/zread-favicon.ico';
 const PREVIOUS_VSCODE_URL_PREFIX = 'https://vscode.dev/github/';
 const REPOSITORY_NWO_META_SELECTOR = 'meta[name="octolytics-dimension-repository_nwo"]';
 const GLOBAL_HEADER_TARGET_SELECTORS = [

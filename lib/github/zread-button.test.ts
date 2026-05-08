@@ -183,8 +183,8 @@ describe('syncZreadButton', () => {
     expect(button?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
     expect(button?.className).toContain('d-inline-flex');
     expect(button?.className).toContain('flex-items-center');
-    expect(getURL).toHaveBeenCalledWith('icons/q-16.png');
-    expect(icon?.src).toBe('chrome-extension://qhelper-test/icons/q-16.png');
+    expect(getURL).toHaveBeenCalledWith('icons/zread-favicon.ico');
+    expect(icon?.src).toBe('chrome-extension://qhelper-test/icons/zread-favicon.ico');
     expect(icon?.alt).toBe('');
     expect(icon?.width).toBe(16);
     expect(icon?.height).toBe(16);
