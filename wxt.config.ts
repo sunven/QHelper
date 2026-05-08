@@ -85,6 +85,12 @@ export default defineConfig({
       48: '/icons/q-48.png',
       128: '/icons/q-128.png',
     },
+    web_accessible_resources: [
+      {
+        resources: ['icons/q-16.png'],
+        matches: ['*://github.com/*'],
+      },
+    ],
     action: {
       default_popup: 'popup',
     },
