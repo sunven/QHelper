@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { createRoot } from 'react-dom/client';
 import { marked, type Tokens } from 'marked';
 import hljs from 'highlight.js';
 import { Copy, Download, FileText } from 'lucide-react';
@@ -7,7 +6,8 @@ import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import { createRoot } from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 const renderer = new marked.Renderer();
 renderer.code = ({ text, lang }: Tokens.Code) => {
@@ -230,7 +230,7 @@ ${state.html}
   );
 }
 
-function App() {
+export function App() {
   return (
     <ToolErrorBoundary>
       <MarkdownEditor />
@@ -238,5 +238,9 @@ function App() {
   );
 }
 
-const root = createRoot(document.getElementById('app')!);
-root.render(<App />);
+const rootElement = document.getElementById('app');
+if (rootElement) {
+  if (redirectLegacyToolPageToSpa('markdown')) {
+    createRoot(rootElement).render(<App />);
+  }
+}

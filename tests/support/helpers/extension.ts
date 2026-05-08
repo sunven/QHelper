@@ -1,6 +1,10 @@
 import type { BrowserContext, Page } from '@playwright/test';
 
 export function toolUrl(extensionId: string, toolName: string): string {
+  return `chrome-extension://${extensionId}/tools.html#/${toolName}`;
+}
+
+export function legacyToolUrl(extensionId: string, toolName: string): string {
   return `chrome-extension://${extensionId}/${toolName}.html`;
 }
 

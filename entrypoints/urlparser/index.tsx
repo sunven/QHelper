@@ -1,14 +1,14 @@
 import { useState, useMemo } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
-function URLParser() {
+export function URLParser() {
   const [input, setInput] = useState('');
 
   const parsed = useMemo(() => {
@@ -170,11 +170,13 @@ function URLParser() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="urlparser" toolName="URL 解析器"><URLParser /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="urlparser" toolName="URL 解析器">
-      <URLParser />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('urlparser')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

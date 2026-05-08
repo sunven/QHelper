@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/button'
-import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import {
   eraseDownloadHistoryRecords,
   listDownloadsForCleanup,
@@ -22,8 +21,9 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import ReactDOM from 'react-dom/client'
-import '../../index.css'
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 type ScanState = 'idle' | 'loading' | 'ready' | 'cleaning' | 'error'
 
@@ -307,5 +307,7 @@ export function App() {
 
 const root = document.getElementById('app')
 if (root) {
-  ReactDOM.createRoot(root).render(<App />)
+  if (redirectLegacyToolPageToSpa('downloads')) {
+    ReactDOM.createRoot(root).render(<App />)
+  }
 }

@@ -120,6 +120,12 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
         description: '解析 URL 各个组成部分',
       },
       {
+        key: 'filemerge',
+        name: 'JS 文件合并',
+        path: '/filemerge.html',
+        description: '合并多个远程 JavaScript 文件',
+      },
+      {
         key: 'csstool',
         name: 'CSS 工具',
         path: '/csstool.html',

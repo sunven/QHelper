@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FileJson, FileText, Copy } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
-function CSVToJSON() {
+export function CSVToJSON() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
@@ -233,11 +233,13 @@ function CSVToJSON() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="csv2json" toolName="CSV 转 JSON"><CSVToJSON /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="csv2json" toolName="CSV 转 JSON">
-      <CSVToJSON />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('csv2json')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

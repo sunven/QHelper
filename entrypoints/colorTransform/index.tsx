@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Palette, ArrowRight } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
-function ColorTransformTool() {
+export function ColorTransformTool() {
   const [srcRgb, setSrcRgb] = useState(['', '', '']);
   const [desHex, setDesHex] = useState('');
   const [srcHex, setSrcHex] = useState('');
@@ -144,11 +144,13 @@ function ColorTransformTool() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="colorTransform" toolName="颜色转换"><ColorTransformTool /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="colorTransform" toolName="颜色转换">
-      <ColorTransformTool />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('colorTransform')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

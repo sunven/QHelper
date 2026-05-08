@@ -40,6 +40,7 @@ declare module "wxt/browser" {
     | "/svgoptimizer.html"
     | "/timestamp.html"
     | "/toml.html"
+    | "/tools.html"
     | "/trans-radix.html"
     | "/uglify-worker.html"
     | "/uglify.html"

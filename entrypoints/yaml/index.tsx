@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import * as yaml from 'js-yaml';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -7,9 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, FileCode, FileJson, ArrowRightLeft } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
-function YAMLConverter() {
+export function YAMLConverter() {
   const [input, setInput] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
@@ -214,11 +214,13 @@ address:
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="yaml" toolName="YAML 转换器"><YAMLConverter /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="yaml" toolName="YAML 转换器">
-      <YAMLConverter />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('yaml')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

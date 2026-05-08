@@ -1,6 +1,4 @@
-import '../../index.css';
 import * as beautify from 'js-beautify';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { useState } from 'react';
 import { copyToClipboard } from '../../lib/utils';
@@ -9,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Copy, FileCode, FileJson, FileType, Database } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 type CodeType = 'js' | 'css' | 'html' | 'xml' | 'sql';
 
@@ -20,7 +20,7 @@ const codeTypes: { type: CodeType; label: string; icon: React.ReactNode }[] = [
   { type: 'sql', label: 'SQL', icon: <Database className="w-4 h-4" /> },
 ];
 
-function CodeBeautifyTool() {
+export function CodeBeautifyTool() {
   const [source, setSource] = useState('');
   const [result, setResult] = useState('');
   const [codeType, setCodeType] = useState<CodeType>('js');
@@ -123,11 +123,13 @@ function CodeBeautifyTool() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="codebeautify" toolName="代码美化"><CodeBeautifyTool /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="codebeautify" toolName="代码美化">
-      <CodeBeautifyTool />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('codebeautify')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

@@ -31,6 +31,7 @@ import { removeAll } from '@/lib/chrome/cookies'
 import { create } from '@/lib/chrome/tabs'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import { toolRegistry } from '@/lib/registry/ToolRegistry'
+import { getToolsSpaPath } from '@/lib/tools-spa'
 import '../../index.css'
 
 type PopupTool = {
@@ -189,7 +190,7 @@ function App() {
       id: tool.id,
       name: tool.name,
       description: tool.description,
-      url: tool.entry,
+      url: getToolsSpaPath(tool.id),
       type: 'jump' as const,
       category: tool.category,
     }))

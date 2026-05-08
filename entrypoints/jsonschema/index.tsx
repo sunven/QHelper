@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import Ajv from 'ajv';
 import { FileJson, Shield, Copy, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import { createRoot } from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 interface JsonSchemaState {
   jsonData: string;
@@ -312,7 +312,7 @@ function JsonSchemaValidator() {
   );
 }
 
-function App() {
+export function App() {
   return (
     <ToolErrorBoundary>
       <JsonSchemaValidator />
@@ -320,5 +320,9 @@ function App() {
   );
 }
 
-const root = createRoot(document.getElementById('app')!);
-root.render(<App />);
+const rootElement = document.getElementById('app');
+if (rootElement) {
+  if (redirectLegacyToolPageToSpa('jsonschema')) {
+    createRoot(rootElement).render(<App />);
+  }
+}

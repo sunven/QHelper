@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import js_beautify from 'js-beautify';
 import { Copy, Download, FileCode, Minimize2, Maximize2, Settings2 } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import { createRoot } from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 interface HtmlFormatState {
   input: string;
@@ -244,7 +244,7 @@ function HtmlFormatter() {
   );
 }
 
-function App() {
+export function App() {
   return (
     <ToolErrorBoundary>
       <HtmlFormatter />
@@ -252,5 +252,9 @@ function App() {
   );
 }
 
-const root = createRoot(document.getElementById('app')!);
-root.render(<App />);
+const rootElement = document.getElementById('app');
+if (rootElement) {
+  if (redirectLegacyToolPageToSpa('htmlformat')) {
+    createRoot(rootElement).render(<App />);
+  }
+}

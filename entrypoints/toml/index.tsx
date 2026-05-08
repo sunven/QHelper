@@ -1,12 +1,12 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import TOMLParser from 'toml-j0.4';
 import { Copy, Download, FileJson, FileCode, ArrowLeftRight, Zap } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import { createRoot } from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 interface TomlState {
   input: string;
@@ -248,7 +248,7 @@ dc = "eqdc10"
   );
 }
 
-function App() {
+export function App() {
   return (
     <ToolErrorBoundary>
       <TomlParser />
@@ -256,5 +256,9 @@ function App() {
   );
 }
 
-const root = createRoot(document.getElementById('app')!);
-root.render(<App />);
+const rootElement = document.getElementById('app');
+if (rootElement) {
+  if (redirectLegacyToolPageToSpa('toml')) {
+    createRoot(rootElement).render(<App />);
+  }
+}

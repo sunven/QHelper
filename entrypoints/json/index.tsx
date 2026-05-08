@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import ReactDOM from 'react-dom/client';
 import ReactJsonView from 'react-json-view';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,8 @@ import { useToolHistory } from '@/hooks/useToolHistory';
 import { useKeyboardShortcuts, type KeyboardShortcut } from '@/hooks/useKeyboardShortcuts';
 import type { HistoryEntry } from '@/types/storage';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 // 文件大小阈值
 const SIZE_THRESHOLDS = {
@@ -65,7 +65,7 @@ interface HistoryItem {
   content: string;
 }
 
-function JsonTool() {
+export function JsonTool() {
   const [jsoncon, setJsoncon] = useState('');
   const [newjsoncon, setNewjsoncon] = useState('');
   const [baseview, setBaseview] = useState<'formatter' | 'diff'>('formatter');
@@ -664,7 +664,14 @@ function JsonTool() {
 }
 
 // Mount the React app
+
+export function App() {
+  return <JsonTool />;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(<JsonTool />);
+  if (redirectLegacyToolPageToSpa('json')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

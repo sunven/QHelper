@@ -17,7 +17,7 @@ test.describe('Extension Popup', () => {
     const toolPage = await popup.clickTool('json');
 
     await expect(toolPage).toHaveURL(
-      new RegExp(`chrome-extension://${extensionId}/json`),
+      `chrome-extension://${extensionId}/tools.html#/json`,
     );
     await toolPage.close();
   });
@@ -28,7 +28,7 @@ test.describe('Extension Popup', () => {
     const toolPage = await popup.clickTool('timestamp');
 
     await expect(toolPage).toHaveURL(
-      new RegExp(`chrome-extension://${extensionId}/timestamp`),
+      `chrome-extension://${extensionId}/tools.html#/timestamp`,
     );
     await toolPage.close();
   });
@@ -39,7 +39,7 @@ test.describe('Extension Popup', () => {
     const toolPage = await popup.clickTool('convert');
 
     await expect(toolPage).toHaveURL(
-      new RegExp(`chrome-extension://${extensionId}/convert`),
+      `chrome-extension://${extensionId}/tools.html#/convert`,
     );
     await toolPage.close();
   });
@@ -50,7 +50,7 @@ test.describe('Extension Popup', () => {
     const toolPage = await popup.clickTool('password');
 
     await expect(toolPage).toHaveURL(
-      new RegExp(`chrome-extension://${extensionId}/password`),
+      `chrome-extension://${extensionId}/tools.html#/password`,
     );
     await toolPage.close();
   });

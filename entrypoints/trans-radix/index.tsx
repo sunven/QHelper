@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 const RADIX_OPTIONS = [
   { value: 2, label: '2进制' },
@@ -15,7 +15,7 @@ const RADIX_OPTIONS = [
   { value: 16, label: '16进制' },
 ];
 
-function TransRadixTool() {
+export function TransRadixTool() {
   const [radixRadio1, setRadixRadio1] = useState(10);
   const [radixSelect1, setRadixSelect1] = useState<number | undefined>(undefined);
   const [value1, setValue1] = useState('');
@@ -179,11 +179,13 @@ function TransRadixTool() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="trans-radix" toolName="进制转换"><TransRadixTool /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="trans-radix" toolName="进制转换">
-      <TransRadixTool />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('trans-radix')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

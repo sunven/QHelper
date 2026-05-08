@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { copyToClipboard } from '../../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -8,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Zap, Copy, Play } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 const UGLIFY_REQUEST_TYPE = 'QHELPER_UGLIFY_MINIFY';
 const UGLIFY_RESULT_TYPE = 'QHELPER_UGLIFY_RESULT';
@@ -184,7 +184,7 @@ async function minifyInSandbox(source: string, options: UglifyOptions): Promise<
   });
 }
 
-function UglifyTool() {
+export function UglifyTool() {
   const [source, setSource] = useState('');
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
@@ -310,11 +310,13 @@ function UglifyTool() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="uglify" toolName="JavaScript 压缩"><UglifyTool /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="uglify" toolName="JavaScript 压缩">
-      <UglifyTool />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('uglify')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

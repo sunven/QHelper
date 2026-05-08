@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -9,7 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Upload, X, Image as ImageIcon, Download, Trash2, Settings } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 interface ImageItem {
   id: string;
@@ -44,7 +44,7 @@ function SortableItem({ id, src, onRemove }: { id: string; src: string; onRemove
   );
 }
 
-function PictureSplicingTool() {
+export function PictureSplicingTool() {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [direction, setDirection] = useState<'horizontal' | 'vertical'>('horizontal');
   const [gap, setGap] = useState(0);
@@ -323,11 +323,13 @@ function PictureSplicingTool() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="pictureSplicing" toolName="图片拼接"><PictureSplicingTool /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="pictureSplicing" toolName="图片拼接">
-      <PictureSplicingTool />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('pictureSplicing')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

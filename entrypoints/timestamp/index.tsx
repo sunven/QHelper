@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useToolState } from '@/hooks/useToolState';
-import ReactDOM from 'react-dom/client';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowRight, ArrowLeft, Clock } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
-function TimestampTool() {
+export function TimestampTool() {
   const [nowDate, setNowDate] = useState('');
   const [now, setNow] = useState('');
   const [srcStamp, setSrcStamp] = useToolState('timestamp', 'srcStamp', '');
@@ -150,11 +150,13 @@ function TimestampTool() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="timestamp" toolName="时间戳转换"><TimestampTool /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="timestamp" toolName="时间戳转换">
-      <TimestampTool />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('timestamp')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

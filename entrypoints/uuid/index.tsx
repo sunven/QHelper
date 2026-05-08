@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Copy, RefreshCw, Trash2 } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
-function UUIDGenerator() {
+export function UUIDGenerator() {
   const [uuids, setUuids] = useState<string[]>(['']);
   const [count, setCount] = useState(1);
   const [uppercase, setUppercase] = useState(false);
@@ -182,11 +182,13 @@ function UUIDGenerator() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="uuid" toolName="UUID 生成器"><UUIDGenerator /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="uuid" toolName="UUID 生成器">
-      <UUIDGenerator />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('uuid')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

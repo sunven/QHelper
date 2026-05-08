@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,9 +10,10 @@ import { Copy, RefreshCw, Shield, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { useToolState } from '@/hooks/useToolState';
 import { CopyButton } from '@/components/tool/CopyButton';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
-function PasswordGenerator() {
+export function PasswordGenerator() {
   // 使用持久化状态保存用户配置
   const [length, setLength] = useToolState('password', 'length', 16);
   const [password, setPassword] = useState('');
@@ -270,11 +270,13 @@ function PasswordGenerator() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="password" toolName="密码生成器"><PasswordGenerator /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="password" toolName="密码生成器">
-      <PasswordGenerator />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('password')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

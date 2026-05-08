@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import ReactDOM from 'react-dom/client';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +9,8 @@ import { useToolHistory } from '@/hooks/useToolHistory';
 import { useToolState } from '@/hooks/useToolState';
 import { CopyButton } from '@/components/tool/CopyButton';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 type EncodeType =
   | 'htmlEscape'
@@ -44,7 +44,7 @@ const encodeItems: EncodeItem[] = [
   { label: 'HTML转JS', type: 'html2js', icon: <FileCode className="w-4 h-4" />, direction: 'encode' },
 ];
 
-function ConvertTool() {
+export function ConvertTool() {
   const [srcText, setSrcText] = useToolState('convert', 'srcText', '');
   const [result, setResult] = useState('');
 
@@ -311,11 +311,13 @@ function ConvertTool() {
   );
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="convert" toolName="字符串编解码"><ConvertTool /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app');
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="convert" toolName="字符串编解码">
-      <ConvertTool />
-    </ToolErrorBoundary>,
-  );
+  if (redirectLegacyToolPageToSpa('convert')) {
+    ReactDOM.createRoot(root).render(<App />);
+  }
 }

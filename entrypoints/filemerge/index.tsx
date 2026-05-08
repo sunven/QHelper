@@ -1,13 +1,13 @@
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
-import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { buildDownloadFileName, mergeRemoteText, parseMergeInput } from '@/lib/filemerge/merge'
 import { Download, FileCode } from 'lucide-react'
 import { useState } from 'react'
-import ReactDOM from 'react-dom/client'
-import '../../index.css'
+import { ToolPageShell } from '@/components/tool/ToolPageShell';
+import ReactDOM from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 function downloadByData(data: string) {
   const url = window.URL.createObjectURL(
@@ -25,7 +25,7 @@ function downloadByData(data: string) {
   window.URL.revokeObjectURL(url)
 }
 
-function FileMergeTool() {
+export function FileMergeTool() {
   const [source, setSource] = useState('')
 
   async function handleDownload() {
@@ -70,11 +70,13 @@ function FileMergeTool() {
   )
 }
 
+export function App() {
+  return <ToolErrorBoundary toolId="filemerge" toolName="JS 文件合并"><FileMergeTool /></ToolErrorBoundary>;
+}
+
 const root = document.getElementById('app')
 if (root) {
-  ReactDOM.createRoot(root).render(
-    <ToolErrorBoundary toolId="filemerge" toolName="JS 文件合并">
-      <FileMergeTool />
-    </ToolErrorBoundary>,
-  )
+  if (redirectLegacyToolPageToSpa('filemerge')) {
+    ReactDOM.createRoot(root).render(<App />)
+  }
 }

@@ -2,6 +2,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToolSideNavigation, createToolMenuItems, findCategoryKeyForTool } from './ToolSideNavigation';
 import type { Tool } from '@/lib/navigation-config';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 
 const { getCurrentToolKey, navigateToTool } = vi.hoisted(() => ({
   getCurrentToolKey: vi.fn(),
@@ -73,5 +74,28 @@ describe('ToolSideNavigation', () => {
         path: '/trans-radix.html',
       }) satisfies Partial<Tool>,
     );
+  });
+
+  it('changes only the React Router location when rendered inside the tools SPA', async () => {
+    function LocationProbe() {
+      const location = useLocation();
+      return <div data-testid="router-location">{location.pathname}</div>;
+    }
+
+    render(
+      <MemoryRouter initialEntries={['/json']}>
+        <ToolSideNavigation />
+        <Routes>
+          <Route path="/:toolId" element={<LocationProbe />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(screen.getByRole('menuitem', { name: /进制转换/ }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('router-location')).toHaveTextContent('/trans-radix');
+    });
+    expect(navigateToTool).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,5 @@
 import { test, expect } from '../support/fixtures';
-import { openToolPage } from '../support/helpers/extension';
+import { legacyToolUrl, openToolPage } from '../support/helpers/extension';
 
 const toolPages = [
   'json',
@@ -22,6 +22,7 @@ const toolPages = [
   'uuid',
   'password',
   'urlparser',
+  'filemerge',
   'pictureSplicing',
   'scss',
   'uglify',
@@ -29,7 +30,7 @@ const toolPages = [
 
 test('tool shell uses compact header without legacy hero metadata', async ({ context, extensionId }) => {
   const page = await openToolPage(context, extensionId, 'json');
-  const header = page.locator('main > section').first();
+  const header = page.locator('main .tool-page-view > section').first();
 
   await expect(header.locator('.tool-hero-title')).toBeVisible();
   await expect(header.getByText('QHelper Workspace')).toHaveCount(0);
@@ -80,6 +81,34 @@ test('tool navigation uses the left-side antd menu', async ({ context, extension
   expect(scrollMetrics.navigationOverflowY).toBe('auto');
   expect(scrollMetrics.mainCanScroll).toBe(true);
   await expect(page.getByTestId('tool-category-chevron-encoding')).toHaveCount(0);
+
+  await page.close();
+});
+
+test('legacy tool URL redirects into the shared tools SPA entry', async ({ context, extensionId }) => {
+  const page = await context.newPage();
+  await page.goto(legacyToolUrl(extensionId, 'json'));
+
+  await expect(page).toHaveURL(`chrome-extension://${extensionId}/tools.html#/json`);
+  await expect(page.getByTestId('json-input')).toBeVisible();
+
+  await page.close();
+});
+
+test('tool navigation keeps form state inside the shared SPA', async ({ context, extensionId }) => {
+  const page = await openToolPage(context, extensionId, 'json');
+  const input = page.getByTestId('json-input');
+
+  await input.fill('{"spa":true}');
+  await expect(input).toHaveValue('{"spa":true}');
+
+  await page.getByTestId('tool-side-navigation').getByRole('menuitem', { name: /进制转换/ }).click();
+  await expect(page).toHaveURL(`chrome-extension://${extensionId}/tools.html#/trans-radix`);
+  await expect(page.getByRole('heading', { name: '进制转换' })).toBeVisible();
+
+  await page.getByTestId('tool-side-navigation').getByRole('menuitem', { name: /JSON 格式化/ }).click();
+  await expect(page).toHaveURL(`chrome-extension://${extensionId}/tools.html#/json`);
+  await expect(page.getByTestId('json-input')).toHaveValue('{"spa":true}');
 
   await page.close();
 });

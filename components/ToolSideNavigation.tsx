@@ -3,7 +3,9 @@ import { Menu, type MenuProps } from 'antd';
 import 'antd/dist/reset.css';
 import { TOOL_CATEGORIES, type Tool } from '@/lib/navigation-config';
 import { getCurrentToolKey, navigateToTool } from '@/lib/navigation-utils';
+import { getToolRoutePath } from '@/lib/tools-spa';
 import { cn } from '@/lib/utils';
+import { useInRouterContext, useLocation, useNavigate } from 'react-router';
 
 type MenuItem = Required<MenuProps>['items'][number];
 
@@ -39,8 +41,55 @@ function createToolByKey(): Map<string, Tool> {
   return toolByKey;
 }
 
+function getToolKeyFromRouterPath(pathname: string): string | null {
+  const toolKey = pathname.replace(/^\/+/, '').split('/')[0];
+  return toolKey || null;
+}
+
 export function ToolSideNavigation({ className }: { className?: string }) {
-  const currentToolKey = getCurrentToolKey();
+  const inRouter = useInRouterContext();
+
+  if (inRouter) {
+    return <RouterToolSideNavigation className={className} />;
+  }
+
+  return <StandaloneToolSideNavigation className={className} currentToolKey={getCurrentToolKey()} />;
+}
+
+function RouterToolSideNavigation({ className }: { className?: string }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  return (
+    <ToolSideNavigationContent
+      className={className}
+      currentToolKey={getToolKeyFromRouterPath(location.pathname)}
+      onToolSelect={(tool) => {
+        void navigate(getToolRoutePath(tool.key));
+      }}
+    />
+  );
+}
+
+function StandaloneToolSideNavigation({ className, currentToolKey }: { className?: string; currentToolKey: string | null }) {
+  return (
+    <ToolSideNavigationContent
+      className={className}
+      currentToolKey={currentToolKey}
+      onToolSelect={navigateToTool}
+    />
+  );
+}
+
+function ToolSideNavigationContent({
+  className,
+  currentToolKey,
+  onToolSelect,
+}: {
+  className?: string;
+  currentToolKey: string | null;
+  onToolSelect: (tool: Tool) => void;
+}) {
   const currentCategoryKey = findCategoryKeyForTool(currentToolKey);
   const items = React.useMemo(() => createToolMenuItems(), []);
   const toolByKey = React.useMemo(() => createToolByKey(), []);
@@ -57,7 +106,7 @@ export function ToolSideNavigation({ className }: { className?: string }) {
   const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
     const tool = toolByKey.get(key);
     if (tool) {
-      navigateToTool(tool);
+      onToolSelect(tool);
     }
   };
 

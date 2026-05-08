@@ -1,11 +1,11 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import { Copy, Download, FileJson, FileCode, Zap } from 'lucide-react';
 import { ToolErrorBoundary } from '../../components/ToolErrorBoundary';
 import { useToolHistory } from '../../hooks/useToolHistory';
 import type { ToolHistoryItem } from '../../types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
-import '../../index.css';
+import { createRoot } from 'react-dom/client';
+import { redirectLegacyToolPageToSpa } from '@/lib/tools-spa';
 
 const SCSS_REQUEST_TYPE = 'QHELPER_SCSS_COMPILE';
 const SCSS_RESULT_TYPE = 'QHELPER_SCSS_RESULT';
@@ -384,7 +384,7 @@ $font-size: 16px;
   );
 }
 
-function App() {
+export function App() {
   return (
     <ToolErrorBoundary>
       <ScssCompiler />
@@ -392,5 +392,9 @@ function App() {
   );
 }
 
-const root = createRoot(document.getElementById('app')!);
-root.render(<App />);
+const rootElement = document.getElementById('app');
+if (rootElement) {
+  if (redirectLegacyToolPageToSpa('scss')) {
+    createRoot(rootElement).render(<App />);
+  }
+}
