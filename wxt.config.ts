@@ -87,7 +87,7 @@ export default defineConfig({
     },
     web_accessible_resources: [
       {
-        resources: ['icons/q-16.png'],
+        resources: ['icons/zread-favicon.ico'],
         matches: ['*://github.com/*'],
       },
     ],
