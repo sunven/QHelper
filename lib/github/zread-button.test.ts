@@ -112,6 +112,18 @@ function stubMutationObserver() {
   };
 }
 
+function stubChromeRuntimeGetUrl() {
+  const getURL = vi.fn((path: string) => `chrome-extension://qhelper-test/${path}`);
+
+  vi.stubGlobal('chrome', {
+    runtime: {
+      getURL,
+    },
+  });
+
+  return { getURL };
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
@@ -159,6 +171,28 @@ describe('buildZreadUrl', () => {
 
 describe('syncZreadButton', () => {
   it('renders a single Zread button on repository root pages', () => {
+    const { getURL } = stubChromeRuntimeGetUrl();
+    renderGitHubHeader();
+
+    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
+
+    const button = document.querySelector<HTMLAnchorElement>(`#${ZREAD_BUTTON_ID}`);
+    const icon = button?.querySelector('img');
+    expect(button).not.toBeNull();
+    expect(button?.textContent).toBe('Zread');
+    expect(button?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
+    expect(button?.className).toContain('d-inline-flex');
+    expect(button?.className).toContain('flex-items-center');
+    expect(getURL).toHaveBeenCalledWith('icons/q-16.png');
+    expect(icon?.src).toBe('chrome-extension://qhelper-test/icons/q-16.png');
+    expect(icon?.src).not.toBe('https://zread.ai/favicon.ico');
+    expect(icon?.alt).toBe('');
+    expect(icon?.width).toBe(16);
+    expect(icon?.height).toBe(16);
+    expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
+  });
+
+  it('renders the Zread button without an icon when extension runtime APIs are unavailable', () => {
     renderGitHubHeader();
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
@@ -167,13 +201,7 @@ describe('syncZreadButton', () => {
     expect(button).not.toBeNull();
     expect(button?.textContent).toBe('Zread');
     expect(button?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
-    expect(button?.className).toContain('d-inline-flex');
-    expect(button?.className).toContain('flex-items-center');
-    expect(button?.querySelector('img')?.src).toBe('https://zread.ai/favicon.ico');
-    expect(button?.querySelector('img')?.alt).toBe('');
-    expect(button?.querySelector('img')?.width).toBe(16);
-    expect(button?.querySelector('img')?.height).toBe(16);
-    expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
+    expect(button?.querySelector('img')).toBeNull();
   });
 
   it('renders a Zread button in the global header on repository subpages', () => {
