@@ -40,39 +40,46 @@ test('tool shell uses compact header without legacy hero metadata', async ({ con
   await page.close();
 });
 
-test('tool navigation opens category panel on click and closes on pointer leave', async ({ context, extensionId }) => {
+test('tool navigation uses the left-side antd menu', async ({ context, extensionId }) => {
   const page = await openToolPage(context, extensionId, 'json');
-  const encodingButton = page.getByRole('button', { name: '编码转换' });
-  const encodingChevron = page.getByTestId('tool-category-chevron-encoding');
-  const convertTool = page.getByRole('link', { name: /字符串编解码/ });
+  const navigation = page.getByTestId('tool-side-navigation');
+  const main = page.getByTestId('tool-page-main');
+  const selectedJsonTool = navigation.getByRole('menuitem', { name: /JSON 格式化/ });
 
-  await expect(encodingChevron).toBeVisible();
-  await encodingButton.hover();
-  await expect(convertTool).toHaveCount(0);
+  await expect(navigation).toBeVisible();
+  await expect(main).toBeVisible();
+  await expect(navigation.getByRole('menuitem', { name: '常用' })).toBeVisible();
+  await expect(selectedJsonTool).toBeVisible();
+  await expect(selectedJsonTool).toHaveClass(/ant-menu-item-selected/);
+  await expect(navigation.getByRole('menuitem', { name: /进制转换/ })).toBeVisible();
 
-  await encodingButton.click();
-  await expect(convertTool).toBeVisible();
-  await expect(encodingButton).toHaveAttribute('aria-expanded', 'true');
-  const categoryItemSizes = await page.locator('#tool-category-panel-encoding a').evaluateAll((items) =>
-    items.map((item) => {
-      const rect = item.getBoundingClientRect();
-      return { height: rect.height, width: rect.width };
-    }),
-  );
-  expect(new Set(categoryItemSizes.map((size) => Math.round(size.height))).size).toBe(1);
-  expect(new Set(categoryItemSizes.map((size) => Math.round(size.width))).size).toBe(1);
+  const boxes = await Promise.all([navigation.boundingBox(), main.boundingBox()]);
+  expect(boxes[0]).not.toBeNull();
+  expect(boxes[1]).not.toBeNull();
+  expect(boxes[0]!.x + boxes[0]!.width).toBeLessThanOrEqual(boxes[1]!.x + 1);
+  const scrollMetrics = await page.evaluate(() => {
+    const main = document.querySelector<HTMLElement>('[data-testid="tool-page-main"]');
+    const navigationScroll = document.querySelector<HTMLElement>('[data-testid="tool-side-navigation-scroll"]');
+    const spacer = document.createElement('div');
+    spacer.style.height = '200vh';
+    spacer.dataset.testOnly = 'main-scroll-spacer';
+    main?.append(spacer);
 
-  await page.locator('main').hover();
-  await expect(convertTool).toHaveCount(0);
-  await expect(encodingButton).toHaveAttribute('aria-expanded', 'false');
-
-  await encodingButton.click();
-  await expect(convertTool).toBeVisible();
-  await expect(encodingButton).toHaveAttribute('aria-expanded', 'true');
-
-  await encodingButton.click();
-  await expect(convertTool).toHaveCount(0);
-  await expect(encodingButton).toHaveAttribute('aria-expanded', 'false');
+    return {
+      bodyClientHeight: document.documentElement.clientHeight,
+      bodyScrollHeight: document.documentElement.scrollHeight,
+      mainCanScroll: main ? main.scrollHeight > main.clientHeight : false,
+      mainOverflowY: main ? getComputedStyle(main).overflowY : '',
+      navigationOverflowY: navigationScroll ? getComputedStyle(navigationScroll).overflowY : '',
+      pageOverflowY: getComputedStyle(document.querySelector<HTMLElement>('.tool-page-shell')!).overflowY,
+    };
+  });
+  expect(scrollMetrics.bodyScrollHeight).toBeLessThanOrEqual(scrollMetrics.bodyClientHeight + 1);
+  expect(scrollMetrics.pageOverflowY).toBe('hidden');
+  expect(scrollMetrics.mainOverflowY).toBe('auto');
+  expect(scrollMetrics.navigationOverflowY).toBe('auto');
+  expect(scrollMetrics.mainCanScroll).toBe(true);
+  await expect(page.getByTestId('tool-category-chevron-encoding')).toHaveCount(0);
 
   await page.close();
 });

@@ -5,17 +5,20 @@ declare global {
   const InvalidMatchPattern: typeof import('wxt/utils/match-patterns').InvalidMatchPattern
   const MatchPattern: typeof import('wxt/utils/match-patterns').MatchPattern
   const ToolErrorBoundary: typeof import('/Users/sunven/github/QHelper/components/ToolErrorBoundary').ToolErrorBoundary
-  const ToolNavigation: typeof import('/Users/sunven/github/QHelper/components/ToolNavigation').ToolNavigation
+  const ToolSideNavigation: typeof import('/Users/sunven/github/QHelper/components/ToolSideNavigation').ToolSideNavigation
   const browser: typeof import('wxt/browser').browser
   const createIframeUi: typeof import('wxt/utils/content-script-ui/iframe').createIframeUi
   const createIntegratedUi: typeof import('wxt/utils/content-script-ui/integrated').createIntegratedUi
   const createShadowRootUi: typeof import('wxt/utils/content-script-ui/shadow-root').createShadowRootUi
+  const createToolMenuItems: typeof import('/Users/sunven/github/QHelper/components/ToolSideNavigation').createToolMenuItems
   const defineAppConfig: typeof import('wxt/utils/define-app-config').defineAppConfig
   const defineBackground: typeof import('wxt/utils/define-background').defineBackground
   const defineContentScript: typeof import('wxt/utils/define-content-script').defineContentScript
   const defineUnlistedScript: typeof import('wxt/utils/define-unlisted-script').defineUnlistedScript
   const defineWxtPlugin: typeof import('wxt/utils/define-wxt-plugin').defineWxtPlugin
   const fakeBrowser: typeof import('wxt/testing').fakeBrowser
+  const findCategoryKeyForTool: typeof import('/Users/sunven/github/QHelper/components/ToolSideNavigation').findCategoryKeyForTool
+  const getAppConfig: typeof import('wxt/utils/app-config').getAppConfig
   const getShortcutDisplayText: typeof import('/Users/sunven/github/QHelper/hooks/useKeyboardShortcuts').getShortcutDisplayText
   const injectScript: typeof import('wxt/utils/inject-script').injectScript
   const storage: typeof import('wxt/utils/storage').storage
