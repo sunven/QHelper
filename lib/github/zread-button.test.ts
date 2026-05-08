@@ -185,7 +185,6 @@ describe('syncZreadButton', () => {
     expect(button?.className).toContain('flex-items-center');
     expect(getURL).toHaveBeenCalledWith('icons/q-16.png');
     expect(icon?.src).toBe('chrome-extension://qhelper-test/icons/q-16.png');
-    expect(icon?.src).not.toBe('https://zread.ai/favicon.ico');
     expect(icon?.alt).toBe('');
     expect(icon?.width).toBe(16);
     expect(icon?.height).toBe(16);
