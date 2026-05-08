@@ -15,6 +15,7 @@ declare module "wxt/browser" {
     | "/icons/q-128.png"
     | "/icons/q-16.png"
     | "/icons/q-48.png"
+    | "/icons/zread-favicon.ico"
     | "/json-string-panel.html"
     | "/libs/difflib.js"
     | "/libs/diffview.js"
