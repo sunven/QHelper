@@ -4,7 +4,7 @@ import { ToolPageShell } from './ToolPageShell';
 import { ToolWorkspaceShell } from './ToolWorkspaceShell';
 
 vi.mock('@/components/ToolSideNavigation', () => ({
-  ToolSideNavigation: () => <nav data-testid="tool-side-navigation">Tools</nav>,
+  ToolSideNavigation: () => <nav data-testid="tool-side-navigation">Side navigation</nav>,
 }));
 
 describe('ToolPageShell', () => {
@@ -34,6 +34,8 @@ describe('ToolWorkspaceShell', () => {
     );
 
     expect(screen.getByTestId('tool-page-main').closest('.tool-page-shell')).toHaveClass('h-screen', 'overflow-hidden');
+    expect(screen.getByTestId('tool-workspace-navbar')).toBeVisible();
+    expect(screen.getByText('QHelper Tools')).toBeVisible();
     expect(screen.getByTestId('tool-side-navigation-region')).toBeVisible();
     expect(screen.getByTestId('tool-side-navigation-region')).toHaveClass('min-h-0', 'shrink-0', 'lg:h-full', 'lg:w-[18.5rem]');
     expect(screen.getByTestId('tool-side-navigation-region')).not.toHaveClass('lg:fixed', 'lg:left-2');

@@ -50,6 +50,7 @@ describe('ToolSideNavigation', () => {
     render(<ToolSideNavigation />);
 
     expect(screen.getByTestId('tool-side-navigation')).toBeVisible();
+    expect(screen.queryByText('Tools')).not.toBeInTheDocument();
     expect(screen.getByText('常用')).toBeVisible();
     expect(screen.getByText('JSON 格式化')).toBeVisible();
     expect(screen.getByRole('menuitem', { name: /JSON 格式化/ })).toHaveClass('ant-menu-item-selected');

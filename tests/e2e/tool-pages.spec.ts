@@ -43,21 +43,27 @@ test('tool shell uses compact header without legacy hero metadata', async ({ con
 
 test('tool navigation uses the left-side antd menu', async ({ context, extensionId }) => {
   const page = await openToolPage(context, extensionId, 'json');
+  const navbar = page.getByTestId('tool-workspace-navbar');
   const navigation = page.getByTestId('tool-side-navigation');
   const main = page.getByTestId('tool-page-main');
   const selectedJsonTool = navigation.getByRole('menuitem', { name: /JSON 格式化/ });
 
+  await expect(navbar).toBeVisible();
+  await expect(navbar).toContainText('QHelper Tools');
   await expect(navigation).toBeVisible();
+  await expect(navigation.getByText('Tools')).toHaveCount(0);
   await expect(main).toBeVisible();
   await expect(navigation.getByRole('menuitem', { name: '常用' })).toBeVisible();
   await expect(selectedJsonTool).toBeVisible();
   await expect(selectedJsonTool).toHaveClass(/ant-menu-item-selected/);
   await expect(navigation.getByRole('menuitem', { name: /进制转换/ })).toBeVisible();
 
-  const boxes = await Promise.all([navigation.boundingBox(), main.boundingBox()]);
+  const boxes = await Promise.all([navbar.boundingBox(), navigation.boundingBox(), main.boundingBox()]);
   expect(boxes[0]).not.toBeNull();
   expect(boxes[1]).not.toBeNull();
-  expect(boxes[0]!.x + boxes[0]!.width).toBeLessThanOrEqual(boxes[1]!.x + 1);
+  expect(boxes[2]).not.toBeNull();
+  expect(boxes[1]!.y).toBeGreaterThanOrEqual(boxes[0]!.y + boxes[0]!.height - 1);
+  expect(boxes[1]!.x + boxes[1]!.width).toBeLessThanOrEqual(boxes[2]!.x + 1);
   const scrollMetrics = await page.evaluate(() => {
     const main = document.querySelector<HTMLElement>('[data-testid="tool-page-main"]');
     const navigationScroll = document.querySelector<HTMLElement>('[data-testid="tool-side-navigation-scroll"]');
