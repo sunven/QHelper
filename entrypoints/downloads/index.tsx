@@ -21,7 +21,7 @@ import {
   RefreshCw,
   Trash2,
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import '../../index.css'
 
@@ -128,7 +128,7 @@ function DownloadRow({
   )
 }
 
-function App() {
+export function App() {
   const [downloads, setDownloads] = useState<DownloadHistoryItem[]>([])
   const [scanState, setScanState] = useState<ScanState>('idle')
   const [errorMessage, setErrorMessage] = useState('')
@@ -157,6 +157,10 @@ function App() {
       setErrorMessage(error instanceof Error ? error.message : '扫描下载记录失败')
     }
   }, [])
+
+  useEffect(() => {
+    void scanDownloads()
+  }, [scanDownloads])
 
   const confirmCleanup = useCallback(async () => {
     if (cleanupIds.length === 0) {
@@ -253,7 +257,7 @@ function App() {
         ) : null}
 
         {summary.missing.length > 0 ? (
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-3 grid grid-cols-2 gap-2">
             {summary.missing.map((item) => (
               <DownloadRow key={item.id} item={item} />
             ))}
@@ -270,7 +274,7 @@ function App() {
           <p className="mt-1 text-xs leading-5 text-amber-700">
             这些记录不会被一键清除。请在 Chrome 原生下载页中手动确认。
           </p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-3 grid grid-cols-2 gap-2">
             {summary.unknown.map((item) => (
               <DownloadRow key={`unknown-${item.id}-${item.filename}`} item={item} muted />
             ))}
