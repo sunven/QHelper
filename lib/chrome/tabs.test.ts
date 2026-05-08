@@ -38,8 +38,8 @@ describe('chrome/tabs', () => {
     });
 
     it('should convert relative path to extension URL', async () => {
-      const path = 'entrypoints/json.html';
-      const fullUrl = 'chrome-extension://test/entrypoints/json.html';
+      const path = 'tools.html#/json';
+      const fullUrl = 'chrome-extension://test/tools.html#/json';
       const mockTab = { id: 1, url: fullUrl };
       mockChrome.tabs.create.mockResolvedValue(mockTab);
       mockChrome.runtime.getURL.mockReturnValue(fullUrl);
@@ -62,8 +62,8 @@ describe('chrome/tabs', () => {
     });
 
     it('should handle .html file paths', async () => {
-      const path = 'json.html';
-      const fullUrl = 'chrome-extension://test/json.html';
+      const path = 'popup.html';
+      const fullUrl = 'chrome-extension://test/popup.html';
       const mockTab = { id: 1, url: fullUrl };
       mockChrome.tabs.create.mockResolvedValue(mockTab);
       mockChrome.runtime.getURL.mockReturnValue(fullUrl);

@@ -18,7 +18,7 @@ describe('ToolSideNavigation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getCurrentToolKey.mockReturnValue('json');
-    window.history.replaceState({}, '', '/json.html');
+    window.history.replaceState({}, '', '/tools.html#/json');
   });
 
   it('creates inline menu items from tool categories', () => {
@@ -71,7 +71,7 @@ describe('ToolSideNavigation', () => {
     expect(navigateToTool).toHaveBeenCalledWith(
       expect.objectContaining({
         key: 'trans-radix',
-        path: '/trans-radix.html',
+        path: '/tools.html#/trans-radix',
       }) satisfies Partial<Tool>,
     );
   });

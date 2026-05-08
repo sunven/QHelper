@@ -1,5 +1,5 @@
 import { test, expect } from '../support/fixtures';
-import { legacyToolUrl, openToolPage } from '../support/helpers/extension';
+import { openToolPage } from '../support/helpers/extension';
 
 const toolPages = [
   'json',
@@ -81,16 +81,6 @@ test('tool navigation uses the left-side antd menu', async ({ context, extension
   expect(scrollMetrics.navigationOverflowY).toBe('auto');
   expect(scrollMetrics.mainCanScroll).toBe(true);
   await expect(page.getByTestId('tool-category-chevron-encoding')).toHaveCount(0);
-
-  await page.close();
-});
-
-test('legacy tool URL redirects into the shared tools SPA entry', async ({ context, extensionId }) => {
-  const page = await context.newPage();
-  await page.goto(legacyToolUrl(extensionId, 'json'));
-
-  await expect(page).toHaveURL(`chrome-extension://${extensionId}/tools.html#/json`);
-  await expect(page.getByTestId('json-input')).toBeVisible();
 
   await page.close();
 });

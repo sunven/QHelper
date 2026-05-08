@@ -1,0 +1,65 @@
+import type { ComponentType } from 'react';
+import { App as CodeBeautifyTool } from '@/components/tool/codebeautify';
+import { App as ColorTransformTool } from '@/components/tool/colorTransform';
+import { App as ConvertTool } from '@/components/tool/convert';
+import { App as CronTool } from '@/components/tool/cron';
+import { App as Csv2JsonTool } from '@/components/tool/csv2json';
+import { App as CssTool } from '@/components/tool/csstool';
+import { App as DownloadsTool } from '@/components/tool/downloads';
+import { App as FileMergeTool } from '@/components/tool/filemerge';
+import { App as HtmlFormatTool } from '@/components/tool/htmlformat';
+import { App as ImageBase64Tool } from '@/components/tool/imagebase64';
+import { App as JsonTool } from '@/components/tool/json';
+import { App as JsonSchemaTool } from '@/components/tool/jsonschema';
+import { App as MarkdownTool } from '@/components/tool/markdown';
+import { App as PasswordTool } from '@/components/tool/password';
+import { App as PictureSplicingTool } from '@/components/tool/pictureSplicing';
+import { App as ScssTool } from '@/components/tool/scss';
+import { App as SvgOptimizerTool } from '@/components/tool/svgoptimizer';
+import { App as TimestampTool } from '@/components/tool/timestamp';
+import { App as TomlTool } from '@/components/tool/toml';
+import { App as TransRadixTool } from '@/components/tool/trans-radix';
+import { App as UglifyTool } from '@/components/tool/uglify';
+import { App as UrlParserTool } from '@/components/tool/urlparser';
+import { App as UuidTool } from '@/components/tool/uuid';
+import { App as XmlFormatterTool } from '@/components/tool/xmlformatter';
+import { App as YamlTool } from '@/components/tool/yaml';
+import { ORDINARY_TOOL_IDS } from '@/lib/tools-spa';
+
+export type ToolRoute = {
+  id: string;
+  Component: ComponentType;
+};
+
+const componentByToolId: Record<string, ComponentType> = {
+  json: JsonTool,
+  'trans-radix': TransRadixTool,
+  convert: ConvertTool,
+  codebeautify: CodeBeautifyTool,
+  uglify: UglifyTool,
+  imagebase64: ImageBase64Tool,
+  pictureSplicing: PictureSplicingTool,
+  uuid: UuidTool,
+  password: PasswordTool,
+  markdown: MarkdownTool,
+  htmlformat: HtmlFormatTool,
+  urlparser: UrlParserTool,
+  filemerge: FileMergeTool,
+  csstool: CssTool,
+  scss: ScssTool,
+  svgoptimizer: SvgOptimizerTool,
+  cron: CronTool,
+  csv2json: Csv2JsonTool,
+  yaml: YamlTool,
+  toml: TomlTool,
+  jsonschema: JsonSchemaTool,
+  xmlformatter: XmlFormatterTool,
+  timestamp: TimestampTool,
+  colorTransform: ColorTransformTool,
+  downloads: DownloadsTool,
+};
+
+export const toolRoutes: ToolRoute[] = ORDINARY_TOOL_IDS.map((id) => ({
+  id,
+  Component: componentByToolId[id],
+}));

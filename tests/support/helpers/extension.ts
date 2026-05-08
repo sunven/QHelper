@@ -4,10 +4,6 @@ export function toolUrl(extensionId: string, toolName: string): string {
   return `chrome-extension://${extensionId}/tools.html#/${toolName}`;
 }
 
-export function legacyToolUrl(extensionId: string, toolName: string): string {
-  return `chrome-extension://${extensionId}/${toolName}.html`;
-}
-
 export function popupUrl(extensionId: string): string {
   return `chrome-extension://${extensionId}/popup.html`;
 }

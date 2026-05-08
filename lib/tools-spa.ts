@@ -34,27 +34,13 @@ export function getToolsSpaUrl(toolId: string): string {
   return `/${path}`;
 }
 
-export function getToolIdFromLegacyPath(pathname: string): string | null {
-  const indexMatch = pathname.match(/\/([^/]+)\/index\.html$/);
-  if (indexMatch) {
-    return isOrdinaryToolId(indexMatch[1]) ? indexMatch[1] : null;
-  }
-
-  const htmlMatch = pathname.match(/\/([^/]+)\.html$/);
-  if (htmlMatch) {
-    return isOrdinaryToolId(htmlMatch[1]) ? htmlMatch[1] : null;
-  }
-
-  return null;
-}
-
 export function getToolIdFromHash(hash: string): string | null {
   const candidate = hash.replace(/^#\/?/, '').split(/[/?]/)[0];
   return isOrdinaryToolId(candidate) ? candidate : null;
 }
 
 export function getCurrentToolIdFromLocation(location: Pick<Location, 'hash' | 'pathname'> = window.location): string | null {
-  return getToolIdFromHash(location.hash) ?? getToolIdFromLegacyPath(location.pathname);
+  return getToolIdFromHash(location.hash);
 }
 
 export function getNavigationToolPath(tool: Tool): string {
@@ -63,13 +49,4 @@ export function getNavigationToolPath(tool: Tool): string {
 
 export function isToolsSpaLocation(location: Pick<Location, 'pathname'> = window.location): boolean {
   return location.pathname.endsWith(`/${TOOLS_SPA_ENTRY}`);
-}
-
-export function redirectLegacyToolPageToSpa(toolId: string, location: Location = window.location): boolean {
-  if (isToolsSpaLocation(location) || !isOrdinaryToolId(toolId)) {
-    return false;
-  }
-
-  location.replace(getToolsSpaUrl(toolId));
-  return false;
 }
