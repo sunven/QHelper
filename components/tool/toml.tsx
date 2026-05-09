@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import TOMLParser from 'toml-j0.4';
 import { Copy, Download, FileJson, FileCode, ArrowLeftRight, Zap } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
+import { Button } from '@/components/ui/button';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -108,38 +109,36 @@ dc = "eqdc10"
         <div className="mb-2 rounded-md border border-slate-200 bg-white/90 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5">
-              <button
+              <Button
                 type="button"
                 onClick={() => handleModeChange('toml-to-json')}
-                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors ${
-                  state.mode === 'toml-to-json'
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
+                variant={state.mode === 'toml-to-json' ? 'default' : 'outline'}
+                size="sm"
+                className="gap-1.5"
               >
                 <FileJson className="w-4 h-4" />
                 TOML → JSON
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={handleSwap}
-                className="h-8 rounded-md bg-slate-100 px-2 transition-colors hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600"
+                variant="outline"
+                size="sm"
+                className="px-2"
                 title="交换方向"
               >
                 <ArrowLeftRight className="w-4 h-4 text-slate-600 dark:text-slate-400" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => handleModeChange('json-to-toml')}
-                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors ${
-                  state.mode === 'json-to-toml'
-                    ? 'bg-teal-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
+                variant={state.mode === 'json-to-toml' ? 'default' : 'outline'}
+                size="sm"
+                className="gap-1.5"
               >
                 <FileCode className="w-4 h-4" />
                 JSON → TOML
-              </button>
+              </Button>
             </div>
             {state.error && (
               <div className="flex min-w-0 items-center gap-1.5 truncate text-xs text-red-600 dark:text-red-400">
@@ -158,13 +157,15 @@ dc = "eqdc10"
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 {state.mode === 'toml-to-json' ? 'TOML 输入' : 'JSON 输入'}
               </h2>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleClear}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                className="h-7 px-2 text-xs"
               >
                 清空
-              </button>
+              </Button>
             </div>
             <textarea
               value={state.input}
@@ -182,24 +183,28 @@ dc = "eqdc10"
                 {state.mode === 'toml-to-json' ? 'JSON 输出' : 'TOML 输出'}
               </h2>
               <div className="flex gap-1.5">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleCopy}
                   disabled={!state.output}
-                  className="flex h-7 items-center gap-1 rounded-md bg-slate-600 px-2 text-xs text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Copy className="w-3 h-3" />
                   复制
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleDownload}
                   disabled={!state.output}
-                  className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-2 text-xs text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Download className="w-3 h-3" />
                   下载
-                </button>
+                </Button>
               </div>
             </div>
             <textarea

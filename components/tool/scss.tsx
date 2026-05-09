@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Copy, Download, FileJson, FileCode, Zap } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -265,14 +267,15 @@ $font-size: 16px;
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
               <label className="text-xs text-slate-600 dark:text-slate-400">输出格式</label>
-              <select
+              <Select
                 value={state.outputStyle}
-                onChange={(e) => setState((prev) => ({ ...prev, outputStyle: e.target.value as ScssOutputStyle }))}
-                className="h-8 rounded-md bg-slate-100 px-2 text-sm text-slate-700 dark:bg-slate-700 dark:text-slate-300"
-              >
-                <option value="expanded">展开格式</option>
-                <option value="compressed">压缩格式</option>
-              </select>
+                onChange={(value) => setState((prev) => ({ ...prev, outputStyle: value as ScssOutputStyle }))}
+                className="w-28"
+                options={[
+                  { value: 'expanded', label: '展开格式' },
+                  { value: 'compressed', label: '压缩格式' },
+                ]}
+              />
             </div>
             {state.error && (
               <div className="flex min-w-0 items-center gap-1.5 truncate text-xs text-red-600 dark:text-red-400">
@@ -292,13 +295,15 @@ $font-size: 16px;
                 <FileJson className="w-4 h-4 text-pink-600" />
                 <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">SCSS 输入</h2>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleClear}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                className="h-7 px-2 text-xs"
               >
                 清空
-              </button>
+              </Button>
             </div>
             <textarea
               value={state.input}
@@ -317,24 +322,28 @@ $font-size: 16px;
                 <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">CSS 输出</h2>
               </div>
               <div className="flex gap-1.5">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleCopy}
                   disabled={!state.output}
-                  className="flex h-7 items-center gap-1 rounded-md bg-slate-600 px-2 text-xs text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Copy className="w-3 h-3" />
                   复制
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleDownload}
                   disabled={!state.output}
-                  className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-2 text-xs text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Download className="w-3 h-3" />
                   下载
-                </button>
+                </Button>
               </div>
             </div>
             <textarea

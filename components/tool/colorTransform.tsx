@@ -62,11 +62,11 @@ export function ColorTransformTool() {
           <CardContent>
             <div className="flex items-center gap-4">
               <div className="h-36 flex-1 rounded-lg border border-border/70" style={{ backgroundColor: color }} />
-              <input
+              <Input
                 type="color"
                 value={color}
                 onChange={handleColorChange}
-                className="h-16 w-16 cursor-pointer rounded-lg border border-border/70 bg-white/75"
+                className="h-16 w-16 cursor-pointer p-1"
               />
             </div>
           </CardContent>

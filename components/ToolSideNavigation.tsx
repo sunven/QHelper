@@ -1,6 +1,5 @@
 import { Menu, type MenuProps } from 'antd'
 import * as React from 'react'
-import 'antd/dist/reset.css'
 import { useInRouterContext, useLocation, useNavigate } from 'react-router'
 import { TOOL_CATEGORIES, type Tool } from '@/lib/navigation-config'
 import { getCurrentToolKey, navigateToTool } from '@/lib/navigation-utils'

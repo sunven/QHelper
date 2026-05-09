@@ -2,6 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import cronParser from 'cron-parser';
 import { Clock, Calendar, Play, Copy, Download, RefreshCw } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -115,14 +117,16 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
             <div className="mb-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300">常用预设</div>
             <div className="flex flex-wrap gap-1.5">
               {presets.map((preset) => (
-                <button
+                <Button
                   key={preset.value}
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleExpressionChange(preset.value)}
-                  className="rounded-md bg-slate-100 px-2 py-1 text-xs text-slate-700 transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+                  className="text-xs"
                 >
                   {preset.name}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -130,24 +134,20 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
           <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-300">Cron 表达式</label>
             <div className="flex gap-1.5">
-              <input
-                type="text"
+              <Input
                 value={state.expression}
                 onChange={(e) => handleExpressionChange(e.target.value)}
                 placeholder="* * * * *"
-                className={`h-9 flex-1 rounded-md border px-2.5 font-mono text-sm transition-colors focus:outline-none ${
-                  state.error
-                    ? 'border-red-300 bg-red-50 text-slate-900 dark:border-red-700 dark:bg-red-900/20 dark:text-slate-100'
-                    : 'border-slate-200 bg-white text-slate-900 focus:border-indigo-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100'
-                }`}
+                className="flex-1 font-mono text-sm"
               />
-              <button
+              <Button
                 type="button"
+                size="icon"
                 onClick={handleCopy}
-                className="flex h-9 w-9 items-center justify-center rounded-md bg-slate-700 text-white transition-colors hover:bg-slate-800"
+                className="shrink-0"
               >
                 <Copy className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
             {state.error && (
               <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
@@ -216,14 +216,16 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
                 <Calendar className="h-4 w-4" />
                 下次运行时间
               </h2>
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={handleDownload}
-                className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs text-white transition-colors hover:bg-emerald-700"
+                className="gap-1.5"
               >
                 <Download className="h-3.5 w-3.5" />
                 导出
-              </button>
+              </Button>
             </div>
             <div className="max-h-[calc(100vh-12rem)] space-y-1 overflow-y-auto">
               {state.nextRuns.map((date, index) => {

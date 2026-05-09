@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import Ajv from 'ajv';
 import { FileJson, Shield, Copy, Download, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
+import { Button } from '@/components/ui/button';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -153,22 +154,26 @@ function JsonSchemaValidator() {
         <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex gap-2">
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={handleFormatJson}
-                className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1.5 text-xs transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                className="gap-1.5"
               >
                 <FileJson className="h-3.5 w-3.5" />
                 格式化
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={handleClear}
-                className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2.5 py-1.5 text-xs transition-colors hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+                className="gap-1.5"
               >
                 <X className="h-3.5 w-3.5" />
                 清空
-              </button>
+              </Button>
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               {state.jsonData && state.jsonSchema && (
@@ -190,21 +195,25 @@ function JsonSchemaValidator() {
                   )}
                 </div>
               )}
-              <button
+              <Button
                 type="button"
+                variant="outline"
+                size="icon"
                 onClick={handleCopy}
-                className="flex h-8 w-8 items-center justify-center rounded-md bg-slate-700 text-white transition-colors hover:bg-slate-800"
+                className="shrink-0"
               >
                 <Copy className="h-3.5 w-3.5" />
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="outline"
+                size="sm"
                 onClick={handleDownload}
-                className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 py-1.5 text-xs text-white transition-colors hover:bg-emerald-700"
+                className="gap-1.5"
               >
                 <Download className="h-3.5 w-3.5" />
                 下载
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { RadioGroup } from '@/components/ui/radio-group';
+import { Select } from '@/components/ui/select';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -23,6 +25,10 @@ export function TransRadixTool() {
 
   const currentRadix1 = radixSelect1 ?? radixRadio1;
   const currentRadix2 = radixSelect2 ?? radixRadio2;
+  const selectOptions = Array.from({ length: 35 }, (_, i) => {
+    const value = i + 1;
+    return { value, label: `${value}进制` };
+  });
 
   function convertValue1To2() {
     if (!value1) {
@@ -67,43 +73,29 @@ export function TransRadixTool() {
         </CardHeader>
         <CardContent className="grid items-end gap-2 pt-2 lg:grid-cols-[1fr_auto_1fr]">
           <div className="space-y-2">
-            <div className="flex flex-wrap gap-x-2 gap-y-1">
-              {RADIX_OPTIONS.map((r) => (
-                <label key={r.value} className="flex items-center gap-1.5 cursor-pointer">
-                  <input
-                    type="radio"
-                    value={r.value}
-                    checked={radixRadio1 === r.value}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setRadixRadio1(r.value);
-                        setRadixSelect1(undefined);
-                      }
-                    }}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">{r.label}</span>
-                </label>
-              ))}
-            </div>
+            <RadioGroup
+              value={radixRadio1}
+              onChange={(e) => {
+                setRadixRadio1(e.target.value);
+                setRadixSelect1(undefined);
+              }}
+              options={RADIX_OPTIONS}
+              optionType="button"
+              buttonStyle="solid"
+            />
 
             <div className="flex gap-2">
-              <select
-                value={radixSelect1 ?? ''}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setRadixSelect1(val ? Number(val) : undefined);
-                  if (val) setRadixRadio1(-1);
+              <Select
+                value={radixSelect1}
+                placeholder="自定义"
+                allowClear
+                onChange={(val) => {
+                  setRadixSelect1(typeof val === 'number' ? val : undefined);
+                  if (val !== undefined) setRadixRadio1(-1);
                 }}
-                className="h-9 w-24 rounded-md border border-input bg-white/75 px-2 text-sm dark:bg-slate-900/58"
-              >
-                <option value="">自定义</option>
-                {Array.from({ length: 35 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1}进制
-                  </option>
-                ))}
-              </select>
+                className="w-28"
+                options={selectOptions}
+              />
 
               <Input
                 type="text"
@@ -124,43 +116,29 @@ export function TransRadixTool() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex flex-wrap gap-x-2 gap-y-1">
-              {RADIX_OPTIONS.map((r) => (
-                <label key={r.value} className="flex items-center gap-1.5 cursor-pointer">
-                  <input
-                    type="radio"
-                    value={r.value}
-                    checked={radixRadio2 === r.value}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setRadixRadio2(r.value);
-                        setRadixSelect2(undefined);
-                      }
-                    }}
-                    className="w-4 h-4"
-                  />
-                  <span className="text-sm">{r.label}</span>
-                </label>
-              ))}
-            </div>
+            <RadioGroup
+              value={radixRadio2}
+              onChange={(e) => {
+                setRadixRadio2(e.target.value);
+                setRadixSelect2(undefined);
+              }}
+              options={RADIX_OPTIONS}
+              optionType="button"
+              buttonStyle="solid"
+            />
 
             <div className="flex gap-2">
-              <select
-                value={radixSelect2 ?? ''}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setRadixSelect2(val ? Number(val) : undefined);
-                  if (val) setRadixRadio2(-1);
+              <Select
+                value={radixSelect2}
+                placeholder="自定义"
+                allowClear
+                onChange={(val) => {
+                  setRadixSelect2(typeof val === 'number' ? val : undefined);
+                  if (val !== undefined) setRadixRadio2(-1);
                 }}
-                className="h-9 w-24 rounded-md border border-input bg-white/75 px-2 text-sm dark:bg-slate-900/58"
-              >
-                <option value="">自定义</option>
-                {Array.from({ length: 35 }, (_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1}进制
-                  </option>
-                ))}
-              </select>
+                className="w-28"
+                options={selectOptions}
+              />
 
               <Input
                 type="text"

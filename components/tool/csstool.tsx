@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import * as csso from 'csso';
 import { Copy, Download, Palette, Minimize2, Maximize2 } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
+import { Button } from '@/components/ui/button';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -94,30 +95,26 @@ function CssTool() {
           <div className="flex items-center gap-2">
             {/* 模式切换 */}
             <div className="flex items-center gap-1.5">
-              <button
+              <Button
                 type="button"
+                variant={state.mode === 'beautify' ? 'default' : 'outline'}
+                size="sm"
                 onClick={() => setState((prev) => ({ ...prev, mode: 'beautify' }))}
-                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors ${
-                  state.mode === 'beautify'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
+                className="gap-1.5"
               >
                 <Maximize2 className="w-4 h-4" />
                 美化
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant={state.mode === 'minify' ? 'default' : 'outline'}
+                size="sm"
                 onClick={() => setState((prev) => ({ ...prev, mode: 'minify' }))}
-                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors ${
-                  state.mode === 'minify'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
+                className="gap-1.5"
               >
                 <Minimize2 className="w-4 h-4" />
                 压缩
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -128,13 +125,15 @@ function CssTool() {
           <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">输入 CSS</h2>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleClear}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                className="h-7 px-2 text-xs"
               >
                 清空
-              </button>
+              </Button>
             </div>
             <textarea
               value={state.input}
@@ -152,22 +151,26 @@ function CssTool() {
                 {state.mode === 'beautify' ? '美化结果' : '压缩结果'}
               </h2>
               <div className="flex gap-1.5">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleCopy}
-                  className="flex h-7 items-center gap-1 rounded-md bg-slate-600 px-2 text-xs text-white transition-colors hover:bg-slate-700"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Copy className="w-3 h-3" />
                   复制
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleDownload}
-                  className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-2 text-xs text-white transition-colors hover:bg-emerald-700"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Download className="w-3 h-3" />
                   下载
-                </button>
+                </Button>
               </div>
             </div>
             <textarea

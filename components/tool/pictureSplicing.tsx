@@ -6,6 +6,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select } from '@/components/ui/select';
 import { Upload, X, Image as ImageIcon, Download, Trash2, Settings } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
 
@@ -223,14 +224,15 @@ export function PictureSplicingTool() {
               <div className="grid grid-cols-1 gap-2">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">拼接方向</label>
-                  <select
+                  <Select
                     value={direction}
-                    onChange={(e) => setDirection(e.target.value as 'horizontal' | 'vertical')}
-                    className="h-9 w-full rounded-md border bg-background px-2 text-sm"
-                  >
-                    <option value="horizontal">水平拼接</option>
-                    <option value="vertical">垂直拼接</option>
-                  </select>
+                    onChange={(value) => setDirection(value as 'horizontal' | 'vertical')}
+                    className="w-full"
+                    options={[
+                      { value: 'horizontal', label: '水平拼接' },
+                      { value: 'vertical', label: '垂直拼接' },
+                    ]}
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -246,11 +248,11 @@ export function PictureSplicingTool() {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">背景颜色</label>
                   <div className="flex gap-2">
-                    <input
+                    <Input
                       type="color"
                       value={bgColor}
                       onChange={(e) => setBgColor(e.target.value)}
-                      className="h-9 w-10 cursor-pointer rounded-md border"
+                      className="h-9 w-12 cursor-pointer p-1"
                     />
                     <Input
                       type="text"

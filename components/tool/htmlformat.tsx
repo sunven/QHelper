@@ -2,6 +2,8 @@ import React, { useState, useCallback, useEffect } from 'react';
 import js_beautify from 'js-beautify';
 import { Copy, Download, FileCode, Minimize2, Maximize2, Settings2 } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
+import { Button } from '@/components/ui/button';
+import { Select } from '@/components/ui/select';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -101,30 +103,26 @@ function HtmlFormatter() {
           <div className="flex flex-wrap items-center gap-2">
             {/* 模式切换 */}
             <div className="flex items-center gap-1.5">
-              <button
+              <Button
                 type="button"
                 onClick={() => setState((prev) => ({ ...prev, mode: 'beautify' }))}
-                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors ${
-                  state.mode === 'beautify'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
+                variant={state.mode === 'beautify' ? 'default' : 'outline'}
+                size="sm"
+                className="gap-1.5"
               >
                 <Maximize2 className="w-4 h-4" />
                 格式化
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
                 onClick={() => setState((prev) => ({ ...prev, mode: 'minify' }))}
-                className={`flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm transition-colors ${
-                  state.mode === 'minify'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
-                }`}
+                variant={state.mode === 'minify' ? 'default' : 'outline'}
+                size="sm"
+                className="gap-1.5"
               >
                 <Minimize2 className="w-4 h-4" />
                 压缩
-              </button>
+              </Button>
             </div>
 
             {/* 分隔线 */}
@@ -133,24 +131,26 @@ function HtmlFormatter() {
             {/* 设置 */}
             <div className="flex items-center gap-2">
               <Settings2 className="w-4 h-4 text-slate-500" />
-              <select
+              <Select
                 value={state.indentSize}
-                onChange={(e) => setState((prev) => ({ ...prev, indentSize: Number(e.target.value) }))}
-                className="h-8 rounded-md bg-slate-100 px-2 text-sm text-slate-700 dark:bg-slate-700 dark:text-slate-300"
-              >
-                <option value={2}>2 空格</option>
-                <option value={4}>4 空格</option>
-                <option value={8}>8 空格</option>
-              </select>
+                onChange={(value) => setState((prev) => ({ ...prev, indentSize: Number(value) }))}
+                className="w-28"
+                options={[
+                  { value: 2, label: '2 空格' },
+                  { value: 4, label: '4 空格' },
+                  { value: 8, label: '8 空格' },
+                ]}
+              />
 
-              <select
+              <Select
                 value={state.indentChar}
-                onChange={(e) => setState((prev) => ({ ...prev, indentChar: e.target.value as 'space' | 'tab' }))}
-                className="h-8 rounded-md bg-slate-100 px-2 text-sm text-slate-700 dark:bg-slate-700 dark:text-slate-300"
-              >
-                <option value="space">空格缩进</option>
-                <option value="tab">Tab 缩进</option>
-              </select>
+                onChange={(value) => setState((prev) => ({ ...prev, indentChar: value as 'space' | 'tab' }))}
+                className="w-32"
+                options={[
+                  { value: 'space', label: '空格缩进' },
+                  { value: 'tab', label: 'Tab 缩进' },
+                ]}
+              />
             </div>
           </div>
         </div>
@@ -161,13 +161,15 @@ function HtmlFormatter() {
           <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">输入 HTML</h2>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleClear}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                className="h-7 px-2 text-xs"
               >
                 清空
-              </button>
+              </Button>
             </div>
             <textarea
               value={state.input}
@@ -185,22 +187,26 @@ function HtmlFormatter() {
                 {state.mode === 'beautify' ? '格式化结果' : '压缩结果'}
               </h2>
               <div className="flex gap-1.5">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleCopy}
-                  className="flex h-7 items-center gap-1 rounded-md bg-slate-600 px-2 text-xs text-white transition-colors hover:bg-slate-700"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Copy className="w-3 h-3" />
                   复制
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleDownload}
-                  className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-2 text-xs text-white transition-colors hover:bg-emerald-700"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Download className="w-3 h-3" />
                   下载
-                </button>
+                </Button>
               </div>
             </div>
             <textarea

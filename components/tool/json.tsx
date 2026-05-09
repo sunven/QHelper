@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import ReactJsonView from 'react-json-view';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
   FileJson,
@@ -424,20 +425,24 @@ export function JsonTool() {
                       key={`${his.name}-${index}`}
                       className="flex items-center justify-between gap-2 px-2 py-1.5 hover:bg-muted rounded"
                     >
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="sm"
                         onClick={() => restore(his)}
-                        className="flex-1 text-left text-sm"
+                        className="flex-1 justify-start px-1 text-sm"
                       >
                         {his.name}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="icon"
                         onClick={() => remove(his, index)}
-                        className="text-muted-foreground hover:text-destructive"
+                        className="h-6 w-6 text-muted-foreground hover:text-destructive"
                       >
                         <X className="w-3 h-3" />
-                      </button>
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -610,12 +615,10 @@ export function JsonTool() {
               <CardTitle className="text-base">保存历史</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <input
-                type="text"
+              <Input
                 value={historyName}
                 onChange={(e) => setHistoryName(e.target.value)}
                 placeholder="请输入辨识名称"
-                className="w-full px-3 py-2 border rounded-md"
               />
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setIsSaveShow(false)} className="flex-1">
@@ -638,12 +641,10 @@ export function JsonTool() {
               <CardTitle className="text-base">导出为 .txt</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <input
-                type="text"
+              <Input
                 value={exTxtName}
                 onChange={(e) => setExTxtName(e.target.value)}
                 placeholder="请输入文件名"
-                className="w-full px-3 py-2 border rounded-md"
               />
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => setIsExportTxtShow(false)} className="flex-1">

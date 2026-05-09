@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { optimize } from 'svgo';
 import { Copy, Download, Image, Zap, Upload } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
+import { Button } from '@/components/ui/button';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -120,16 +121,16 @@ function SvgOptimizer() {
         {/* 文件上传 */}
         <div className="mb-2 rounded-md border border-slate-200 bg-white/90 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="flex items-center justify-between gap-2">
-            <label className="flex h-8 cursor-pointer items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 text-sm text-white transition-colors hover:bg-emerald-700">
+            <Button type="button" variant="outline" size="sm" className="relative overflow-hidden gap-1.5">
               <Upload className="w-4 h-4" />
               <span>上传 SVG 文件</span>
               <input
                 type="file"
                 accept=".svg,image/svg+xml"
                 onChange={handleFileUpload}
-                className="hidden"
+                className="absolute inset-0 cursor-pointer opacity-0"
               />
-            </label>
+            </Button>
             {state.error && (
               <div className="flex min-w-0 items-center gap-1.5 truncate text-xs text-red-600 dark:text-red-400">
                 <Zap className="w-4 h-4" />
@@ -148,13 +149,15 @@ function SvgOptimizer() {
                 <Image className="w-4 h-4 text-purple-600" />
                 <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">原始 SVG</h2>
               </div>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={handleClear}
-                className="text-xs text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                className="h-7 px-2 text-xs"
               >
                 清空
-              </button>
+              </Button>
             </div>
             <textarea
               value={state.input}
@@ -173,24 +176,28 @@ function SvgOptimizer() {
                 <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">优化后 SVG</h2>
               </div>
               <div className="flex gap-1.5">
-                <button
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleCopy}
                   disabled={!state.output}
-                  className="flex h-7 items-center gap-1 rounded-md bg-slate-600 px-2 text-xs text-white transition-colors hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Copy className="w-3 h-3" />
                   复制
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
+                  variant="outline"
+                  size="sm"
                   onClick={handleDownload}
                   disabled={!state.output}
-                  className="flex h-7 items-center gap-1 rounded-md bg-emerald-600 px-2 text-xs text-white transition-colors hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+                  className="h-7 gap-1 px-2 text-xs"
                 >
                   <Download className="w-3 h-3" />
                   下载
-                </button>
+                </Button>
               </div>
             </div>
             <textarea

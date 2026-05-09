@@ -3,6 +3,7 @@ import { marked, type Tokens } from 'marked';
 import hljs from 'highlight.js';
 import { Copy, Download, FileText } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
+import { Button } from '@/components/ui/button';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -158,22 +159,26 @@ ${state.html}
 
         {/* 操作按钮 */}
         <div className="mb-2 flex gap-1.5">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={handleCopyHtml}
-            className="flex h-8 items-center gap-1.5 rounded-md bg-slate-700 px-2.5 text-sm text-white transition-colors hover:bg-slate-800"
+            className="gap-1.5"
           >
             <Copy className="w-4 h-4" />
             复制 HTML
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={handleExportHtml}
-            className="flex h-8 items-center gap-1.5 rounded-md bg-emerald-600 px-2.5 text-sm text-white transition-colors hover:bg-emerald-700"
+            className="gap-1.5"
           >
             <Download className="w-4 h-4" />
             导出 HTML
-          </button>
+          </Button>
         </div>
 
         {/* 编辑器 */}
