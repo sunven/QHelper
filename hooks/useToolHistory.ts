@@ -146,7 +146,7 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
   useEffect(() => {
     const handleStorageChange = (
       changes: { [key: string]: chrome.storage.StorageChange },
-      areaName: chrome.storage.AreaName,
+      areaName: string,
     ) => {
       if (areaName === 'local' && fullStorageKey in changes) {
         const newHistory = (changes[fullStorageKey].newValue as HistoryEntry<unknown, unknown>[]) || [];
@@ -158,10 +158,10 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
       }
     };
 
-    chrome.storage.onChanged.addListener(handleStorageChange);
+    chromeStorage.onChanged(handleStorageChange);
 
     return () => {
-      chrome.storage.onChanged.removeListener(handleStorageChange);
+      globalThis.chrome?.storage?.onChanged?.removeListener(handleStorageChange);
     };
   }, [fullStorageKey, deserialize]);
 

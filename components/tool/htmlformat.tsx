@@ -3,7 +3,13 @@ import js_beautify from 'js-beautify';
 import { Copy, Download, FileCode, Minimize2, Maximize2, Settings2 } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -132,25 +138,31 @@ function HtmlFormatter() {
             <div className="flex items-center gap-2">
               <Settings2 className="w-4 h-4 text-slate-500" />
               <Select
-                value={state.indentSize}
-                onChange={(value) => setState((prev) => ({ ...prev, indentSize: Number(value) }))}
-                className="w-28"
-                options={[
-                  { value: 2, label: '2 空格' },
-                  { value: 4, label: '4 空格' },
-                  { value: 8, label: '8 空格' },
-                ]}
-              />
+                value={String(state.indentSize)}
+                onValueChange={(value) => setState((prev) => ({ ...prev, indentSize: Number(value) }))}
+              >
+                <SelectTrigger className="w-28">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2">2 空格</SelectItem>
+                  <SelectItem value="4">4 空格</SelectItem>
+                  <SelectItem value="8">8 空格</SelectItem>
+                </SelectContent>
+              </Select>
 
               <Select
                 value={state.indentChar}
-                onChange={(value) => setState((prev) => ({ ...prev, indentChar: value as 'space' | 'tab' }))}
-                className="w-32"
-                options={[
-                  { value: 'space', label: '空格缩进' },
-                  { value: 'tab', label: 'Tab 缩进' },
-                ]}
-              />
+                onValueChange={(value) => setState((prev) => ({ ...prev, indentChar: value as 'space' | 'tab' }))}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="space">空格缩进</SelectItem>
+                  <SelectItem value="tab">Tab 缩进</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

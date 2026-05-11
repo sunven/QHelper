@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router';
 import { ToolActivityOutlet } from './ToolActivityOutlet';
 
@@ -51,6 +51,19 @@ function RouteControls() {
 }
 
 describe('ToolActivityOutlet', () => {
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      addEventListener: vi.fn(),
+      addListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+      matches: false,
+      media: query,
+      onchange: null,
+      removeEventListener: vi.fn(),
+      removeListener: vi.fn(),
+    }));
+  });
+
   it('keeps React and DOM state when switching visited tools', async () => {
     render(
       <MemoryRouter initialEntries={['/json']}>

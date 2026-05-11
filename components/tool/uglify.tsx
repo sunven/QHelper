@@ -66,11 +66,13 @@ function createRequestId() {
 }
 
 function getSandboxUrl() {
-  if (!chrome?.runtime?.getURL) {
+  const runtime = globalThis.chrome?.runtime;
+
+  if (!runtime?.getURL) {
     throw new Error('当前环境不支持扩展沙箱');
   }
 
-  return chrome.runtime.getURL(SANDBOX_PAGE);
+  return runtime.getURL(SANDBOX_PAGE);
 }
 
 function getSandboxFrame() {

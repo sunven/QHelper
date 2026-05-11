@@ -1,12 +1,55 @@
-import { Menu, type MenuProps } from 'antd'
+import {
+  BinaryIcon,
+  BracketsCurlyIcon,
+  ClockIcon,
+  DatabaseIcon,
+  GlobeIcon,
+  ImageIcon,
+  LockKeyIcon,
+  RobotIcon,
+  ToolboxIcon,
+} from '@phosphor-icons/react'
 import * as React from 'react'
 import { useInRouterContext, useLocation, useNavigate } from 'react-router'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import {
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
+} from '@/components/ui/sidebar'
 import { TOOL_CATEGORIES, type Tool } from '@/lib/navigation-config'
 import { getCurrentToolKey, navigateToTool } from '@/lib/navigation-utils'
 import { getToolRoutePath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
 
-type MenuItem = Required<MenuProps>['items'][number]
+type ToolMenuItem = {
+  key: string
+  label: string
+  children: {
+    key: string
+    label: string
+  }[]
+}
+
+const categoryIcons: Record<string, React.ReactNode> = {
+  common: <BracketsCurlyIcon />,
+  encoding: <BinaryIcon />,
+  image: <ImageIcon />,
+  security: <LockKeyIcon />,
+  web_format: <GlobeIcon />,
+  data_format: <DatabaseIcon />,
+  ai: <RobotIcon />,
+  other: <ClockIcon />,
+}
 
 export function findCategoryKeyForTool(toolKey: string | null): string | null {
   if (!toolKey) {
@@ -19,7 +62,7 @@ export function findCategoryKeyForTool(toolKey: string | null): string | null {
   return category?.key ?? null
 }
 
-export function createToolMenuItems(): MenuItem[] {
+export function createToolMenuItems(): ToolMenuItem[] {
   return TOOL_CATEGORIES.map((category) => ({
     key: category.key,
     label: category.name,
@@ -103,7 +146,6 @@ function ToolSideNavigationContent({
   onToolSelect: (tool: Tool) => void
 }) {
   const currentCategoryKey = findCategoryKeyForTool(currentToolKey)
-  const items = React.useMemo(() => createToolMenuItems(), [])
   const toolByKey = React.useMemo(() => createToolByKey(), [])
   const [openKeys, setOpenKeys] = React.useState<string[]>(() =>
     currentCategoryKey ? [currentCategoryKey] : [],
@@ -119,8 +161,20 @@ function ToolSideNavigationContent({
     )
   }, [currentCategoryKey])
 
-  const handleMenuClick: MenuProps['onClick'] = ({ key }) => {
-    const tool = toolByKey.get(key)
+  function handleCategoryOpenChange(categoryKey: string, open: boolean) {
+    setOpenKeys((keys) => {
+      if (open) {
+        return keys.includes(categoryKey) ? keys : [...keys, categoryKey]
+      }
+
+      return keys.filter((key) => key !== categoryKey)
+    })
+  }
+
+  function handleToolSelect(event: React.MouseEvent, toolKey: string) {
+    event.preventDefault()
+
+    const tool = toolByKey.get(toolKey)
     if (tool) {
       onToolSelect(tool)
     }
@@ -130,25 +184,58 @@ function ToolSideNavigationContent({
     <nav
       aria-label="工具导航"
       data-testid="tool-side-navigation"
-      className={cn(
-        'tool-side-navigation flex h-full min-h-0 flex-col overflow-hidden border border-slate-200/80 bg-white/92 shadow-sm backdrop-blur dark:border-slate-800 dark:bg-slate-950/88',
-        className,
-      )}
+      className={cn('tool-side-navigation', className)}
     >
-      <div
-        data-testid="tool-side-navigation-scroll"
-        className="min-h-0 flex-1 overflow-y-auto"
-      >
-        <Menu
-          aria-label="工具列表"
-          items={items}
-          mode="inline"
-          onClick={handleMenuClick}
-          onOpenChange={setOpenKeys}
-          openKeys={openKeys}
-          selectedKeys={currentToolKey ? [currentToolKey] : []}
-        />
-      </div>
+      <SidebarGroup>
+        <SidebarGroupLabel>Tools</SidebarGroupLabel>
+        <SidebarMenu data-testid="tool-side-navigation-scroll">
+          {TOOL_CATEGORIES.map((category) => (
+            <Collapsible
+              key={category.key}
+              asChild
+              open={openKeys.includes(category.key)}
+              onOpenChange={(open) =>
+                handleCategoryOpenChange(category.key, open)
+              }
+              className="group/collapsible"
+            >
+              <SidebarMenuItem>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    tooltip={category.name}
+                    isActive={category.key === currentCategoryKey}
+                  >
+                    {categoryIcons[category.key] ?? <ToolboxIcon />}
+                    <span>{category.name}</span>
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {category.tools.map((tool) => (
+                      <SidebarMenuSubItem key={tool.key}>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={currentToolKey === tool.key}
+                        >
+                          <a
+                            href={tool.path}
+                            onClick={(event) =>
+                              handleToolSelect(event, tool.key)
+                            }
+                            role="menuitem"
+                          >
+                            <span>{tool.name}</span>
+                          </a>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
+              </SidebarMenuItem>
+            </Collapsible>
+          ))}
+        </SidebarMenu>
+      </SidebarGroup>
     </nav>
   )
 }

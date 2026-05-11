@@ -2,7 +2,13 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Copy, Download, FileJson, FileCode, Zap } from 'lucide-react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Button } from '@/components/ui/button';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
@@ -56,11 +62,13 @@ function createRequestId() {
 }
 
 function getSandboxUrl() {
-  if (!chrome?.runtime?.getURL) {
+  const runtime = globalThis.chrome?.runtime;
+
+  if (!runtime?.getURL) {
     throw new Error('当前环境不支持扩展沙箱');
   }
 
-  return chrome.runtime.getURL(SANDBOX_PAGE);
+  return runtime.getURL(SANDBOX_PAGE);
 }
 
 function getSandboxFrame() {
@@ -269,13 +277,16 @@ $font-size: 16px;
               <label className="text-xs text-slate-600 dark:text-slate-400">输出格式</label>
               <Select
                 value={state.outputStyle}
-                onChange={(value) => setState((prev) => ({ ...prev, outputStyle: value as ScssOutputStyle }))}
-                className="w-28"
-                options={[
-                  { value: 'expanded', label: '展开格式' },
-                  { value: 'compressed', label: '压缩格式' },
-                ]}
-              />
+                onValueChange={(value) => setState((prev) => ({ ...prev, outputStyle: value as ScssOutputStyle }))}
+              >
+                <SelectTrigger className="w-28">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="expanded">展开格式</SelectItem>
+                  <SelectItem value="compressed">压缩格式</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             {state.error && (
               <div className="flex min-w-0 items-center gap-1.5 truncate text-xs text-red-600 dark:text-red-400">

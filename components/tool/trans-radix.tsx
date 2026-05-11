@@ -2,17 +2,24 @@ import { useState } from 'react';
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { RadioGroup } from '@/components/ui/radio-group';
-import { Select } from '@/components/ui/select';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
 
 const RADIX_OPTIONS = [
-  { value: 2, label: '2进制' },
-  { value: 8, label: '8进制' },
-  { value: 10, label: '10进制' },
-  { value: 16, label: '16进制' },
+  { value: '2', label: '2进制' },
+  { value: '8', label: '8进制' },
+  { value: '10', label: '10进制' },
+  { value: '16', label: '16进制' },
 ];
 
 export function TransRadixTool() {
@@ -74,28 +81,40 @@ export function TransRadixTool() {
         <CardContent className="grid items-end gap-2 pt-2 lg:grid-cols-[1fr_auto_1fr]">
           <div className="space-y-2">
             <RadioGroup
-              value={radixRadio1}
-              onChange={(e) => {
-                setRadixRadio1(e.target.value);
+              value={String(radixRadio1)}
+              onValueChange={(value) => {
+                setRadixRadio1(Number(value));
                 setRadixSelect1(undefined);
               }}
-              options={RADIX_OPTIONS}
-              optionType="button"
-              buttonStyle="solid"
-            />
+              className="flex flex-wrap gap-2"
+            >
+              {RADIX_OPTIONS.map((option) => (
+                <div key={option.value} className="flex items-center gap-1.5">
+                  <RadioGroupItem id={`source-radix-${option.value}`} value={option.value} />
+                  <Label htmlFor={`source-radix-${option.value}`}>{option.label}</Label>
+                </div>
+              ))}
+            </RadioGroup>
 
             <div className="flex gap-2">
               <Select
-                value={radixSelect1}
-                placeholder="自定义"
-                allowClear
-                onChange={(val) => {
-                  setRadixSelect1(typeof val === 'number' ? val : undefined);
-                  if (val !== undefined) setRadixRadio1(-1);
+                value={radixSelect1 ? String(radixSelect1) : undefined}
+                onValueChange={(value) => {
+                  setRadixSelect1(Number(value));
+                  setRadixRadio1(-1);
                 }}
-                className="w-28"
-                options={selectOptions}
-              />
+              >
+                <SelectTrigger className="w-28">
+                  <SelectValue placeholder="自定义" />
+                </SelectTrigger>
+                <SelectContent>
+                  {selectOptions.map((option) => (
+                    <SelectItem key={option.value} value={String(option.value)}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               <Input
                 type="text"
@@ -117,28 +136,40 @@ export function TransRadixTool() {
 
           <div className="space-y-2">
             <RadioGroup
-              value={radixRadio2}
-              onChange={(e) => {
-                setRadixRadio2(e.target.value);
+              value={String(radixRadio2)}
+              onValueChange={(value) => {
+                setRadixRadio2(Number(value));
                 setRadixSelect2(undefined);
               }}
-              options={RADIX_OPTIONS}
-              optionType="button"
-              buttonStyle="solid"
-            />
+              className="flex flex-wrap gap-2"
+            >
+              {RADIX_OPTIONS.map((option) => (
+                <div key={option.value} className="flex items-center gap-1.5">
+                  <RadioGroupItem id={`target-radix-${option.value}`} value={option.value} />
+                  <Label htmlFor={`target-radix-${option.value}`}>{option.label}</Label>
+                </div>
+              ))}
+            </RadioGroup>
 
             <div className="flex gap-2">
               <Select
-                value={radixSelect2}
-                placeholder="自定义"
-                allowClear
-                onChange={(val) => {
-                  setRadixSelect2(typeof val === 'number' ? val : undefined);
-                  if (val !== undefined) setRadixRadio2(-1);
+                value={radixSelect2 ? String(radixSelect2) : undefined}
+                onValueChange={(value) => {
+                  setRadixSelect2(Number(value));
+                  setRadixRadio2(-1);
                 }}
-                className="w-28"
-                options={selectOptions}
-              />
+              >
+                <SelectTrigger className="w-28">
+                  <SelectValue placeholder="自定义" />
+                </SelectTrigger>
+                <SelectContent>
+                  {selectOptions.map((option) => (
+                    <SelectItem key={option.value} value={String(option.value)}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
               <Input
                 type="text"

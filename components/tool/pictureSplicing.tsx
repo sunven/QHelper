@@ -6,7 +6,13 @@ import { CSS } from '@dnd-kit/utilities';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Upload, X, Image as ImageIcon, Download, Trash2, Settings } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
 
@@ -226,13 +232,16 @@ export function PictureSplicingTool() {
                   <label className="text-sm font-medium">拼接方向</label>
                   <Select
                     value={direction}
-                    onChange={(value) => setDirection(value as 'horizontal' | 'vertical')}
-                    className="w-full"
-                    options={[
-                      { value: 'horizontal', label: '水平拼接' },
-                      { value: 'vertical', label: '垂直拼接' },
-                    ]}
-                  />
+                    onValueChange={(value) => setDirection(value as 'horizontal' | 'vertical')}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="horizontal">水平拼接</SelectItem>
+                      <SelectItem value="vertical">垂直拼接</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

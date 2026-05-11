@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToolPageShell } from './ToolPageShell';
 import { ToolWorkspaceShell } from './ToolWorkspaceShell';
 
@@ -24,9 +24,22 @@ describe('ToolPageShell', () => {
 });
 
 describe('ToolWorkspaceShell', () => {
+  beforeEach(() => {
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      addEventListener: vi.fn(),
+      addListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+      matches: false,
+      media: query,
+      onchange: null,
+      removeEventListener: vi.fn(),
+      removeListener: vi.fn(),
+    }));
+  });
+
   it('renders side navigation and reserves shared shell width for it', () => {
     render(
-      <ToolWorkspaceShell>
+      <ToolWorkspaceShell activeToolId="json">
         <ToolPageShell toolId="json">
           <div>Tool body</div>
         </ToolPageShell>
@@ -37,10 +50,8 @@ describe('ToolWorkspaceShell', () => {
     expect(screen.getByTestId('tool-workspace-navbar')).toBeVisible();
     expect(screen.getByText('QHelper Tools')).toBeVisible();
     expect(screen.getByTestId('tool-side-navigation-region')).toBeVisible();
-    expect(screen.getByTestId('tool-side-navigation-region')).toHaveClass('min-h-0', 'shrink-0', 'lg:h-full', 'lg:w-[18.5rem]');
-    expect(screen.getByTestId('tool-side-navigation-region')).not.toHaveClass('lg:fixed', 'lg:left-2');
     expect(screen.getByTestId('tool-side-navigation')).toBeVisible();
-    expect(screen.getByTestId('tool-page-main')).toHaveClass('min-h-0', 'min-w-0', 'flex-1', 'overflow-y-auto');
+    expect(screen.getByTestId('tool-page-main')).toHaveClass('min-h-0', 'min-w-0', 'flex-1', 'overflow-y-auto', 'p-4', 'pt-0');
     expect(screen.getByText('Tool body')).toBeVisible();
     expect(screen.queryByText('tool-category-chevron-common')).not.toBeInTheDocument();
   });

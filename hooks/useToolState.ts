@@ -52,7 +52,7 @@ export function useToolState<T>(
   useEffect(() => {
     const handleStorageChange = (
       changes: { [key: string]: chrome.storage.StorageChange },
-      areaName: chrome.storage.AreaName,
+      areaName: string,
     ) => {
       if (areaName === 'local' && storageKey in changes) {
         const newValue = changes[storageKey].newValue;
@@ -60,10 +60,10 @@ export function useToolState<T>(
       }
     };
 
-    chrome.storage.onChanged.addListener(handleStorageChange);
+    chromeStorage.onChanged(handleStorageChange);
 
     return () => {
-      chrome.storage.onChanged.removeListener(handleStorageChange);
+      globalThis.chrome?.storage?.onChanged?.removeListener(handleStorageChange);
     };
   }, [storageKey, initialState]);
 

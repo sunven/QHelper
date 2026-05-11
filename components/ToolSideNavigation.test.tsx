@@ -3,6 +3,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToolSideNavigation, createToolMenuItems, findCategoryKeyForTool } from './ToolSideNavigation';
 import type { Tool } from '@/lib/navigation-config';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { TooltipProvider } from '@/components/ui/tooltip';
+
+function renderWithSidebar(ui: React.ReactElement) {
+  return render(
+    <TooltipProvider>
+      <SidebarProvider>{ui}</SidebarProvider>
+    </TooltipProvider>,
+  );
+}
 
 const { getCurrentToolKey, navigateToTool } = vi.hoisted(() => ({
   getCurrentToolKey: vi.fn(),
@@ -19,6 +29,16 @@ describe('ToolSideNavigation', () => {
     vi.clearAllMocks();
     getCurrentToolKey.mockReturnValue('json');
     window.history.replaceState({}, '', '/tools.html#/json');
+    window.matchMedia = vi.fn().mockImplementation((query) => ({
+      addEventListener: vi.fn(),
+      addListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+      matches: false,
+      media: query,
+      onchange: null,
+      removeEventListener: vi.fn(),
+      removeListener: vi.fn(),
+    }));
   });
 
   it('creates inline menu items from tool categories', () => {
@@ -47,17 +67,17 @@ describe('ToolSideNavigation', () => {
   });
 
   it('renders categories and tools with the current tool selected', () => {
-    render(<ToolSideNavigation />);
+    renderWithSidebar(<ToolSideNavigation />);
 
     expect(screen.getByTestId('tool-side-navigation')).toBeVisible();
-    expect(screen.queryByText('Tools')).not.toBeInTheDocument();
+    expect(screen.getByText('Tools')).toBeVisible();
     expect(screen.getByText('常用')).toBeVisible();
     expect(screen.getByText('JSON 格式化')).toBeVisible();
-    expect(screen.getByRole('menuitem', { name: /JSON 格式化/ })).toHaveClass('ant-menu-item-selected');
+    expect(screen.getByRole('menuitem', { name: /JSON 格式化/ })).toHaveAttribute('data-active', 'true');
   });
 
   it('opens the current tool category by default', async () => {
-    render(<ToolSideNavigation />);
+    renderWithSidebar(<ToolSideNavigation />);
 
     await waitFor(() => {
       expect(screen.getByRole('menuitem', { name: /进制转换/ })).toBeVisible();
@@ -65,7 +85,7 @@ describe('ToolSideNavigation', () => {
   });
 
   it('delegates tool clicks to the existing navigation helper', () => {
-    render(<ToolSideNavigation />);
+    renderWithSidebar(<ToolSideNavigation />);
 
     fireEvent.click(screen.getByRole('menuitem', { name: /进制转换/ }));
 
@@ -83,7 +103,7 @@ describe('ToolSideNavigation', () => {
       return <div data-testid="router-location">{location.pathname}</div>;
     }
 
-    render(
+    renderWithSidebar(
       <MemoryRouter initialEntries={['/json']}>
         <ToolSideNavigation />
         <Routes>
