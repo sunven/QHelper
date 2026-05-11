@@ -52,7 +52,7 @@ describe('ToolWorkspaceShell', () => {
     expect(screen.getByTestId('tool-workspace-navbar')).toBeVisible();
     expect(screen.getByText('QHelper Tools')).toBeVisible();
     expect(screen.getByText('QHelper Tools').closest('li')).toHaveClass('md:flex');
-    expect(screen.getByRole('link', { name: '打开设置' })).toHaveAttribute('href', '#/settings');
+    expect(screen.getByRole('link', { name: '打开设置' })).toHaveAttribute('href', '/tools/settings.html');
     expect(screen.getByTestId('tool-side-navigation-region')).toBeVisible();
     expect(screen.getByTestId('tool-side-navigation')).toBeVisible();
     expect(screen.getByTestId('tool-page-main')).toHaveClass('min-h-0', 'min-w-0', 'flex-1', 'overflow-y-auto', 'p-4', 'pt-px');

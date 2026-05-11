@@ -126,10 +126,10 @@ export function TransRadixTool() {
           </div>
 
           <div className="flex justify-center gap-2 pb-0.5 lg:flex-col">
-            <Button onClick={convertValue1To2} size="icon" className="rounded-full">
+            <Button onClick={convertValue1To2} size="icon" className="rounded-none">
               <ArrowRight className="w-4 h-4" />
             </Button>
-            <Button onClick={convertValue2To1} size="icon" className="rounded-full" variant="secondary">
+            <Button onClick={convertValue2To1} size="icon" className="rounded-none" variant="secondary">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </div>

@@ -28,7 +28,7 @@ describe('ToolSideNavigation', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     getCurrentToolKey.mockReturnValue('json');
-    window.history.replaceState({}, '', '/tools.html#/json');
+    window.history.replaceState({}, '', '/tools/json.html');
     window.matchMedia = vi.fn().mockImplementation((query) => ({
       addEventListener: vi.fn(),
       addListener: vi.fn(),
@@ -92,7 +92,7 @@ describe('ToolSideNavigation', () => {
     expect(navigateToTool).toHaveBeenCalledWith(
       expect.objectContaining({
         key: 'trans-radix',
-        path: '/tools.html#/trans-radix',
+        path: '/tools/trans-radix.html',
       }) satisfies Partial<Tool>,
     );
   });
@@ -104,10 +104,10 @@ describe('ToolSideNavigation', () => {
     }
 
     renderWithSidebar(
-      <MemoryRouter initialEntries={['/json']}>
+      <MemoryRouter initialEntries={['/json.html']}>
         <ToolSideNavigation />
         <Routes>
-          <Route path="/:toolId" element={<LocationProbe />} />
+          <Route path="/:toolFile" element={<LocationProbe />} />
         </Routes>
       </MemoryRouter>,
     );
@@ -115,7 +115,7 @@ describe('ToolSideNavigation', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: /进制转换/ }));
 
     await waitFor(() => {
-      expect(screen.getByTestId('router-location')).toHaveTextContent('/trans-radix');
+      expect(screen.getByTestId('router-location')).toHaveTextContent('/trans-radix.html');
     });
     expect(navigateToTool).not.toHaveBeenCalled();
   });

@@ -151,7 +151,7 @@ function JsonSchemaValidator() {
   return (
     <ToolPageShell toolId="jsonschema">
       <div className="mx-auto max-w-[1440px] space-y-2">
-        <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+        <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex gap-2">
               <Button
@@ -177,7 +177,7 @@ function JsonSchemaValidator() {
             </div>
             <div className="flex flex-wrap items-center gap-1.5">
               {state.jsonData && state.jsonSchema && (
-                <div className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium ${
+                <div className={`flex items-center gap-1.5 rounded-none px-2.5 py-1.5 text-xs font-medium ${
                   state.isValid
                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
                     : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
@@ -219,7 +219,7 @@ function JsonSchemaValidator() {
         </div>
 
         <div className="grid gap-2 lg:grid-cols-2">
-          <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="overflow-hidden rounded-none border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <div className="flex items-center border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-900">
               <FileJson className="mr-1.5 h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -235,7 +235,7 @@ function JsonSchemaValidator() {
             />
           </div>
 
-          <div className="overflow-hidden rounded-lg border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="overflow-hidden rounded-none border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <div className="flex items-center border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-700 dark:bg-slate-900">
               <Shield className="mr-1.5 h-3.5 w-3.5 text-slate-600 dark:text-slate-400" />
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
@@ -253,7 +253,7 @@ function JsonSchemaValidator() {
         </div>
 
         {(state.errors.length > 0 || state.validationResults.length > 0) && (
-          <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <h3 className="mb-1.5 flex items-center gap-1.5 font-semibold text-slate-700 dark:text-slate-200">
               <AlertCircle className="h-4 w-4" />
               验证结果
@@ -288,7 +288,7 @@ function JsonSchemaValidator() {
         </div>
 
         {history.length > 0 && (
-          <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <h3 className="mb-1.5 font-semibold text-slate-700 dark:text-slate-200">历史记录</h3>
             <div className="max-h-36 space-y-1 overflow-y-auto">
               {history.map((item, index) => {
@@ -296,7 +296,7 @@ function JsonSchemaValidator() {
                 return (
                   <div
                     key={index}
-                    className="cursor-pointer rounded-md bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
+                    className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
                     onClick={() => {
                       setState((prev) => ({
                         ...prev,

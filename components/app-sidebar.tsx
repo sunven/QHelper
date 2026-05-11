@@ -11,7 +11,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-import { getToolsSpaHash } from "@/lib/tools-spa"
+import { getToolsSpaPath } from "@/lib/tools-spa"
 import { ToolboxIcon } from "@phosphor-icons/react"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -21,7 +21,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href={getToolsSpaHash("json")}>
+              <a href={`/${getToolsSpaPath("json")}`}>
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <ToolboxIcon />
                 </div>

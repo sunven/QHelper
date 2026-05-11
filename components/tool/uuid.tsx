@@ -130,7 +130,7 @@ export function UUIDGenerator() {
                 <p>
                   <strong>UUID v4</strong> 基于随机数生成：
                 </p>
-                <span className="block rounded-md bg-muted px-2 py-1 font-mono text-[11px]">
+                <span className="block rounded-none bg-muted px-2 py-1 font-mono text-[11px]">
                   xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
                 </span>
                 <p>4xxx 表示版本，y 表示变体。</p>
@@ -157,7 +157,7 @@ export function UUIDGenerator() {
               {uuids.map((uuid, index) => (
                 <div
                   key={index}
-                  className="group flex items-center gap-2 rounded-md border border-border/70 bg-muted/50 px-2.5 py-1.5"
+                  className="group flex items-center gap-2 rounded-none border border-border/70 bg-muted/50 px-2.5 py-1.5"
                 >
                   <code className="flex-1 font-mono text-sm">{uuid || '点击生成按钮创建 UUID'}</code>
                   {uuid && (

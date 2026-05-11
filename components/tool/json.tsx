@@ -264,13 +264,13 @@ export function JsonTool() {
     const Icon = config.icon;
 
     return (
-      <div key={change.path} className={`p-3 rounded-md ${config.className} mb-2`}>
+      <div key={change.path} className={`p-3 rounded-none ${config.className} mb-2`}>
         <div className="flex items-start gap-2">
           <Icon className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="font-medium text-sm">{config.label}</span>
-              <code className="text-xs bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded">
+              <code className="text-xs bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded-none">
                 {change.path || '(根)'}
               </code>
             </div>
@@ -368,7 +368,7 @@ export function JsonTool() {
 
   return (
     <ToolPageShell toolId="json" description="高密度 JSON 工作台，支持格式化、压缩、Diff 对比与历史保存。">
-      <div className="flex min-h-[calc(100vh-8.5rem)] flex-col overflow-hidden rounded-lg border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+      <div className="flex min-h-[calc(100vh-8.5rem)] flex-col overflow-hidden rounded-none border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
         {/* 工具栏 */}
         <div className="flex flex-wrap items-center gap-1.5 border-b border-border/70 bg-muted/40 p-2">
         <Button
@@ -419,11 +419,11 @@ export function JsonTool() {
                 历史 ({historys.length})
               </Button>
               {historys.length > 0 && (
-                <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-md border bg-popover p-1.5 shadow-md">
+                <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-none border bg-popover p-1.5 shadow-md">
                   {historys.map((his, index) => (
                     <div
                       key={`${his.name}-${index}`}
-                      className="flex items-center justify-between gap-2 px-2 py-1.5 hover:bg-muted rounded"
+                      className="flex items-center justify-between gap-2 px-2 py-1.5 hover:bg-muted rounded-none"
                     >
                       <Button
                         type="button"
@@ -515,7 +515,7 @@ export function JsonTool() {
                   </div>
 
                   {diffError && (
-                    <div className="mb-2 rounded-md bg-destructive/10 p-2.5 text-sm text-destructive">
+                    <div className="mb-2 rounded-none bg-destructive/10 p-2.5 text-sm text-destructive">
                       {diffError}
                     </div>
                   )}
@@ -553,7 +553,7 @@ export function JsonTool() {
               <>
                 {isProcessing && (
                   <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-current mb-4" />
+                    <div className="animate-spin rounded-none h-8 w-8 border-b-2 border-current mb-4" />
                     <p className="text-sm">处理中...</p>
                     {inputSize > SIZE_THRESHOLDS.MEDIUM && (
                       <p className="text-xs mt-2">大文件处理可能需要较长时间</p>

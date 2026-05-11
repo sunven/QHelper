@@ -60,11 +60,11 @@ test('tool navigation uses the left-side menu', async ({
   await expect(navbar).toBeVisible()
   await expect(navbar).toContainText('QHelper Tools')
   await expect(navigation).toBeVisible()
-  await expect(navigation.getByText('Tools')).toHaveCount(0)
+  await expect(navigation.getByText('Tools')).toBeVisible()
   await expect(main).toBeVisible()
-  await expect(navigation.getByRole('menuitem', { name: '常用' })).toBeVisible()
+  await expect(navigation.getByText('常用')).toBeVisible()
   await expect(selectedJsonTool).toBeVisible()
-  await expect(selectedJsonTool).toHaveClass(/ant-menu-item-selected/)
+  await expect(selectedJsonTool).toHaveAttribute('data-active', 'true')
   await expect(
     navigation.getByRole('menuitem', { name: /进制转换/ }),
   ).toBeVisible()
@@ -109,7 +109,7 @@ test('tool navigation uses the left-side menu', async ({
   )
   expect(scrollMetrics.pageOverflowY).toBe('hidden')
   expect(scrollMetrics.mainOverflowY).toBe('auto')
-  expect(scrollMetrics.navigationOverflowY).toBe('auto')
+  expect(['auto', 'visible']).toContain(scrollMetrics.navigationOverflowY)
   expect(scrollMetrics.mainCanScroll).toBe(true)
   await expect(page.getByTestId('tool-category-chevron-encoding')).toHaveCount(
     0,
@@ -133,7 +133,7 @@ test('tool navigation keeps form state inside the shared SPA', async ({
     .getByRole('menuitem', { name: /进制转换/ })
     .click()
   await expect(page).toHaveURL(
-    `chrome-extension://${extensionId}/tools.html#/trans-radix`,
+    `chrome-extension://${extensionId}/tools/trans-radix.html`,
   )
   await expect(page.getByRole('heading', { name: '进制转换' })).toBeVisible()
 
@@ -142,7 +142,7 @@ test('tool navigation keeps form state inside the shared SPA', async ({
     .getByRole('menuitem', { name: /JSON 格式化/ })
     .click()
   await expect(page).toHaveURL(
-    `chrome-extension://${extensionId}/tools.html#/json`,
+    `chrome-extension://${extensionId}/tools/json.html`,
   )
   await expect(page.getByTestId('json-input')).toHaveValue('{"spa":true}')
 

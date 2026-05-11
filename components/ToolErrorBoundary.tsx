@@ -101,7 +101,7 @@ export class ToolErrorBoundary extends Component<Props, State> {
               {this.state.error && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">错误信息</p>
-                  <pre className="bg-muted p-3 rounded-md text-xs overflow-auto max-h-32">
+                  <pre className="bg-muted p-3 rounded-none text-xs overflow-auto max-h-32">
                     {this.state.error.message}
                   </pre>
                 </div>

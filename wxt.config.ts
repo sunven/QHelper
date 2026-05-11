@@ -1,6 +1,13 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import { defineConfig } from 'wxt';
+import {
+  ORDINARY_TOOL_IDS,
+  TOOL_SETTINGS_ID,
+  TOOLS_ROUTE_BASE,
+  TOOLS_SPA_ENTRY,
+} from './lib/tools-spa';
 
 const require = createRequire(import.meta.url);
 
@@ -55,6 +62,26 @@ export default exports;
   };
 }
 
+function writeToolsRouteAliases(outDir: string) {
+  const htmlPath = join(outDir, TOOLS_SPA_ENTRY);
+  if (!existsSync(htmlPath)) {
+    return [];
+  }
+
+  const html = readFileSync(htmlPath, 'utf8');
+  const aliases = [...ORDINARY_TOOL_IDS, TOOL_SETTINGS_ID].map(
+    (toolId) => `${TOOLS_ROUTE_BASE}/${toolId}.html`,
+  );
+
+  for (const alias of aliases) {
+    const aliasPath = join(outDir, alias);
+    mkdirSync(dirname(aliasPath), { recursive: true });
+    writeFileSync(aliasPath, html);
+  }
+
+  return aliases;
+}
+
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   dev: {
@@ -93,6 +120,21 @@ export default defineConfig({
     ],
     action: {
       default_popup: 'popup',
+    },
+  },
+
+  hooks: {
+    'build:done': (wxt, output) => {
+      const aliases = writeToolsRouteAliases(wxt.config.outDir);
+      output.publicAssets.push(
+        ...aliases.map((fileName) => ({ type: 'asset' as const, fileName })),
+      );
+    },
+    'prepare:publicPaths': (_, paths) => {
+      paths.push({
+        type: 'templateLiteral',
+        path: `${TOOLS_ROUTE_BASE}/\${string}`,
+      });
     },
   },
 

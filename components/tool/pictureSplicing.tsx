@@ -33,7 +33,7 @@ function SortableItem({ id, src, onRemove }: { id: string; src: string; onRemove
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="relative group cursor-move">
-      <img src={src} alt="" className="w-32 h-32 object-cover rounded-md border" />
+      <img src={src} alt="" className="w-32 h-32 object-cover rounded-none border" />
       <Button
         variant="destructive"
         size="icon"
@@ -312,7 +312,7 @@ export function PictureSplicingTool() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <img src={canvasUrl} alt="拼接结果" className="max-h-[calc(100vh-14rem)] w-full rounded-lg border border-border/70 object-contain" />
+              <img src={canvasUrl} alt="拼接结果" className="max-h-[calc(100vh-14rem)] w-full rounded-none border border-border/70 object-contain" />
 
               <div className="flex gap-2">
                 <Button onClick={downloadCanvas} size="sm" className="flex-1">

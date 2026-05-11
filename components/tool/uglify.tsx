@@ -286,7 +286,7 @@ export function UglifyTool() {
             </CardHeader>
             <CardContent className="space-y-2">
               {error && (
-                <div className="rounded-md bg-destructive/10 p-2 text-sm text-destructive">
+                <div className="rounded-none bg-destructive/10 p-2 text-sm text-destructive">
                   {error}
                 </div>
               )}

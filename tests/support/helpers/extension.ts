@@ -1,7 +1,7 @@
 import type { BrowserContext, Page } from '@playwright/test';
 
 export function toolUrl(extensionId: string, toolName: string): string {
-  return `chrome-extension://${extensionId}/tools.html#/${toolName}`;
+  return `chrome-extension://${extensionId}/tools/${toolName}.html`;
 }
 
 export function popupUrl(extensionId: string): string {

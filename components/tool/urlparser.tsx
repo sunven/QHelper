@@ -61,7 +61,7 @@ export function URLParser() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="text-xs text-muted-foreground">协议 (Protocol)</label>
-                  <div className="mt-1 flex items-center justify-between gap-2 rounded-md bg-muted/45 px-2 py-1">
+                  <div className="mt-1 flex items-center justify-between gap-2 rounded-none bg-muted/45 px-2 py-1">
                     <code className="text-sm">{parsed.protocol}</code>
                     <Button variant="ghost" size="sm" onClick={() => parsed.protocol && handleCopy(parsed.protocol)}>
                       <Copy className="w-3 h-3" />
@@ -71,7 +71,7 @@ export function URLParser() {
 
                 <div>
                   <label className="text-xs text-muted-foreground">主机名 (Hostname)</label>
-                  <div className="mt-1 flex items-center justify-between gap-2 rounded-md bg-muted/45 px-2 py-1">
+                  <div className="mt-1 flex items-center justify-between gap-2 rounded-none bg-muted/45 px-2 py-1">
                     <code className="text-sm">{parsed.hostname}</code>
                     <Button variant="ghost" size="sm" onClick={() => parsed.hostname && handleCopy(parsed.hostname)}>
                       <Copy className="w-3 h-3" />
@@ -82,7 +82,7 @@ export function URLParser() {
                 {parsed.port && (
                   <div>
                     <label className="text-xs text-muted-foreground">端口 (Port)</label>
-                    <div className="mt-1 flex items-center justify-between gap-2 rounded-md bg-muted/45 px-2 py-1">
+                    <div className="mt-1 flex items-center justify-between gap-2 rounded-none bg-muted/45 px-2 py-1">
                       <code className="text-sm">{parsed.port}</code>
                       <Button variant="ghost" size="sm" onClick={() => handleCopy(parsed.port)}>
                         <Copy className="w-3 h-3" />
@@ -93,7 +93,7 @@ export function URLParser() {
 
                 <div>
                   <label className="text-xs text-muted-foreground">来源 (Origin)</label>
-                  <div className="mt-1 flex items-center justify-between gap-2 rounded-md bg-muted/45 px-2 py-1">
+                  <div className="mt-1 flex items-center justify-between gap-2 rounded-none bg-muted/45 px-2 py-1">
                     <code className="text-sm">{parsed.origin}</code>
                     <Button variant="ghost" size="sm" onClick={() => parsed.origin && handleCopy(parsed.origin)}>
                       <Copy className="w-3 h-3" />
@@ -104,7 +104,7 @@ export function URLParser() {
 
               <div>
                 <label className="text-xs text-muted-foreground">路径 (Pathname)</label>
-                <div className="mt-1 flex items-center justify-between gap-2 rounded-md bg-muted/45 px-2 py-1">
+                <div className="mt-1 flex items-center justify-between gap-2 rounded-none bg-muted/45 px-2 py-1">
                   <code className="text-sm">{parsed.pathname || '/'}</code>
                   <Button variant="ghost" size="sm" onClick={() => handleCopy(parsed.pathname || '/')}>
                     <Copy className="w-3 h-3" />
@@ -119,7 +119,7 @@ export function URLParser() {
                     {parsed.params.map((param, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-2 rounded-md border border-border/70 bg-muted/55 px-2 py-1"
+                        className="flex items-center gap-2 rounded-none border border-border/70 bg-muted/55 px-2 py-1"
                       >
                         <code className="min-w-0 flex-1 truncate text-sm">
                           <span className="text-blue-600 dark:text-blue-400">{param.key}</span>
@@ -142,7 +142,7 @@ export function URLParser() {
               {parsed.hash && (
                 <div>
                   <label className="text-xs text-muted-foreground">哈希 (Hash)</label>
-                  <div className="mt-1 flex items-center justify-between gap-2 rounded-md bg-muted/45 px-2 py-1">
+                  <div className="mt-1 flex items-center justify-between gap-2 rounded-none bg-muted/45 px-2 py-1">
                     <code className="text-sm">{parsed.hash}</code>
                     <Button variant="ghost" size="sm" onClick={() => handleCopy(parsed.hash)}>
                       <Copy className="w-3 h-3" />
@@ -153,7 +153,7 @@ export function URLParser() {
 
               <div>
                 <label className="text-xs text-muted-foreground">完整 URL (Href)</label>
-                <div className="mt-1 flex items-center justify-between gap-2 rounded-md bg-muted/45 px-2 py-1">
+                <div className="mt-1 flex items-center justify-between gap-2 rounded-none bg-muted/45 px-2 py-1">
                   <code className="break-all text-sm">{parsed.href}</code>
                   <Button variant="ghost" size="sm" onClick={() => parsed.href && handleCopy(parsed.href)}>
                     <Copy className="w-3 h-3" />

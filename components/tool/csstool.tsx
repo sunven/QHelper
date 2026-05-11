@@ -91,7 +91,7 @@ function CssTool() {
       <div className="mx-auto max-w-[1520px]">
 
         {/* 操作栏 */}
-        <div className="mb-2 rounded-md border border-slate-200 bg-white/90 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        <div className="mb-2 rounded-none border border-slate-200 bg-white/90 p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
           <div className="flex items-center gap-2">
             {/* 模式切换 */}
             <div className="flex items-center gap-1.5">
@@ -122,7 +122,7 @@ function CssTool() {
         {/* 编辑器区域 */}
         <div className="grid min-h-[calc(100vh-12rem)] grid-cols-1 gap-2 lg:grid-cols-2">
           {/* 输入区域 */}
-          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="overflow-hidden rounded-none border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">输入 CSS</h2>
               <Button
@@ -145,7 +145,7 @@ function CssTool() {
           </div>
 
           {/* 输出区域 */}
-          <div className="overflow-hidden rounded-md border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="overflow-hidden rounded-none border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-100 px-2.5 py-1.5 dark:border-slate-600 dark:bg-slate-700">
               <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-200">
                 {state.mode === 'beautify' ? '美化结果' : '压缩结果'}
@@ -190,13 +190,13 @@ function CssTool() {
 
         {/* 历史记录 */}
         {history.length > 0 && (
-          <div className="mt-2 rounded-md border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+          <div className="mt-2 rounded-none border border-slate-200 bg-white p-2 shadow-sm dark:border-slate-700 dark:bg-slate-800">
             <h3 className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">历史记录</h3>
             <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
               {history.map((item, index) => (
                 <div
                   key={index}
-                  className="cursor-pointer rounded-md bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
+                  className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
                   onClick={() => handleInputChange((item as CssToolState).input)}
                 >
                   <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">

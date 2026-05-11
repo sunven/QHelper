@@ -82,7 +82,7 @@ export function FileUpload({
       </Button>
 
       {showFile && selectedFile && (
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-md text-sm">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-muted rounded-none text-sm">
           <FileText className="w-4 h-4 text-muted-foreground" />
           <span className="max-w-[200px] truncate">{selectedFile.name}</span>
           <span className="text-muted-foreground">({(selectedFile.size / 1024).toFixed(1)} KB)</span>
@@ -177,7 +177,7 @@ export function DropZone({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       className={`
-        border-2 border-dashed rounded-lg transition-colors
+        border-2 border-dashed rounded-none transition-colors
         ${isDragging ? 'border-primary bg-primary/5' : 'border-muted-foreground/25'}
         ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
         ${className}

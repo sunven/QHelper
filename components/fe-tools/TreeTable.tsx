@@ -67,7 +67,7 @@ function TreeNode({
                           [item.id]: !isExpanded,
                         }))
                       }
-                      className="mr-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                      className="mr-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-none text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                     >
                       {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                     </button>

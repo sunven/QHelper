@@ -177,7 +177,7 @@ address:
             </CardHeader>
             <CardContent>
               {error ? (
-                <div className="min-h-[340px] rounded-md bg-destructive/10 p-2.5 text-sm text-destructive">
+                <div className="min-h-[340px] rounded-none bg-destructive/10 p-2.5 text-sm text-destructive">
                   {error}
                 </div>
               ) : (

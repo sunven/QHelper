@@ -198,7 +198,7 @@ export function CSVToJSON() {
           </CardHeader>
           <CardContent>
             {error ? (
-              <div className="p-4 bg-destructive/10 text-destructive rounded-md">
+              <div className="p-4 bg-destructive/10 text-destructive rounded-none">
                 {error}
               </div>
             ) : (

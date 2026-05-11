@@ -40,10 +40,10 @@ function RouteControls() {
 
   return (
     <div>
-      <button type="button" onClick={() => void navigate('/downloads')}>
+      <button type="button" onClick={() => void navigate('/downloads.html')}>
         Go downloads
       </button>
-      <button type="button" onClick={() => void navigate('/json')}>
+      <button type="button" onClick={() => void navigate('/json.html')}>
         Go json
       </button>
     </div>
@@ -66,7 +66,7 @@ describe('ToolActivityOutlet', () => {
 
   it('keeps React and DOM state when switching visited tools', async () => {
     render(
-      <MemoryRouter initialEntries={['/json']}>
+      <MemoryRouter initialEntries={['/json.html']}>
         <RouteControls />
         <Routes>
           <Route path="/:toolId" element={<ToolActivityOutlet />} />

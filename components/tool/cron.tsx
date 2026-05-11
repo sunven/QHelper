@@ -113,7 +113,7 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
     <ToolPageShell toolId="cron">
       <div className="mx-auto grid max-w-[1320px] gap-2 xl:grid-cols-[minmax(320px,0.85fr)_minmax(520px,1.15fr)]">
         <div className="space-y-2">
-          <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <div className="mb-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300">常用预设</div>
             <div className="flex flex-wrap gap-1.5">
               {presets.map((preset) => (
@@ -131,7 +131,7 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
             </div>
           </div>
 
-          <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-300">Cron 表达式</label>
             <div className="flex gap-1.5">
               <Input
@@ -157,10 +157,10 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
             )}
           </div>
 
-          <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <h3 className="mb-1.5 text-sm font-semibold text-slate-700 dark:text-slate-300">Cron 表达式格式</h3>
             <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
-              <div className="rounded bg-slate-100 p-1.5 font-mono dark:bg-slate-800">* * * * * *</div>
+              <div className="rounded-none bg-slate-100 p-1.5 font-mono dark:bg-slate-800">* * * * * *</div>
               <div className="grid grid-cols-5 gap-1 text-center">
                 <div>
                   <div className="font-semibold">分钟</div>
@@ -190,13 +190,13 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
           </div>
 
           {history.length > 0 && (
-            <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+            <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
               <h3 className="mb-1.5 font-semibold text-slate-700 dark:text-slate-300">历史记录</h3>
               <div className="max-h-36 space-y-1 overflow-y-auto">
                 {history.map((item, index) => (
                   <div
                     key={index}
-                    className="cursor-pointer rounded-md bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
+                    className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
                     onClick={() => handleExpressionChange((item as CronState).expression)}
                   >
                     <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
@@ -210,7 +210,7 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
         </div>
 
         {state.isValid && state.nextRuns.length > 0 && (
-          <div className="rounded-lg border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
+          <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
             <div className="mb-2 flex items-center justify-between gap-2">
               <h2 className="flex items-center gap-1.5 text-base font-semibold text-slate-700 dark:text-slate-300">
                 <Calendar className="h-4 w-4" />
@@ -233,7 +233,7 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
                 return (
                   <div
                     key={index}
-                    className="grid grid-cols-[4.5rem_4rem_1fr_1.5fr] items-center gap-2 rounded-md bg-slate-50 px-2 py-1.5 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
+                    className="grid grid-cols-[4.5rem_4rem_1fr_1.5fr] items-center gap-2 rounded-none bg-slate-50 px-2 py-1.5 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
                   >
                     <span className="text-xs font-medium text-indigo-600 dark:text-indigo-400">第 {index + 1} 次</span>
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{dayLabel}</span>

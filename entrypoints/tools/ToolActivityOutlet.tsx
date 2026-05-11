@@ -6,7 +6,8 @@ import { toolRoutes } from './tool-routes';
 
 export function ToolActivityOutlet() {
   const { toolId } = useParams<{ toolId: string }>();
-  const activeToolId = isOrdinaryToolId(toolId) ? toolId : null;
+  const routeToolId = toolId?.replace(/\.html$/, '');
+  const activeToolId = isOrdinaryToolId(routeToolId) ? routeToolId : null;
   const [visitedToolIds, setVisitedToolIds] = useState<Set<string>>(() => new Set([activeToolId ?? DEFAULT_TOOL_ID]));
 
   useEffect(() => {

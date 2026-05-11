@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/tooltip'
 import { TOOL_CATEGORIES } from '@/lib/navigation-config'
 import { toolRegistry } from '@/lib/registry/ToolRegistry'
-import { getToolsSpaHash } from '@/lib/tools-spa'
+import { getToolsSpaPath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
 
 type ToolWorkspaceShellProps = {
@@ -69,7 +69,7 @@ export function ToolWorkspaceShell({
                   <BreadcrumbItem className="hidden h-7 items-center md:flex">
                     <BreadcrumbLink
                       className="inline-flex h-7 items-center leading-none"
-                      href="#/json"
+                      href={`/${getToolsSpaPath('json')}`}
                     >
                       QHelper Tools
                     </BreadcrumbLink>
@@ -103,7 +103,7 @@ export function ToolWorkspaceShell({
                     <a
                       aria-label="打开设置"
                       data-testid="tool-settings-link"
-                      href={getToolsSpaHash('settings')}
+                      href={`/${getToolsSpaPath('settings')}`}
                     >
                       <GearSixIcon aria-hidden />
                     </a>

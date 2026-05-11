@@ -128,7 +128,7 @@ export function PasswordGenerator() {
                       <span className={`text-xs font-medium ${strength.color}`}>{strength.label}</span>
                       <span className="text-xs text-muted-foreground">{password.length} 位</span>
                     </div>
-                    <div className="h-1.5 overflow-hidden rounded-full bg-slate-200/80 dark:bg-slate-700">
+                    <div className="h-1.5 overflow-hidden rounded-none bg-slate-200/80 dark:bg-slate-700">
                       <div
                         className={`h-full transition-all ${
                           strength.level === 1
@@ -156,7 +156,7 @@ export function PasswordGenerator() {
             <div>
               <div className="mb-2 flex items-center justify-between">
                 <Label>密码长度</Label>
-                <span className="rounded bg-muted px-2 py-0.5 font-mono text-xs">{length}</span>
+                <span className="rounded-none bg-muted px-2 py-0.5 font-mono text-xs">{length}</span>
               </div>
               <Slider
                 value={[length]}

@@ -38,8 +38,8 @@ describe('chrome/tabs', () => {
     });
 
     it('should convert relative path to extension URL', async () => {
-      const path = 'tools.html#/json';
-      const fullUrl = 'chrome-extension://test/tools.html#/json';
+      const path = 'tools/json.html';
+      const fullUrl = 'chrome-extension://test/tools/json.html';
       const mockTab = { id: 1, url: fullUrl };
       mockChrome.tabs.create.mockResolvedValue(mockTab);
       mockChrome.runtime.getURL.mockReturnValue(fullUrl);

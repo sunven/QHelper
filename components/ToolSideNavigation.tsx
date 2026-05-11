@@ -85,11 +85,6 @@ function createToolByKey(): Map<string, Tool> {
   return toolByKey
 }
 
-function getToolKeyFromRouterPath(pathname: string): string | null {
-  const toolKey = pathname.replace(/^\/+/, '').split('/')[0]
-  return toolKey || null
-}
-
 export function ToolSideNavigation({ className }: { className?: string }) {
   const inRouter = useInRouterContext()
 
@@ -112,7 +107,10 @@ function RouterToolSideNavigation({ className }: { className?: string }) {
   return (
     <ToolSideNavigationContent
       className={className}
-      currentToolKey={getToolKeyFromRouterPath(location.pathname)}
+      currentToolKey={location.pathname
+        .replace(/^\/+/, '')
+        .split('/')[0]
+        ?.replace(/\.html$/, '') || null}
       onToolSelect={(tool) => {
         void navigate(getToolRoutePath(tool.key))
       }}

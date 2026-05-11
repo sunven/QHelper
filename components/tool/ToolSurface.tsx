@@ -5,7 +5,7 @@ export function ToolSurface({ className, ...props }: HTMLAttributes<HTMLDivEleme
   return (
     <div
       className={cn(
-        'rounded-lg border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78',
+        'rounded-none border border-slate-200/80 bg-white/92 shadow-sm dark:border-slate-800 dark:bg-slate-950/78',
         className,
       )}
       {...props}

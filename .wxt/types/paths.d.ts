@@ -23,6 +23,7 @@ declare module "wxt/browser" {
     | "/scss-worker.html"
     | "/sidepanel.html"
     | "/tools.html"
+    | `/tools/${string}`
     | "/uglify-worker.html"
   type HtmlPublicPath = Extract<PublicPath, `${string}.html`>
   export interface WxtRuntime {

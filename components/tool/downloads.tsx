@@ -84,7 +84,7 @@ function SummaryCard({
   }[tone]
 
   return (
-    <div className={cn('rounded-md border px-3 py-2', toneClassName)}>
+    <div className={cn('rounded-none border px-3 py-2', toneClassName)}>
       <div className="text-xs font-medium">{label}</div>
       <div className="mt-1 text-2xl font-semibold">{value}</div>
     </div>
@@ -99,7 +99,7 @@ function DownloadRow({
   muted?: boolean
 }) {
   return (
-    <li className={cn('rounded-md border border-slate-200 bg-white p-3', muted && 'bg-slate-50 text-slate-500')}>
+    <li className={cn('rounded-none border border-slate-200 bg-white p-3', muted && 'bg-slate-50 text-slate-500')}>
       <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
           <div className="truncate text-sm font-semibold text-slate-900">{getFileName(item.filename)}</div>
@@ -190,7 +190,7 @@ export function App() {
         <SummaryCard label="总记录" value={downloads.length} />
       </section>
 
-      <section className="mt-2 rounded-md border border-slate-200 bg-white p-3 shadow-sm">
+      <section className="mt-2 rounded-none border border-slate-200 bg-white p-3 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-sm font-semibold text-slate-950">失效下载记录</h2>
@@ -218,34 +218,34 @@ export function App() {
         </div>
 
         {cleanedCount !== null ? (
-          <div className="mt-3 flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+          <div className="mt-3 flex items-center gap-2 rounded-none border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
             <CheckCircle2 className="h-4 w-4" />
             已清理 {cleanedCount} 条下载历史记录。
           </div>
         ) : null}
 
         {scanState === 'error' ? (
-          <div className="mt-3 flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          <div className="mt-3 flex items-center gap-2 rounded-none border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
             <AlertTriangle className="h-4 w-4" />
             {errorMessage}
           </div>
         ) : null}
 
         {scanState === 'idle' ? (
-          <div className="mt-3 rounded-md border border-dashed border-slate-200 bg-slate-50 px-3 py-8 text-center text-sm text-slate-500">
+          <div className="mt-3 rounded-none border border-dashed border-slate-200 bg-slate-50 px-3 py-8 text-center text-sm text-slate-500">
             点击扫描开始检查下载历史。
           </div>
         ) : null}
 
         {scanState === 'loading' || scanState === 'cleaning' ? (
-          <div className="mt-3 flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-3 py-8 text-sm text-slate-500">
+          <div className="mt-3 flex items-center justify-center gap-2 rounded-none border border-slate-200 bg-slate-50 px-3 py-8 text-sm text-slate-500">
             <Loader2 className="h-4 w-4 animate-spin" />
             {scanState === 'loading' ? '正在扫描下载记录...' : '正在清理下载历史...'}
           </div>
         ) : null}
 
         {scanState === 'ready' && summary.missing.length === 0 ? (
-          <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-8 text-center text-sm text-emerald-700">
+          <div className="mt-3 rounded-none border border-emerald-200 bg-emerald-50 px-3 py-8 text-center text-sm text-emerald-700">
             没有发现确认缺失的下载记录。
           </div>
         ) : null}
@@ -260,7 +260,7 @@ export function App() {
       </section>
 
       {summary.unknown.length > 0 ? (
-        <section className="mt-2 rounded-md border border-amber-200 bg-amber-50/60 p-3">
+        <section className="mt-2 rounded-none border border-amber-200 bg-amber-50/60 p-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-amber-800">
             <FileQuestion className="h-4 w-4" />
             已跳过无法确认的记录
@@ -278,7 +278,7 @@ export function App() {
 
       {confirmOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/45 p-4">
-          <div className="w-full max-w-md rounded-md border border-slate-200 bg-white p-4 shadow-xl">
+          <div className="w-full max-w-md rounded-none border border-slate-200 bg-white p-4 shadow-xl">
             <h2 className="text-base font-semibold text-slate-950">确认清理下载历史</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               将从下载历史中移除 {cleanupIds.length} 条确认缺失的记录。此操作不会删除任何本地文件。

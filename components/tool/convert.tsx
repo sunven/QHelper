@@ -283,14 +283,14 @@ export function ConvertTool() {
                 {history.slice(-10).reverse().map((entry) => (
                   <div
                     key={entry.id}
-                    className="cursor-pointer rounded-md border border-border/70 bg-muted/55 p-2 text-xs transition-colors hover:bg-muted/80"
+                    className="cursor-pointer rounded-none border border-border/70 bg-muted/55 p-2 text-xs transition-colors hover:bg-muted/80"
                     onClick={() => restoreHistory(entry.input)}
                   >
                     <div className="mb-1 flex items-center justify-between gap-2">
                       <span className="text-muted-foreground">
                         {new Date(entry.timestamp).toLocaleString()}
                       </span>
-                      <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
+                      <span className="rounded-none bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
                         {entry.metadata?.type as string || '未知'}
                       </span>
                     </div>

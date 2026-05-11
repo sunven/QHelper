@@ -98,10 +98,10 @@ export function ImageBase64Tool() {
               <img
                 src={preview}
                 alt="预览"
-                className="max-h-[min(56vh,560px)] w-full rounded-lg border border-border/70 object-contain"
+                className="max-h-[min(56vh,560px)] w-full rounded-none border border-border/70 object-contain"
               />
             ) : (
-              <div className="flex h-[min(42vh,420px)] items-center justify-center rounded-lg border-2 border-dashed border-border text-muted-foreground">
+              <div className="flex h-[min(42vh,420px)] items-center justify-center rounded-none border-2 border-dashed border-border text-muted-foreground">
                 <span className="text-sm">图片预览区域</span>
               </div>
             )}

@@ -2,26 +2,26 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_TOOL_ID,
   getCurrentToolIdFromLocation,
-  getToolIdFromHash,
+  getToolIdFromPathname,
   getToolsSpaPath,
   getToolsSpaUrl,
   isToolsSpaLocation,
 } from './tools-spa';
 
 describe('tools-spa routing helpers', () => {
-  it('builds hash-based routes for ordinary tools', () => {
+  it('builds path-based routes for ordinary tools', () => {
     expect(DEFAULT_TOOL_ID).toBe('json');
-    expect(getToolsSpaPath('json')).toBe('tools.html#/json');
-    expect(getToolsSpaPath('trans-radix')).toBe('tools.html#/trans-radix');
+    expect(getToolsSpaPath('json')).toBe('tools/json.html');
+    expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html');
   });
 
-  it('detects current tool from SPA hash', () => {
-    expect(getToolIdFromHash('#/json')).toBe('json');
-    expect(getToolIdFromHash('#trans-radix')).toBe('trans-radix');
-    expect(getToolIdFromHash('#/json-string-panel')).toBeNull();
-    expect(getCurrentToolIdFromLocation({ hash: '#/downloads', pathname: '/tools.html' })).toBe('downloads');
-    expect(getCurrentToolIdFromLocation({ hash: '', pathname: '/tools.html' })).toBeNull();
-    expect(getCurrentToolIdFromLocation({ hash: '', pathname: '/downloads.html' })).toBeNull();
+  it('detects current tool from SPA pathname', () => {
+    expect(getToolIdFromPathname('/tools/json.html')).toBe('json');
+    expect(getToolIdFromPathname('/tools/trans-radix.html')).toBe('trans-radix');
+    expect(getToolIdFromPathname('/tools/json-string-panel.html')).toBeNull();
+    expect(getCurrentToolIdFromLocation({ pathname: '/tools/downloads.html' })).toBe('downloads');
+    expect(getCurrentToolIdFromLocation({ pathname: '/tools' })).toBeNull();
+    expect(getCurrentToolIdFromLocation({ pathname: '/downloads.html' })).toBeNull();
   });
 
   it('uses chrome.runtime.getURL when available', () => {
@@ -31,11 +31,11 @@ describe('tools-spa routing helpers', () => {
       },
     });
 
-    expect(getToolsSpaUrl('json')).toBe('chrome-extension://test/tools.html#/json');
+    expect(getToolsSpaUrl('json')).toBe('chrome-extension://test/tools/json.html');
   });
 
   it('detects the shared SPA entry', () => {
-    expect(isToolsSpaLocation({ pathname: '/tools.html' })).toBe(true);
+    expect(isToolsSpaLocation({ pathname: '/tools/json.html' })).toBe(true);
     expect(isToolsSpaLocation({ pathname: '/json.html' })).toBe(false);
   });
 });
