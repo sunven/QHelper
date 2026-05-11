@@ -1,37 +1,35 @@
-import type { LucideIcon } from 'lucide-react'
 import {
-  ArrowLeftRight,
-  ArrowUpRight,
-  Bookmark,
-  Calculator,
-  CalendarClock,
-  Clock,
-  Code,
-  Code2,
-  FileCode,
-  FileJson,
-  FileText,
-  Hash,
-  Image,
-  ImagePlus,
-  LayoutGrid,
-  Link2,
-  Palette,
-  Shield,
-  Sparkles,
-  Trash2,
-  Wand2,
-  Wrench,
-  Zap,
-} from 'lucide-react'
+  ArrowsLeftRightIcon,
+  BookmarkSimpleIcon,
+  BracketsCurlyIcon,
+  CalculatorIcon,
+  ClockIcon,
+  CodeIcon,
+  FileCodeIcon,
+  FileJsIcon,
+  FileTextIcon,
+  HashIcon,
+  ImageIcon,
+  ImageSquareIcon,
+  LinkIcon,
+  MagicWandIcon,
+  PaletteIcon,
+  ShieldCheckIcon,
+  SparkleIcon,
+  TrashIcon,
+  WrenchIcon,
+} from '@phosphor-icons/react'
+import type { Icon } from '@phosphor-icons/react'
 import { useEffect, useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
+import { Button } from '@/components/ui/button'
 import { TOOL_CATEGORIES } from '@/constants/tools'
 import { removeAll } from '@/lib/chrome/cookies'
 import { create } from '@/lib/chrome/tabs'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import { toolRegistry } from '@/lib/registry/ToolRegistry'
 import { getToolsSpaPath } from '@/lib/tools-spa'
+import { cn } from '@/lib/utils'
 import '../../index.css'
 
 type PopupTool = {
@@ -57,48 +55,116 @@ const CATEGORY_ORDER: Array<typeof ALL_CATEGORY | ToolCategory> = [
   ToolCategory.OTHER,
 ]
 
-const toolIconMap: Record<string, LucideIcon> = {
-  json: Code,
-  'trans-radix': Calculator,
-  convert: ArrowLeftRight,
-  codebeautify: Wand2,
-  uglify: Zap,
-  imagebase64: Image,
-  pictureSplicing: ImagePlus,
-  timestamp: CalendarClock,
-  colorTransform: Palette,
-  downloads: Trash2,
-  'clear-cookie': Trash2,
-  uuid: Hash,
-  password: Shield,
-  bookmarks: Bookmark,
-  urlparser: Link2,
-  csv2json: FileJson,
-  filemerge: FileCode,
-  yaml: FileCode,
-  markdown: FileText,
-  htmlformat: Code2,
-  csstool: Palette,
-  scss: FileJson,
-  svgoptimizer: Image,
-  cron: Clock,
-  toml: FileJson,
-  jsonschema: Shield,
-  xmlformatter: FileCode,
+const toolIconMap: Record<string, Icon> = {
+  json: CodeIcon,
+  'trans-radix': CalculatorIcon,
+  convert: ArrowsLeftRightIcon,
+  codebeautify: MagicWandIcon,
+  uglify: SparkleIcon,
+  imagebase64: ImageIcon,
+  pictureSplicing: ImageSquareIcon,
+  timestamp: ClockIcon,
+  colorTransform: PaletteIcon,
+  downloads: TrashIcon,
+  'clear-cookie': TrashIcon,
+  uuid: HashIcon,
+  password: ShieldCheckIcon,
+  bookmarks: BookmarkSimpleIcon,
+  urlparser: LinkIcon,
+  csv2json: BracketsCurlyIcon,
+  filemerge: FileCodeIcon,
+  yaml: FileCodeIcon,
+  markdown: FileTextIcon,
+  htmlformat: CodeIcon,
+  csstool: PaletteIcon,
+  scss: FileJsIcon,
+  svgoptimizer: ImageSquareIcon,
+  cron: ClockIcon,
+  toml: BracketsCurlyIcon,
+  jsonschema: ShieldCheckIcon,
+  xmlformatter: FileCodeIcon,
 }
 
-const categoryIconMap: Record<ToolCategory | typeof ALL_CATEGORY, LucideIcon> =
+const categoryIconMap: Record<ToolCategory | typeof ALL_CATEGORY, Icon> =
   {
-    all: LayoutGrid,
-    [ToolCategory.COMMON]: Sparkles,
-    [ToolCategory.ENCODING]: ArrowLeftRight,
-    [ToolCategory.IMAGE]: Image,
-    [ToolCategory.SECURITY]: Shield,
-    [ToolCategory.WEB_FORMAT]: Link2,
-    [ToolCategory.DATA_FORMAT]: FileJson,
-    [ToolCategory.AI]: Sparkles,
-    [ToolCategory.OTHER]: Wrench,
+    all: SparkleIcon,
+    [ToolCategory.COMMON]: SparkleIcon,
+    [ToolCategory.ENCODING]: ArrowsLeftRightIcon,
+    [ToolCategory.IMAGE]: ImageIcon,
+    [ToolCategory.SECURITY]: ShieldCheckIcon,
+    [ToolCategory.WEB_FORMAT]: LinkIcon,
+    [ToolCategory.DATA_FORMAT]: BracketsCurlyIcon,
+    [ToolCategory.AI]: SparkleIcon,
+    [ToolCategory.OTHER]: WrenchIcon,
   }
+
+const categoryAccentMap: Record<
+  ToolCategory,
+  {
+    section: string
+    headerIcon: string
+    count: string
+    tool: string
+    toolIcon: string
+  }
+> = {
+  [ToolCategory.COMMON]: {
+    section: 'border-emerald-500',
+    headerIcon: 'bg-emerald-500/10 text-emerald-700',
+    count: 'text-emerald-700',
+    tool: 'hover:bg-emerald-500/10 hover:text-emerald-900',
+    toolIcon: 'text-emerald-600',
+  },
+  [ToolCategory.ENCODING]: {
+    section: 'border-blue-500',
+    headerIcon: 'bg-blue-500/10 text-blue-700',
+    count: 'text-blue-700',
+    tool: 'hover:bg-blue-500/10 hover:text-blue-900',
+    toolIcon: 'text-blue-600',
+  },
+  [ToolCategory.IMAGE]: {
+    section: 'border-fuchsia-500',
+    headerIcon: 'bg-fuchsia-500/10 text-fuchsia-700',
+    count: 'text-fuchsia-700',
+    tool: 'hover:bg-fuchsia-500/10 hover:text-fuchsia-900',
+    toolIcon: 'text-fuchsia-600',
+  },
+  [ToolCategory.SECURITY]: {
+    section: 'border-rose-500',
+    headerIcon: 'bg-rose-500/10 text-rose-700',
+    count: 'text-rose-700',
+    tool: 'hover:bg-rose-500/10 hover:text-rose-900',
+    toolIcon: 'text-rose-600',
+  },
+  [ToolCategory.WEB_FORMAT]: {
+    section: 'border-cyan-500',
+    headerIcon: 'bg-cyan-500/10 text-cyan-700',
+    count: 'text-cyan-700',
+    tool: 'hover:bg-cyan-500/10 hover:text-cyan-900',
+    toolIcon: 'text-cyan-600',
+  },
+  [ToolCategory.DATA_FORMAT]: {
+    section: 'border-amber-500',
+    headerIcon: 'bg-amber-500/10 text-amber-700',
+    count: 'text-amber-700',
+    tool: 'hover:bg-amber-500/10 hover:text-amber-900',
+    toolIcon: 'text-amber-600',
+  },
+  [ToolCategory.AI]: {
+    section: 'border-violet-500',
+    headerIcon: 'bg-violet-500/10 text-violet-700',
+    count: 'text-violet-700',
+    tool: 'hover:bg-violet-500/10 hover:text-violet-900',
+    toolIcon: 'text-violet-600',
+  },
+  [ToolCategory.OTHER]: {
+    section: 'border-slate-500',
+    headerIcon: 'bg-slate-500/10 text-slate-700',
+    count: 'text-slate-700',
+    tool: 'hover:bg-slate-500/10 hover:text-slate-900',
+    toolIcon: 'text-slate-600',
+  },
+}
 
 const clearCookieTool: PopupTool = {
   id: 'clear-cookie',
@@ -155,8 +221,8 @@ async function handleToolClick(tool: PopupTool) {
 }
 
 function getToolIcon(toolId: string) {
-  const Icon = toolIconMap[toolId] || Wrench
-  return <Icon className="h-4 w-4" />
+  const Icon = toolIconMap[toolId] || WrenchIcon
+  return <Icon data-icon="inline-start" weight="duotone" />
 }
 
 function getCategoryLabel(categoryId: ToolCategory | typeof ALL_CATEGORY) {
@@ -211,39 +277,15 @@ function App() {
   }, [allTools])
 
   const renderToolCard = (tool: PopupTool) => (
-    <button
-      key={tool.id}
-      type="button"
-      data-testid={`tool-${tool.id}`}
-      onClick={() => handleToolClick(tool)}
-      className="group flex min-h-8 cursor-pointer items-center justify-between gap-1 rounded-md border border-slate-200 bg-white p-1 text-left transition-[border-color,background-color,box-shadow] duration-200 hover:border-emerald-400/60 hover:bg-emerald-50/50 hover:shadow-[0_10px_24px_rgba(16,185,129,0.10)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
-    >
-      <div className="flex min-w-0 items-center gap-1.5">
-        <div className="flex h-6.5 w-6.5 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-100 text-slate-700">
-          {getToolIcon(tool.id)}
-        </div>
-        <div className="line-clamp-1 text-[12px] font-semibold leading-4 text-slate-900">
-          {tool.name}
-        </div>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-1">
-        <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 transition-colors duration-200 group-hover:text-emerald-600" />
-      </div>
-    </button>
+    <ToolButton tool={tool} />
   )
 
   return (
-    <div
-      className="w-130 overflow-hidden text-slate-900"
-      style={{
-        fontFamily: '"IBM Plex Sans", "SF Pro Text", "Segoe UI", sans-serif',
-      }}
-    >
+    <div className="w-130 overflow-hidden bg-background text-foreground">
       <div className="relative">
         <div className="pointer-events-none absolute inset-0" />
 
-        <div className="relative space-y-2 p-2">
+        <div className="relative flex flex-col gap-1.5 p-1.5">
           {CATEGORY_ORDER.filter(
             (categoryId) => categoryId !== ALL_CATEGORY,
           ).map((categoryId) => {
@@ -253,26 +295,34 @@ function App() {
             }
 
             const Icon = categoryIconMap[categoryId]
+            const accent = categoryAccentMap[categoryId]
 
             return (
-              <section key={categoryId} className="space-y-1.5">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600">
-                      <Icon className="h-3.5 w-3.5" />
-                    </div>
-                    <div className="flex items-baseline gap-1.5">
-                      <div className="text-[13px] font-semibold text-slate-900">
-                        {getCategoryLabel(categoryId)}
-                      </div>
-                      <div className="text-[11px] text-slate-500">
-                        {tools.length} 个工具
-                      </div>
-                    </div>
-                  </div>
+              <section
+                key={categoryId}
+                className={cn(
+                  'flex flex-col gap-0.5 border-l-2 pl-1',
+                  accent.section,
+                )}
+              >
+                <div className="flex h-5 items-center gap-1.5 px-1 text-xs text-muted-foreground">
+                  <span
+                    className={cn(
+                      'flex size-4 items-center justify-center rounded-xs',
+                      accent.headerIcon,
+                    )}
+                  >
+                    <Icon data-icon="inline-start" weight="duotone" />
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {getCategoryLabel(categoryId)}
+                  </span>
+                  <span className={cn('font-medium', accent.count)}>
+                    {tools.length}
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-1">
+                <div className="grid grid-cols-4 gap-0.5">
                   {tools.map(renderToolCard)}
                 </div>
               </section>
@@ -281,6 +331,39 @@ function App() {
         </div>
       </div>
     </div>
+  )
+}
+
+function ToolButton({ tool }: { tool: PopupTool }) {
+  const accent = categoryAccentMap[tool.category]
+
+  return (
+    <Button
+      key={tool.id}
+      type="button"
+      variant="ghost"
+      size="sm"
+      data-testid={`tool-${tool.id}`}
+      aria-label={`${tool.name}: ${tool.description}`}
+      title={tool.description}
+      onClick={() => handleToolClick(tool)}
+      className={cn(
+        'h-7 w-full justify-start gap-1.5 rounded-sm px-1.5 text-left',
+        accent.tool,
+      )}
+    >
+      <div className="flex min-w-0 items-center gap-1.5">
+        <span
+          className={cn(
+            'flex size-4 shrink-0 items-center justify-center',
+            accent.toolIcon,
+          )}
+        >
+          {getToolIcon(tool.id)}
+        </span>
+        <span className="min-w-0 truncate">{tool.name}</span>
+      </div>
+    </Button>
   )
 }
 
