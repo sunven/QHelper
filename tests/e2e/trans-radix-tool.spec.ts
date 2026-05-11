@@ -5,7 +5,7 @@ test.describe('Trans Radix Tool', () => {
   test('page loads with conversion interface', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'trans-radix');
 
-    await expect(page.locator('.tool-hero-title, h1').first()).toContainText('进制转换');
+    await expect(page.locator('#tool-page-title-trans-radix')).toContainText('进制转换');
 
     await page.close();
   });

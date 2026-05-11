@@ -13,12 +13,7 @@ vi.mock('@/lib/chrome/downloads', () => ({
 }))
 
 vi.mock('@/components/tool/ToolPageShell', () => ({
-  ToolPageShell: ({ children, heroActions }: { children: React.ReactNode; heroActions?: React.ReactNode }) => (
-    <main>
-      <div>{heroActions}</div>
-      {children}
-    </main>
-  ),
+  ToolPageShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
 }))
 
 describe('downloads/App', () => {

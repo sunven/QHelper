@@ -5,7 +5,7 @@ test.describe('Timestamp Converter Tool', () => {
   test('page loads and shows tool title', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'timestamp');
 
-    await expect(page.locator('.tool-hero-title, h1').first()).toContainText('时间戳');
+    await expect(page.locator('#tool-page-title-timestamp')).toContainText('时间戳');
 
     await page.close();
   });

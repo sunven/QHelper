@@ -5,7 +5,7 @@ test.describe('Color Transform Tool', () => {
   test('page loads successfully', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'colorTransform');
 
-    await expect(page.locator('.tool-hero-title, h1').first()).toContainText('颜色转换');
+    await expect(page.locator('#tool-page-title-colorTransform')).toContainText('颜色转换');
 
     await page.close();
   });

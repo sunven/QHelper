@@ -28,18 +28,19 @@ const toolPages = [
   'uglify',
 ]
 
-test('tool shell uses compact header without legacy hero metadata', async ({
+test('tool shell uses breadcrumb title without a duplicated body title', async ({
   context,
   extensionId,
 }) => {
   const page = await openToolPage(context, extensionId, 'json')
-  const header = page.locator('main .tool-page-view > section').first()
+  const pageView = page.locator('main .tool-page-view').first()
 
-  await expect(header.locator('.tool-hero-title')).toBeVisible()
-  await expect(header.getByText('QHelper Workspace')).toHaveCount(0)
-  await expect(header.getByText('交互')).toHaveCount(0)
-  await expect(header.getByText('输入')).toHaveCount(0)
-  await expect(header.getByText('能力')).toHaveCount(0)
+  await expect(page.getByTestId('tool-workspace-navbar')).toContainText(
+    'JSON 格式化',
+  )
+  await expect(pageView.locator('.tool-hero-title')).toHaveCount(0)
+  await expect(page.locator('#tool-page-title-json')).toHaveClass(/sr-only/)
+  await expect(page.locator('#tool-page-title-json')).toHaveText('JSON 格式化')
 
   await page.close()
 })

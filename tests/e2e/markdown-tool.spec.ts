@@ -5,7 +5,7 @@ test.describe('Markdown Editor Tool', () => {
   test('page loads with editor area', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'markdown');
 
-    await expect(page.locator('.tool-hero-title, h1').first()).toContainText('Markdown');
+    await expect(page.locator('#tool-page-title-markdown')).toContainText('Markdown');
 
     await page.close();
   });

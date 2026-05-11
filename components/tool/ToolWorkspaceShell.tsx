@@ -62,28 +62,34 @@ export function ToolWorkspaceShell({
               <SidebarTrigger className="-ml-1" />
               <Separator
                 orientation="vertical"
-                className="mr-2 data-[orientation=vertical]:h-4"
+                className="mr-2 !self-center data-[orientation=vertical]:h-4"
               />
-              <Breadcrumb>
-                <BreadcrumbList className="h-7 flex-nowrap leading-none">
-                  <BreadcrumbItem className="hidden md:flex">
-                    <BreadcrumbLink className="leading-none" href="#/json">
+              <Breadcrumb className="flex h-7 items-center">
+                <BreadcrumbList className="h-7 flex-nowrap items-center leading-none">
+                  <BreadcrumbItem className="hidden h-7 items-center md:flex">
+                    <BreadcrumbLink
+                      className="inline-flex h-7 items-center leading-none"
+                      href="#/json"
+                    >
                       QHelper Tools
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   {activeCategory ? (
                     <>
-                      <BreadcrumbSeparator className="hidden items-center md:flex [&>svg]:block" />
-                      <BreadcrumbItem className="hidden md:flex">
-                        <BreadcrumbLink className="leading-none" href="#">
+                      <BreadcrumbSeparator className="hidden h-7 items-center md:flex [&>svg]:block" />
+                      <BreadcrumbItem className="hidden h-7 items-center md:flex">
+                        <BreadcrumbLink
+                          className="inline-flex h-7 items-center leading-none"
+                          href="#"
+                        >
                           {activeCategory.name}
                         </BreadcrumbLink>
                       </BreadcrumbItem>
                     </>
                   ) : null}
-                  <BreadcrumbSeparator className="hidden items-center md:flex [&>svg]:block" />
-                  <BreadcrumbItem>
-                    <BreadcrumbPage className="leading-none">
+                  <BreadcrumbSeparator className="hidden h-7 items-center md:flex [&>svg]:block" />
+                  <BreadcrumbItem className="h-7 items-center">
+                    <BreadcrumbPage className="inline-flex h-7 items-center leading-none">
                       {currentPageTitle}
                     </BreadcrumbPage>
                   </BreadcrumbItem>

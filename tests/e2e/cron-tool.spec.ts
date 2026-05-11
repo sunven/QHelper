@@ -5,7 +5,7 @@ test.describe('Cron Parser Tool', () => {
   test('page loads with default expression', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'cron');
 
-    await expect(page.locator('.tool-hero-title, h1').first()).toContainText('Cron');
+    await expect(page.locator('#tool-page-title-cron')).toContainText('Cron');
 
     await page.close();
   });

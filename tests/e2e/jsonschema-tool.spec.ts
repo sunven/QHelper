@@ -5,7 +5,7 @@ test.describe('JSON Schema Validator Tool', () => {
   test('page loads successfully', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'jsonschema');
 
-    await expect(page.locator('.tool-hero-title, h1').first()).toContainText('JSON Schema');
+    await expect(page.locator('#tool-page-title-jsonschema')).toContainText('JSON Schema');
 
     await page.close();
   });

@@ -182,15 +182,7 @@ export function App() {
   }, [cleanupIds])
 
   return (
-    <ToolPageShell
-      toolId="downloads"
-      heroActions={
-        <Button type="button" onClick={scanDownloads} disabled={isBusy} className="h-8 gap-1.5">
-          {scanState === 'loading' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
-          扫描
-        </Button>
-      }
-    >
+    <ToolPageShell toolId="downloads">
       <section className="grid gap-2 md:grid-cols-4">
         <SummaryCard label="确认缺失" value={summary.missing.length} tone="danger" />
         <SummaryCard label="已存在" value={summary.existing.length} tone="safe" />
@@ -208,6 +200,10 @@ export function App() {
           </div>
 
           <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={scanDownloads} disabled={isBusy} className="h-8 gap-1.5">
+              {scanState === 'loading' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              扫描
+            </Button>
             <Button
               type="button"
               variant="outline"
