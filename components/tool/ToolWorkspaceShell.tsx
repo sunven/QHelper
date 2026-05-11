@@ -65,23 +65,25 @@ export function ToolWorkspaceShell({
                 className="mr-2 data-[orientation=vertical]:h-4"
               />
               <Breadcrumb>
-                <BreadcrumbList>
-                  <BreadcrumbItem className="hidden md:block">
-                    <BreadcrumbLink href="#/json">QHelper Tools</BreadcrumbLink>
+                <BreadcrumbList className="h-7 flex-nowrap leading-none">
+                  <BreadcrumbItem className="hidden md:flex">
+                    <BreadcrumbLink className="leading-none" href="#/json">
+                      QHelper Tools
+                    </BreadcrumbLink>
                   </BreadcrumbItem>
                   {activeCategory ? (
                     <>
-                      <BreadcrumbSeparator className="hidden md:block" />
-                      <BreadcrumbItem className="hidden md:block">
-                        <BreadcrumbLink href="#">
+                      <BreadcrumbSeparator className="hidden items-center md:flex [&>svg]:block" />
+                      <BreadcrumbItem className="hidden md:flex">
+                        <BreadcrumbLink className="leading-none" href="#">
                           {activeCategory.name}
                         </BreadcrumbLink>
                       </BreadcrumbItem>
                     </>
                   ) : null}
-                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbSeparator className="hidden items-center md:flex [&>svg]:block" />
                   <BreadcrumbItem>
-                    <BreadcrumbPage>
+                    <BreadcrumbPage className="leading-none">
                       {currentPageTitle}
                     </BreadcrumbPage>
                   </BreadcrumbItem>
