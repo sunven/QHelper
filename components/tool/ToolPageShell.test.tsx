@@ -55,7 +55,7 @@ describe('ToolWorkspaceShell', () => {
     expect(screen.getByRole('link', { name: '打开设置' })).toHaveAttribute('href', '#/settings');
     expect(screen.getByTestId('tool-side-navigation-region')).toBeVisible();
     expect(screen.getByTestId('tool-side-navigation')).toBeVisible();
-    expect(screen.getByTestId('tool-page-main')).toHaveClass('min-h-0', 'min-w-0', 'flex-1', 'overflow-y-auto', 'p-4', 'pt-0');
+    expect(screen.getByTestId('tool-page-main')).toHaveClass('min-h-0', 'min-w-0', 'flex-1', 'overflow-y-auto', 'p-4', 'pt-px');
     expect(screen.getByText('Tool body')).toBeVisible();
     expect(screen.queryByText('tool-category-chevron-common')).not.toBeInTheDocument();
   });

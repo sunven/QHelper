@@ -116,7 +116,7 @@ export function ToolWorkspaceShell({
 
           <main
             data-testid="tool-page-main"
-            className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 pt-0"
+            className="min-h-0 min-w-0 flex-1 overflow-y-auto p-4 pt-px"
           >
             {children}
           </main>
