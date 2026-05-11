@@ -24,6 +24,8 @@
   "author": "sunven",
   "license": "ISC",
   "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@phosphor-icons/react": "^2.1.10",
     "@dnd-kit/utilities": "^3.2.2",
     "@radix-ui/react-checkbox": "^1.3.3",
     "@radix-ui/react-label": "^2.1.8",

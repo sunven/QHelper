@@ -4,6 +4,7 @@ declare global {
   const ContentScriptContext: typeof import('wxt/utils/content-script-context').ContentScriptContext
   const InvalidMatchPattern: typeof import('wxt/utils/match-patterns').InvalidMatchPattern
   const MatchPattern: typeof import('wxt/utils/match-patterns').MatchPattern
+  const ThemeProvider: typeof import('/Users/sunven/github/QHelper/components/theme-provider').ThemeProvider
   const ToolErrorBoundary: typeof import('/Users/sunven/github/QHelper/components/ToolErrorBoundary').ToolErrorBoundary
   const ToolSideNavigation: typeof import('/Users/sunven/github/QHelper/components/ToolSideNavigation').ToolSideNavigation
   const browser: typeof import('wxt/browser').browser
@@ -33,6 +34,7 @@ declare global {
   const useReducer: typeof import('react').useReducer
   const useRef: typeof import('react').useRef
   const useState: typeof import('react').useState
+  const useTheme: typeof import('/Users/sunven/github/QHelper/components/theme-provider').useTheme
   const useToolHistory: typeof import('/Users/sunven/github/QHelper/hooks/useToolHistory').useToolHistory
   const useToolHistoryStats: typeof import('/Users/sunven/github/QHelper/hooks/useToolHistory').useToolHistoryStats
   const useToolState: typeof import('/Users/sunven/github/QHelper/hooks/useToolState').useToolState

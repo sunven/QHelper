@@ -20,6 +20,7 @@ declare module '#imports' {
   export { fakeBrowser } from 'wxt/testing';
   export { ToolErrorBoundary, ToolErrorBoundary } from '../components/ToolErrorBoundary';
   export { findCategoryKeyForTool, createToolMenuItems, ToolSideNavigation } from '../components/ToolSideNavigation';
+  export { ThemeProvider, useTheme } from '../components/theme-provider';
   export { useChromeCookies } from '../hooks/useChromeCookies';
   export { useExtensionStorage } from '../hooks/useExtensionStorage';
   export { useKeyboardShortcuts, getShortcutDisplayText, KeyboardShortcut, KeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
