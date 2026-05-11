@@ -2,6 +2,12 @@ import { createRoot, type Root } from 'react-dom/client'
 import { DictionaryOverlay } from '@/components/dictionary/DictionaryOverlay'
 import '@/components/dictionary/styles.css'
 import { ballStore, panelStore } from './stores'
+import {
+  DEFAULT_DICTIONARY_SETTINGS,
+  getDictionarySettings,
+  subscribeDictionarySettings,
+  type DictionarySettings,
+} from './settings'
 import { createDictionaryFetchMessage, createYoudaoUrl } from './youdao'
 import type { DictionaryData } from './types'
 
@@ -20,6 +26,13 @@ export type DictionarySelectionDeps = {
   createRoot?: (container: Element | DocumentFragment) => Root
 }
 
+export type DictionarySelectionControllerDeps = DictionarySelectionDeps & {
+  getSettings?: () => Promise<DictionarySettings>
+  onSettingsChanged?: (
+    listener: (settings: DictionarySettings) => void,
+  ) => () => void
+}
+
 function isInDictPanel(element: Node | EventTarget | null): boolean {
   if (!element) {
     return false
@@ -35,18 +48,22 @@ function isInDictPanel(element: Node | EventTarget | null): boolean {
   return false
 }
 
-function ensureRoot(documentRef: Document, createRootFn: (container: Element) => Root) {
+function ensureRoot(
+  documentRef: Document,
+  createRootFn: (container: Element) => Root,
+) {
   const existing = documentRef.getElementById(ROOT_ID)
   if (existing) {
-    return existing
+    return { rootElement: existing, reactRoot: undefined }
   }
 
   const rootElement = documentRef.createElement('div')
   rootElement.id = ROOT_ID
   rootElement.className = 'cranberry-panel'
   documentRef.documentElement.appendChild(rootElement)
-  createRootFn(rootElement).render(<DictionaryOverlay />)
-  return rootElement
+  const reactRoot = createRootFn(rootElement)
+  reactRoot.render(<DictionaryOverlay />)
+  return { rootElement, reactRoot }
 }
 
 function parseDictionaryData(response: unknown): DictionaryData | undefined {
@@ -63,7 +80,7 @@ export function installDictionarySelectionLookup(
   deps: DictionarySelectionDeps = {},
 ) {
   const runtime = deps.runtime || chrome.runtime
-  ensureRoot(documentRef, deps.createRoot || createRoot)
+  const mountedRoot = ensureRoot(documentRef, deps.createRoot || createRoot)
 
   const handleMouseUp = () => {
     const selection = windowRef.getSelection()
@@ -125,5 +142,58 @@ export function installDictionarySelectionLookup(
   return () => {
     documentRef.removeEventListener('mouseup', handleMouseUp)
     documentRef.removeEventListener('mousedown', handleMouseDown)
+    ballStore.close()
+    panelStore.mergeData({ show: false })
+    mountedRoot.reactRoot?.unmount()
+    if (mountedRoot.reactRoot) {
+      mountedRoot.rootElement.remove()
+    }
+  }
+}
+
+export function installDictionarySelectionLookupController(
+  windowRef: Window,
+  documentRef: Document,
+  deps: DictionarySelectionControllerDeps = {},
+) {
+  const getSettings = deps.getSettings || getDictionarySettings
+  const onSettingsChanged =
+    deps.onSettingsChanged || subscribeDictionarySettings
+  let disposed = false
+  let cleanupLookup: (() => void) | undefined
+
+  function applySettings(settings: DictionarySettings) {
+    if (disposed) {
+      return
+    }
+
+    if (settings.selectionLookupEnabled) {
+      if (!cleanupLookup) {
+        cleanupLookup = installDictionarySelectionLookup(
+          windowRef,
+          documentRef,
+          deps,
+        )
+      }
+      return
+    }
+
+    cleanupLookup?.()
+    cleanupLookup = undefined
+  }
+
+  void getSettings()
+    .then(applySettings)
+    .catch(() => {
+      applySettings(DEFAULT_DICTIONARY_SETTINGS)
+    })
+
+  const cleanupSettings = onSettingsChanged(applySettings)
+
+  return () => {
+    disposed = true
+    cleanupSettings()
+    cleanupLookup?.()
+    cleanupLookup = undefined
   }
 }

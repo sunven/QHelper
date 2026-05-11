@@ -1,5 +1,7 @@
 import ReactDOM from 'react-dom/client'
 import { HashRouter, Navigate, Route, Routes } from 'react-router'
+import { SettingsPage } from '@/components/tool/settings'
+import { ToolWorkspaceShell } from '@/components/tool/ToolWorkspaceShell'
 import { DEFAULT_TOOL_ID, getToolRoutePath } from '@/lib/tools-spa'
 import '../../index.css'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -12,6 +14,14 @@ function ToolsApp() {
         <Route
           path="/"
           element={<Navigate replace to={getToolRoutePath(DEFAULT_TOOL_ID)} />}
+        />
+        <Route
+          path="/settings"
+          element={
+            <ToolWorkspaceShell pageTitle="设置">
+              <SettingsPage />
+            </ToolWorkspaceShell>
+          }
         />
         <Route path="/:toolId" element={<ToolActivityOutlet />} />
         <Route

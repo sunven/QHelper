@@ -49,10 +49,22 @@ describe('ToolWorkspaceShell', () => {
     expect(screen.getByTestId('tool-page-main').closest('.tool-page-shell')).toHaveClass('h-screen', 'overflow-hidden');
     expect(screen.getByTestId('tool-workspace-navbar')).toBeVisible();
     expect(screen.getByText('QHelper Tools')).toBeVisible();
+    expect(screen.getByRole('link', { name: '打开设置' })).toHaveAttribute('href', '#/settings');
     expect(screen.getByTestId('tool-side-navigation-region')).toBeVisible();
     expect(screen.getByTestId('tool-side-navigation')).toBeVisible();
     expect(screen.getByTestId('tool-page-main')).toHaveClass('min-h-0', 'min-w-0', 'flex-1', 'overflow-y-auto', 'p-4', 'pt-0');
     expect(screen.getByText('Tool body')).toBeVisible();
     expect(screen.queryByText('tool-category-chevron-common')).not.toBeInTheDocument();
+  });
+
+  it('renders a non-tool page title in the shared shell', () => {
+    render(
+      <ToolWorkspaceShell pageTitle="设置">
+        <div>Settings body</div>
+      </ToolWorkspaceShell>,
+    );
+
+    expect(screen.getByText('设置')).toBeVisible();
+    expect(screen.getByText('Settings body')).toBeVisible();
   });
 });

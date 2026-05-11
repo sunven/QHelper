@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { installDictionarySelectionLookup } from './content'
+import {
+  installDictionarySelectionLookup,
+  installDictionarySelectionLookupController,
+} from './content'
 import { ballStore, panelStore, resetDictionaryStores } from './stores'
 import { DICTIONARY_FETCH_MESSAGE } from './types'
 
@@ -135,5 +138,47 @@ describe('dictionary/content', () => {
 
     document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }))
     expect(panelStore.getSnapshot().show).toBe(false)
+  })
+
+  it('does not install the selection lookup when settings disable it', async () => {
+    const createRoot = vi.fn(() => ({ render: vi.fn(), unmount: vi.fn() }))
+
+    installDictionarySelectionLookupController(window, document, {
+      createRoot,
+      getSettings: () => Promise.resolve({ selectionLookupEnabled: false }),
+      onSettingsChanged: () => () => undefined,
+    })
+    await Promise.resolve()
+
+    mockSelection('hello')
+    document.dispatchEvent(new MouseEvent('mouseup'))
+
+    expect(createRoot).not.toHaveBeenCalled()
+    expect(ballStore.getSnapshot().show).toBe(false)
+  })
+
+  it('reacts to setting changes without reloading the page', async () => {
+    let settingsListener:
+      | ((settings: { selectionLookupEnabled: boolean }) => void)
+      | undefined
+    const createRoot = vi.fn(() => ({ render: vi.fn(), unmount: vi.fn() }))
+
+    installDictionarySelectionLookupController(window, document, {
+      createRoot,
+      getSettings: () => Promise.resolve({ selectionLookupEnabled: false }),
+      onSettingsChanged: (listener) => {
+        settingsListener = listener
+        return () => undefined
+      },
+    })
+    await Promise.resolve()
+
+    settingsListener?.({ selectionLookupEnabled: true })
+    expect(createRoot).toHaveBeenCalledTimes(1)
+
+    settingsListener?.({ selectionLookupEnabled: false })
+    expect(
+      document.documentElement.querySelector('#qhelper-dictionary-root'),
+    ).not.toBeInTheDocument()
   })
 })
