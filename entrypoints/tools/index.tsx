@@ -7,7 +7,7 @@ import '../../index.css'
 import { ThemeProvider } from '@/components/theme-provider'
 import { ToolActivityOutlet } from './ToolActivityOutlet'
 
-function ToolsRoutes() {
+export function ToolsRoutes() {
   return (
     <Routes>
       <Route
@@ -15,12 +15,16 @@ function ToolsRoutes() {
         element={<Navigate replace to={getToolRoutePath(DEFAULT_TOOL_ID)} />}
       />
       <Route
-        path="/settings"
+        path="/settings.html"
         element={
           <ToolWorkspaceShell pageTitle="设置">
             <SettingsPage />
           </ToolWorkspaceShell>
         }
+      />
+      <Route
+        path="/settings"
+        element={<Navigate replace to="/settings.html" />}
       />
       <Route path="/:toolId" element={<ToolActivityOutlet />} />
       <Route

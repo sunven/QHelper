@@ -54,4 +54,19 @@ test.describe('Extension Popup', () => {
     );
     await toolPage.close();
   });
+
+  test('clicking settings icon opens settings page', async ({ popupPage, extensionId }) => {
+    const [settingsPage] = await Promise.all([
+      popupPage.context().waitForEvent('page'),
+      popupPage.getByTestId('popup-settings-link').click(),
+    ]);
+
+    await expect(settingsPage).toHaveURL(
+      `chrome-extension://${extensionId}/tools/settings.html`,
+    );
+    await expect(settingsPage.getByTestId('tool-workspace-navbar')).toContainText(
+      '设置',
+    );
+    await settingsPage.close();
+  });
 });

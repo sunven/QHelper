@@ -18,6 +18,7 @@ import {
   SparkleIcon,
   TrashIcon,
   WrenchIcon,
+  GearSixIcon,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import { useEffect, useMemo } from 'react'
@@ -200,6 +201,15 @@ const specialTools: PopupTool[] = [
   clearCookieTool,
 ]
 
+async function openSettings() {
+  try {
+    await create(getToolsSpaPath('settings'))
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '操作失败'
+    alert(message)
+  }
+}
+
 async function handleToolClick(tool: PopupTool) {
   try {
     if (tool.type === 'jump') {
@@ -286,6 +296,27 @@ function App() {
         <div className="pointer-events-none absolute inset-0" />
 
         <div className="relative flex flex-col gap-1.5 p-1.5">
+          <header className="flex h-8 items-center justify-between border-border border-b px-1">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <span className="flex size-5 shrink-0 items-center justify-center rounded-sm bg-primary text-primary-foreground">
+                <WrenchIcon data-icon="inline-start" weight="duotone" />
+              </span>
+              <span className="truncate font-medium text-sm">QHelper</span>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label="打开设置"
+              data-testid="popup-settings-link"
+              title="设置"
+              onClick={() => void openSettings()}
+              className="rounded-sm"
+            >
+              <GearSixIcon aria-hidden weight="duotone" />
+            </Button>
+          </header>
+
           {CATEGORY_ORDER.filter(
             (categoryId) => categoryId !== ALL_CATEGORY,
           ).map((categoryId) => {

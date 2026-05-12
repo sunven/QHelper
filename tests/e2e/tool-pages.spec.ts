@@ -149,6 +149,25 @@ test('tool navigation keeps form state inside the shared SPA', async ({
   await page.close()
 })
 
+test('tool settings button opens the settings page', async ({
+  context,
+  extensionId,
+}) => {
+  const page = await openToolPage(context, extensionId, 'json')
+
+  await page.getByTestId('tool-settings-link').click()
+
+  await expect(page).toHaveURL(
+    `chrome-extension://${extensionId}/tools/settings.html`,
+  )
+  await expect(page.getByTestId('tool-workspace-navbar')).toContainText('设置')
+  await expect(
+    page.getByRole('checkbox', { name: '启用字典划词翻译' }),
+  ).toBeVisible()
+
+  await page.close()
+})
+
 for (const toolId of toolPages) {
   test.describe(`${toolId} tool page`, () => {
     test('loads successfully', async ({ context, extensionId }) => {
