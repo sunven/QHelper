@@ -1,6 +1,9 @@
 import {
+  getJsonStringSettings,
   REQUEST_DATA_STORAGE_KEY,
+  subscribeJsonStringSettings,
   transformJsonStringToJson,
+  type JsonStringSettings,
 } from '@/lib/fe-tools/json-string'
 import { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
@@ -22,9 +25,16 @@ function parseCapturedContent(content: string) {
 function JsonStringPanel() {
   const [requestData, setRequestData] = useState<CapturedRequest[]>([])
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
+  const [settings, setSettings] = useState<JsonStringSettings | null>(null)
 
   useEffect(() => {
     let mounted = true
+
+    getJsonStringSettings().then((nextSettings) => {
+      if (mounted) {
+        setSettings(nextSettings)
+      }
+    })
 
     chrome.storage.local.get(REQUEST_DATA_STORAGE_KEY).then((result) => {
       if (mounted) {
@@ -44,10 +54,21 @@ function JsonStringPanel() {
     }
 
     chrome.storage.onChanged.addListener(onStorageChanged)
+    const unsubscribeSettings = subscribeJsonStringSettings((nextSettings) => {
+      if (!mounted) {
+        return
+      }
+
+      setSettings(nextSettings)
+      if (!nextSettings.enabled) {
+        setSelectedIndex(null)
+      }
+    })
 
     return () => {
       mounted = false
       chrome.storage.onChanged.removeListener(onStorageChanged)
+      unsubscribeSettings()
       void chrome.storage.local.set({ [REQUEST_DATA_STORAGE_KEY]: [] })
     }
   }, [])
@@ -70,6 +91,23 @@ function JsonStringPanel() {
       }
     }
   }, [selectedRequest])
+
+  if (!settings) {
+    return <main className="h-screen bg-white" />
+  }
+
+  if (!settings.enabled) {
+    return (
+      <main className="grid h-screen place-items-center bg-white p-6 text-slate-900">
+        <section className="max-w-sm text-center">
+          <h1 className="font-mono text-sm font-semibold">Json String 已停用</h1>
+          <p className="mt-2 text-xs leading-5 text-slate-500">
+            可在 QHelper 设置中重新启用。
+          </p>
+        </section>
+      </main>
+    )
+  }
 
   return (
     <main className="grid h-screen grid-cols-[minmax(240px,34%)_1fr] bg-white text-slate-900">

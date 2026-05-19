@@ -1,11 +1,19 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  getJsonStringSettings,
+  JSON_STRING_SETTINGS_STORAGE_KEY,
   isJsonString,
+  setJsonStringSettings,
   shouldCaptureJsonRequest,
+  subscribeJsonStringSettings,
   transformJsonStringToJson,
 } from './json-string'
 
 describe('fe-tools/json-string', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('expands nested object strings', () => {
     expect(transformJsonStringToJson({ payload: '{"a":1}' })).toEqual({
       payload: { a: 1 },
@@ -88,5 +96,48 @@ describe('fe-tools/json-string', () => {
         response: { headers: [{ name: 'content-type', value: 'application/json' }] },
       }),
     ).toBe(false)
+  })
+
+  it('defaults Json String settings to enabled', async () => {
+    vi.mocked(chrome.storage.local.get).mockImplementationOnce(
+      () => Promise.resolve({}) as never,
+    )
+
+    await expect(getJsonStringSettings()).resolves.toEqual({ enabled: true })
+  })
+
+  it('persists normalized Json String settings', async () => {
+    vi.mocked(chrome.storage.local.set).mockImplementationOnce(
+      () => Promise.resolve() as never,
+    )
+
+    await expect(setJsonStringSettings({ enabled: false })).resolves.toEqual({
+      enabled: false,
+    })
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({
+      [JSON_STRING_SETTINGS_STORAGE_KEY]: { enabled: false },
+    })
+  })
+
+  it('subscribes to Json String settings changes', () => {
+    const listener = vi.fn()
+    const unsubscribe = subscribeJsonStringSettings(listener)
+    const calls = vi.mocked(chrome.storage.onChanged.addListener).mock.calls
+    const handleChange = calls[calls.length - 1]?.[0]
+
+    handleChange?.(
+      {
+        [JSON_STRING_SETTINGS_STORAGE_KEY]: {
+          newValue: { enabled: false },
+        },
+      },
+      'local',
+    )
+
+    expect(listener).toHaveBeenCalledWith({ enabled: false })
+    unsubscribe()
+    expect(chrome.storage.onChanged.removeListener).toHaveBeenCalledWith(
+      handleChange,
+    )
   })
 })

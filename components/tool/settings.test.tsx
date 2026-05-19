@@ -7,6 +7,11 @@ const dictionarySettingsMocks = vi.hoisted(() => ({
   setDictionarySettings: vi.fn(),
   subscribeDictionarySettings: vi.fn(),
 }))
+const jsonStringSettingsMocks = vi.hoisted(() => ({
+  getJsonStringSettings: vi.fn(),
+  setJsonStringSettings: vi.fn(),
+  subscribeJsonStringSettings: vi.fn(),
+}))
 
 vi.mock('@/lib/dictionary/settings', () => ({
   DEFAULT_DICTIONARY_SETTINGS: { selectionLookupEnabled: true },
@@ -14,6 +19,14 @@ vi.mock('@/lib/dictionary/settings', () => ({
   setDictionarySettings: dictionarySettingsMocks.setDictionarySettings,
   subscribeDictionarySettings:
     dictionarySettingsMocks.subscribeDictionarySettings,
+}))
+
+vi.mock('@/lib/fe-tools/json-string', () => ({
+  DEFAULT_JSON_STRING_SETTINGS: { enabled: true },
+  getJsonStringSettings: jsonStringSettingsMocks.getJsonStringSettings,
+  setJsonStringSettings: jsonStringSettingsMocks.setJsonStringSettings,
+  subscribeJsonStringSettings:
+    jsonStringSettingsMocks.subscribeJsonStringSettings,
 }))
 
 describe('SettingsPage', () => {
@@ -28,17 +41,31 @@ describe('SettingsPage', () => {
     dictionarySettingsMocks.subscribeDictionarySettings.mockReturnValue(
       () => undefined,
     )
+    jsonStringSettingsMocks.getJsonStringSettings.mockResolvedValue({
+      enabled: true,
+    })
+    jsonStringSettingsMocks.setJsonStringSettings.mockImplementation(
+      async (nextSettings) => nextSettings,
+    )
+    jsonStringSettingsMocks.subscribeJsonStringSettings.mockReturnValue(
+      () => undefined,
+    )
   })
 
-  it('renders the dictionary selection lookup setting', async () => {
+  it('renders the settings toggles', async () => {
     render(<SettingsPage />)
 
-    const checkbox = await screen.findByRole('checkbox', {
+    const dictionaryCheckbox = await screen.findByRole('checkbox', {
       name: '启用字典划词翻译',
     })
+    const jsonStringCheckbox = screen.getByRole('checkbox', {
+      name: '启用 Json String',
+    })
 
-    expect(checkbox).toBeChecked()
-    expect(screen.getByText('已启用')).toBeVisible()
+    expect(dictionaryCheckbox).toBeChecked()
+    expect(dictionaryCheckbox).toHaveAccessibleDescription('已启用')
+    expect(jsonStringCheckbox).toBeChecked()
+    expect(jsonStringCheckbox).toHaveAccessibleDescription('已启用')
   })
 
   it('persists dictionary selection lookup changes', async () => {
@@ -54,6 +81,22 @@ describe('SettingsPage', () => {
         { selectionLookupEnabled: false },
       )
     })
-    expect(screen.getByText('已停用')).toBeVisible()
+    expect(checkbox).toHaveAccessibleDescription('已停用')
+  })
+
+  it('persists Json String enabled changes', async () => {
+    render(<SettingsPage />)
+
+    const checkbox = await screen.findByRole('checkbox', {
+      name: '启用 Json String',
+    })
+    fireEvent.click(checkbox)
+
+    await waitFor(() => {
+      expect(jsonStringSettingsMocks.setJsonStringSettings).toHaveBeenCalledWith(
+        { enabled: false },
+      )
+    })
+    expect(checkbox).toHaveAccessibleDescription('已停用')
   })
 })
