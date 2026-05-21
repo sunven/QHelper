@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToolSideNavigation, createToolMenuItems, findCategoryKeyForTool } from './ToolSideNavigation';
-import type { Tool } from '@/lib/navigation-config';
+import type { ToolCatalogTool as Tool } from '@/lib/tool-catalog';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { TooltipProvider } from '@/components/ui/tooltip';

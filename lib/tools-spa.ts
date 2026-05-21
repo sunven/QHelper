@@ -1,25 +1,29 @@
-import type { Tool } from './navigation-config';
-import { TOOL_CATEGORIES } from './navigation-config';
+import type { ToolCatalogTool as Tool } from './tool-catalog';
+import {
+  DEFAULT_TOOL_ID,
+  ORDINARY_TOOL_IDS,
+  TOOL_SETTINGS_ID,
+  TOOLS_ROUTE_BASE,
+  TOOLS_SPA_ENTRY,
+  getToolsSpaPath as getCatalogToolsSpaPath,
+  isOrdinaryToolId,
+} from './tool-catalog';
 
-export const TOOLS_SPA_ENTRY = 'tools.html';
-export const TOOLS_ROUTE_BASE = 'tools';
-export const DEFAULT_TOOL_ID = 'json';
-export const TOOL_SETTINGS_ID = 'settings';
-
-export const ORDINARY_TOOL_IDS = TOOL_CATEGORIES.flatMap((category) => category.tools.map((tool) => tool.key));
-
-const ordinaryToolIdSet = new Set(ORDINARY_TOOL_IDS);
-
-export function isOrdinaryToolId(toolId: string | null | undefined): toolId is string {
-  return typeof toolId === 'string' && ordinaryToolIdSet.has(toolId);
-}
+export {
+  DEFAULT_TOOL_ID,
+  ORDINARY_TOOL_IDS,
+  TOOL_SETTINGS_ID,
+  TOOLS_ROUTE_BASE,
+  TOOLS_SPA_ENTRY,
+  isOrdinaryToolId,
+};
 
 export function getToolRoutePath(toolId: string): string {
   return `/${encodeURIComponent(toolId)}.html`;
 }
 
 export function getToolsSpaPath(toolId: string): string {
-  return `${TOOLS_ROUTE_BASE}/${encodeURIComponent(toolId)}.html`;
+  return getCatalogToolsSpaPath(toolId);
 }
 
 export function getToolsSpaUrl(toolId: string): string {
@@ -47,7 +51,7 @@ export function getCurrentToolIdFromLocation(location: Pick<Location, 'pathname'
 }
 
 export function getNavigationToolPath(tool: Tool): string {
-  return `/${getToolsSpaPath(tool.key)}`;
+  return tool.path;
 }
 
 export function isToolsSpaLocation(location: Pick<Location, 'pathname'> = window.location): boolean {

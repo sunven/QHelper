@@ -26,7 +26,10 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
-import { TOOL_CATEGORIES, type Tool } from '@/lib/navigation-config'
+import {
+  TOOL_CATEGORIES,
+  type ToolCatalogTool as Tool,
+} from '@/lib/tool-catalog'
 import { getCurrentToolKey, navigateToTool } from '@/lib/navigation-utils'
 import { getToolRoutePath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'

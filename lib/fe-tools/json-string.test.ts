@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  DEFAULT_JSON_STRING_SETTINGS,
   getJsonStringSettings,
   JSON_STRING_SETTINGS_STORAGE_KEY,
   isJsonString,
+  jsonStringSettings,
+  normalizeJsonStringSettings,
   setJsonStringSettings,
   shouldCaptureJsonRequest,
   subscribeJsonStringSettings,
@@ -12,6 +15,18 @@ import {
 describe('fe-tools/json-string', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    vi.mocked(chrome.storage.sync.get).mockImplementation(
+      () => Promise.resolve({}) as never,
+    )
+    vi.mocked(chrome.storage.sync.set).mockImplementation(
+      () => Promise.resolve() as never,
+    )
+    vi.mocked(chrome.storage.local.get).mockImplementation(
+      () => Promise.resolve({}) as never,
+    )
+    vi.mocked(chrome.storage.local.set).mockImplementation(
+      () => Promise.resolve() as never,
+    )
   })
 
   it('expands nested object strings', () => {
@@ -98,28 +113,29 @@ describe('fe-tools/json-string', () => {
     ).toBe(false)
   })
 
-  it('defaults Json String settings to enabled', async () => {
-    vi.mocked(chrome.storage.local.get).mockImplementationOnce(
-      () => Promise.resolve({}) as never,
-    )
-
-    await expect(getJsonStringSettings()).resolves.toEqual({ enabled: true })
+  it('defines Json String settings as a synced Tool Setting', () => {
+    expect(jsonStringSettings).toMatchObject({
+      key: JSON_STRING_SETTINGS_STORAGE_KEY,
+      defaults: DEFAULT_JSON_STRING_SETTINGS,
+    })
   })
 
-  it('persists normalized Json String settings', async () => {
-    vi.mocked(chrome.storage.local.set).mockImplementationOnce(
-      () => Promise.resolve() as never,
-    )
-
-    await expect(setJsonStringSettings({ enabled: false })).resolves.toEqual({
+  it('normalizes Json String settings to enabled by default', () => {
+    expect(normalizeJsonStringSettings(undefined)).toEqual({ enabled: true })
+    expect(normalizeJsonStringSettings({ enabled: false })).toEqual({
       enabled: false,
     })
-    expect(chrome.storage.local.set).toHaveBeenCalledWith({
-      [JSON_STRING_SETTINGS_STORAGE_KEY]: { enabled: false },
+  })
+
+  it('keeps compatible get and set exports on the definition', async () => {
+    await expect(getJsonStringSettings()).resolves.toEqual({ enabled: true })
+    await expect(setJsonStringSettings({ enabled: false })).resolves.toEqual({
+      settings: { enabled: false },
+      storageArea: 'sync',
     })
   })
 
-  it('subscribes to Json String settings changes', () => {
+  it('subscribes through the definition without exposing storage area', () => {
     const listener = vi.fn()
     const unsubscribe = subscribeJsonStringSettings(listener)
     const calls = vi.mocked(chrome.storage.onChanged.addListener).mock.calls
@@ -131,7 +147,7 @@ describe('fe-tools/json-string', () => {
           newValue: { enabled: false },
         },
       },
-      'local',
+      'sync',
     )
 
     expect(listener).toHaveBeenCalledWith({ enabled: false })

@@ -20,6 +20,12 @@ const mockChrome = {
       remove: vi.fn(() => Promise.resolve()),
       clear: vi.fn(() => Promise.resolve()),
     },
+    sync: {
+      get: vi.fn(() => Promise.resolve({})),
+      set: vi.fn(() => Promise.resolve()),
+      remove: vi.fn(() => Promise.resolve()),
+      clear: vi.fn(() => Promise.resolve()),
+    },
     onChanged: {
       addListener: vi.fn(),
       removeListener: vi.fn(),

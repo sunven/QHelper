@@ -24,11 +24,13 @@ import type { Icon } from '@phosphor-icons/react'
 import { useEffect, useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
 import { Button } from '@/components/ui/button'
-import { TOOL_CATEGORIES } from '@/constants/tools'
 import { removeAll } from '@/lib/chrome/cookies'
 import { create } from '@/lib/chrome/tabs'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
-import { toolRegistry } from '@/lib/registry/ToolRegistry'
+import {
+  ORDINARY_TOOL_CATALOG_TOOLS,
+  TOOL_CATEGORY_LABELS,
+} from '@/lib/tool-catalog'
 import { getToolsSpaPath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
 import '../../index.css'
@@ -38,6 +40,7 @@ type PopupTool = {
   name: string
   description: string
   url: string
+  icon: string
   type: 'jump' | 'clearCookie' | 'webSummary'
   category: ToolCategory
 }
@@ -56,34 +59,26 @@ const CATEGORY_ORDER: Array<typeof ALL_CATEGORY | ToolCategory> = [
   ToolCategory.OTHER,
 ]
 
-const toolIconMap: Record<string, Icon> = {
-  json: CodeIcon,
-  'trans-radix': CalculatorIcon,
-  convert: ArrowsLeftRightIcon,
-  codebeautify: MagicWandIcon,
-  uglify: SparkleIcon,
-  imagebase64: ImageIcon,
-  pictureSplicing: ImageSquareIcon,
-  timestamp: ClockIcon,
-  colorTransform: PaletteIcon,
-  downloads: TrashIcon,
-  'clear-cookie': TrashIcon,
-  uuid: HashIcon,
-  password: ShieldCheckIcon,
-  bookmarks: BookmarkSimpleIcon,
-  urlparser: LinkIcon,
-  csv2json: BracketsCurlyIcon,
-  filemerge: FileCodeIcon,
-  yaml: FileCodeIcon,
-  markdown: FileTextIcon,
-  htmlformat: CodeIcon,
-  csstool: PaletteIcon,
-  scss: FileJsIcon,
-  svgoptimizer: ImageSquareIcon,
-  cron: ClockIcon,
-  toml: BracketsCurlyIcon,
-  jsonschema: ShieldCheckIcon,
-  xmlformatter: FileCodeIcon,
+const toolIconByName: Record<string, Icon> = {
+  ArrowsLeftRight: ArrowsLeftRightIcon,
+  BookmarkSimple: BookmarkSimpleIcon,
+  BracketsCurly: BracketsCurlyIcon,
+  Calculator: CalculatorIcon,
+  Clock: ClockIcon,
+  Code: CodeIcon,
+  FileCode: FileCodeIcon,
+  FileJs: FileJsIcon,
+  FileText: FileTextIcon,
+  Hash: HashIcon,
+  Image: ImageIcon,
+  ImageSquare: ImageSquareIcon,
+  Link: LinkIcon,
+  MagicWand: MagicWandIcon,
+  Palette: PaletteIcon,
+  ShieldCheck: ShieldCheckIcon,
+  Sparkle: SparkleIcon,
+  Trash: TrashIcon,
+  Wrench: WrenchIcon,
 }
 
 const categoryIconMap: Record<ToolCategory | typeof ALL_CATEGORY, Icon> =
@@ -173,6 +168,7 @@ const clearCookieTool: PopupTool = {
   description:
     '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
   url: '',
+  icon: 'Trash',
   type: 'clearCookie',
   category: ToolCategory.OTHER,
 }
@@ -182,6 +178,7 @@ const webSummaryTool: PopupTool = {
   name: '网页总结',
   description: '打开侧边栏总结当前网页内容。',
   url: '',
+  icon: 'Sparkle',
   type: 'webSummary',
   category: ToolCategory.AI,
 }
@@ -191,6 +188,7 @@ const bookmarksTool: PopupTool = {
   name: '书签',
   description: '查看浏览器书签树。',
   url: 'bookmarks.html',
+  icon: 'BookmarkSimple',
   type: 'jump',
   category: ToolCategory.OTHER,
 }
@@ -230,8 +228,8 @@ async function handleToolClick(tool: PopupTool) {
   }
 }
 
-function getToolIcon(toolId: string) {
-  const Icon = toolIconMap[toolId] || WrenchIcon
+function getToolIcon(iconName: string) {
+  const Icon = toolIconByName[iconName] || WrenchIcon
   return <Icon data-icon="inline-start" weight="duotone" />
 }
 
@@ -240,7 +238,7 @@ function getCategoryLabel(categoryId: ToolCategory | typeof ALL_CATEGORY) {
     return '全部'
   }
 
-  return TOOL_CATEGORIES[categoryId]
+  return TOOL_CATEGORY_LABELS[categoryId]
 }
 
 function App() {
@@ -262,11 +260,12 @@ function App() {
   }, [])
 
   const allTools = useMemo<PopupTool[]>(() => {
-    const registryTools = toolRegistry.getAll().map((tool) => ({
-      id: tool.id,
+    const registryTools = ORDINARY_TOOL_CATALOG_TOOLS.map((tool) => ({
+      id: tool.key,
       name: tool.name,
-      description: tool.description,
-      url: getToolsSpaPath(tool.id),
+      description: tool.description ?? '',
+      url: getToolsSpaPath(tool.key),
+      icon: tool.icon,
       type: 'jump' as const,
       category: tool.category,
     }))
@@ -390,7 +389,7 @@ function ToolButton({ tool }: { tool: PopupTool }) {
             accent.toolIcon,
           )}
         >
-          {getToolIcon(tool.id)}
+          {getToolIcon(tool.icon)}
         </span>
         <span className="min-w-0 truncate">{tool.name}</span>
       </div>

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import * as chromeStorage from '@/lib/chrome/storage'
+import * as localPersistedData from '@/lib/chrome/local-persisted-data'
 import {
   DEFAULT_WEB_SUMMARY_CONFIG,
   WEB_SUMMARY_CONFIG_KEY,
@@ -9,9 +9,9 @@ import {
   validateWebSummaryConfig,
 } from './config'
 
-vi.mock('@/lib/chrome/storage', () => ({
-  get: vi.fn(),
-  set: vi.fn(),
+vi.mock('@/lib/chrome/local-persisted-data', () => ({
+  getLocalPersistedData: vi.fn(),
+  setLocalPersistedData: vi.fn(),
 }))
 
 describe('web-summary/config', () => {
@@ -54,7 +54,7 @@ describe('web-summary/config', () => {
       apiKey: ' secret ',
     })
 
-    expect(chromeStorage.set).toHaveBeenCalledWith(WEB_SUMMARY_CONFIG_KEY, {
+    expect(localPersistedData.setLocalPersistedData).toHaveBeenCalledWith(WEB_SUMMARY_CONFIG_KEY, {
       endpoint: 'https://example.com/v1/chat/completions',
       model: 'gpt-4.1-mini',
       apiKey: 'secret',
@@ -62,7 +62,7 @@ describe('web-summary/config', () => {
   })
 
   it('loads and normalizes the dedicated summary config', async () => {
-    vi.mocked(chromeStorage.get).mockResolvedValue({
+    vi.mocked(localPersistedData.getLocalPersistedData).mockResolvedValue({
       endpoint: ' https://example.com/v1/chat/completions ',
       model: ' test-model ',
       apiKey: ' test-key ',
@@ -73,7 +73,7 @@ describe('web-summary/config', () => {
       model: 'test-model',
       apiKey: 'test-key',
     })
-    expect(chromeStorage.get).toHaveBeenCalledWith(
+    expect(localPersistedData.getLocalPersistedData).toHaveBeenCalledWith(
       WEB_SUMMARY_CONFIG_KEY,
       DEFAULT_WEB_SUMMARY_CONFIG,
     )

@@ -103,17 +103,16 @@ mkdir -p tests/unit tests/integration tests/mocks
 | ID | 任务 | 文件 | 说明 |
 |----|------|------|------|
 | 1.2.1 | 创建工具元数据类型 | `lib/registry/ToolMetadata.ts` | 定义 ToolMetadata 接口 |
-| 1.2.2 | 创建工具注册表 | `lib/registry/ToolRegistry.ts` | ToolRegistry 类 |
+| 1.2.2 | 创建工具目录 | `lib/tool-catalog.ts` | Tool Catalog |
 | 1.2.3 | 创建工具注册文件 | `lib/registry/tools.ts` | 所有工具的元数据 |
 | 1.2.4 | 创建类型导出 | `types/index.ts` | 导出所有类型 |
-| 1.2.5 | 创建工具常量 | `constants/tools.ts` | 工具分类常量 |
+| 1.2.5 | 创建工具目录 | `lib/tool-catalog.ts` | 工具分类、路径和目录常量 |
 
 #### 验收标准
 
 - [ ] ToolMetadata.ts 包含完整的接口定义
-- [ ] ToolRegistry 实现单例模式
-- [ ] 支持按分类获取工具
-- [ ] 支持关键词搜索工具
+- [ ] Tool Catalog 暴露工具身份、分类和路径
+- [ ] 支持按分类展示工具
 - [ ] tools.ts 包含所有现有工具的元数据
 - [ ] 编译无错误
 
@@ -147,17 +146,16 @@ export interface ToolMetadata {
   status: 'stable' | 'beta' | 'experimental';
 }
 
-// lib/registry/ToolRegistry.ts
-export class ToolRegistry {
-  private static instance: ToolRegistry;
-  register(tool: ToolMetadata): void;
-  get(id: string): ToolMetadata | undefined;
-  getAll(): ToolMetadata[];
-  getByCategory(category: ToolCategory): ToolMetadata[];
-  search(query: string): ToolMetadata[];
+// lib/tool-catalog.ts
+export type ToolCatalogTool = {
+  key: string;
+  name: string;
+  path: string;
+  category: ToolCategory;
 }
 
-export const toolRegistry = ToolRegistry.getInstance();
+export const TOOL_CATEGORIES: ToolCatalogCategory[];
+export function getToolCatalogTool(toolId: string): ToolCatalogTool | undefined;
 ```
 
 ---

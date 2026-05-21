@@ -1,8 +1,8 @@
 import { Activity, useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router';
 import { ToolWorkspaceShell } from '@/components/tool/ToolWorkspaceShell';
+import { toolRoutes } from '@/components/tool/tool-routes';
 import { DEFAULT_TOOL_ID, getToolRoutePath, isOrdinaryToolId } from '@/lib/tools-spa';
-import { toolRoutes } from './tool-routes';
 
 export function ToolActivityOutlet() {
   const { toolId } = useParams<{ toolId: string }>();

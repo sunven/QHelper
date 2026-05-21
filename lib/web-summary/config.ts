@@ -1,4 +1,7 @@
-import { get, set } from '@/lib/chrome/storage'
+import {
+  getLocalPersistedData,
+  setLocalPersistedData,
+} from '@/lib/chrome/local-persisted-data'
 import type { WebSummaryConfig } from '@/types/web-summary'
 
 export const WEB_SUMMARY_CONFIG_KEY = 'webSummaryConfig'
@@ -56,7 +59,7 @@ export function isWebSummaryConfigComplete(
 }
 
 export async function getWebSummaryConfig(): Promise<WebSummaryConfig> {
-  const config = await get<Partial<WebSummaryConfig>>(
+  const config = await getLocalPersistedData<Partial<WebSummaryConfig>>(
     WEB_SUMMARY_CONFIG_KEY,
     DEFAULT_WEB_SUMMARY_CONFIG,
   )
@@ -67,5 +70,5 @@ export async function getWebSummaryConfig(): Promise<WebSummaryConfig> {
 export async function setWebSummaryConfig(
   config: Partial<WebSummaryConfig>,
 ): Promise<void> {
-  await set(WEB_SUMMARY_CONFIG_KEY, normalizeWebSummaryConfig(config))
+  await setLocalPersistedData(WEB_SUMMARY_CONFIG_KEY, normalizeWebSummaryConfig(config))
 }

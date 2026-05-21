@@ -22,8 +22,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { TOOL_CATEGORIES } from '@/lib/navigation-config'
-import { toolRegistry } from '@/lib/registry/ToolRegistry'
+import {
+  getToolCatalogCategoryForTool,
+  getToolCatalogTool,
+} from '@/lib/tool-catalog'
 import { getToolsSpaPath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
 
@@ -40,11 +42,9 @@ export function ToolWorkspaceShell({
   className,
   pageTitle,
 }: ToolWorkspaceShellProps) {
-  const activeTool = activeToolId ? toolRegistry.get(activeToolId) : undefined
+  const activeTool = getToolCatalogTool(activeToolId)
   const currentPageTitle = pageTitle ?? activeTool?.name ?? '工具'
-  const activeCategory = TOOL_CATEGORIES.find((category) =>
-    category.tools.some((tool) => tool.key === activeToolId),
-  )
+  const activeCategory = getToolCatalogCategoryForTool(activeToolId)
 
   return (
     <TooltipProvider>

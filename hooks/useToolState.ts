@@ -1,5 +1,10 @@
 import { useState, useCallback, useEffect } from 'react';
-import * as chromeStorage from '@/lib/chrome/storage';
+import {
+  getLocalPersistedData,
+  getToolStateStorageKey,
+  setLocalPersistedData,
+  subscribeLocalPersistedDataKey,
+} from '@/lib/chrome/local-persisted-data';
 
 /**
  * 工具状态管理 Hook
@@ -26,7 +31,7 @@ export function useToolState<T>(
   key: string,
   initialState: T,
 ): [state: T, setState: (value: T | ((prev: T) => T)) => void, loading: boolean] {
-  const storageKey = `tool_${toolId}_${key}`;
+  const storageKey = getToolStateStorageKey(toolId, key);
   const [state, setState] = useState<T>(initialState);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +39,7 @@ export function useToolState<T>(
   useEffect(() => {
     const loadState = async () => {
       try {
-        const storedValue = await chromeStorage.get<T>(storageKey);
+        const storedValue = await getLocalPersistedData<T>(storageKey);
         if (storedValue !== undefined) {
           setState(storedValue);
         }
@@ -50,20 +55,15 @@ export function useToolState<T>(
 
   // 监听其他标签页的更改
   useEffect(() => {
-    const handleStorageChange = (
-      changes: { [key: string]: chrome.storage.StorageChange },
-      areaName: string,
-    ) => {
-      if (areaName === 'local' && storageKey in changes) {
-        const newValue = changes[storageKey].newValue;
+    const unsubscribe = subscribeLocalPersistedDataKey<T>(
+      storageKey,
+      (newValue) => {
         setState((newValue ?? initialState) as T);
-      }
-    };
-
-    chromeStorage.onChanged(handleStorageChange);
+      },
+    );
 
     return () => {
-      globalThis.chrome?.storage?.onChanged?.removeListener(handleStorageChange);
+      unsubscribe();
     };
   }, [storageKey, initialState]);
 
@@ -74,7 +74,7 @@ export function useToolState<T>(
         const newValue = typeof value === 'function' ? (value as (prev: T) => T)(prev) : value;
 
         // 异步保存到 chrome.storage
-        chromeStorage.set(storageKey, newValue).catch((error) => {
+        setLocalPersistedData(storageKey, newValue).catch((error) => {
           console.error(`Failed to save state for ${storageKey}:`, error);
         });
 
@@ -116,7 +116,7 @@ export function useToolStateWithConfig<T>(
     if (!saveOnUnmount) return;
 
     const handleBeforeUnload = () => {
-      chromeStorage.set(`tool_${toolId}_${key}`, state).catch((error) => {
+      setLocalPersistedData(getToolStateStorageKey(toolId, key), state).catch((error) => {
         console.error(`Failed to save state on unmount for ${toolId}_${key}:`, error);
       });
     };
@@ -124,7 +124,7 @@ export function useToolStateWithConfig<T>(
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      chromeStorage.set(`tool_${toolId}_${key}`, state).catch(() => {
+      setLocalPersistedData(getToolStateStorageKey(toolId, key), state).catch(() => {
         // 静默失败，避免过多错误日志
       });
     };

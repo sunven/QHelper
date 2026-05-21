@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const { installDictionarySelectionLookup } = vi.hoisted(() => ({
-  installDictionarySelectionLookup: vi.fn(),
+const { installDictionarySelectionLookupController } = vi.hoisted(() => ({
+  installDictionarySelectionLookupController: vi.fn(),
 }))
 
 vi.mock('wxt/utils/define-content-script', () => ({
@@ -9,14 +9,14 @@ vi.mock('wxt/utils/define-content-script', () => ({
 }))
 
 vi.mock('@/lib/dictionary/content', () => ({
-  installDictionarySelectionLookup,
+  installDictionarySelectionLookupController,
 }))
 
 import dictionaryContentScript from '../entrypoints/dictionary.content'
 
 describe('entrypoints/dictionary.content.tsx', () => {
   beforeEach(() => {
-    installDictionarySelectionLookup.mockClear()
+    installDictionarySelectionLookupController.mockClear()
   })
 
   it('registers the dictionary content script on all pages and delegates to the installer', () => {
@@ -25,7 +25,9 @@ describe('entrypoints/dictionary.content.tsx', () => {
 
     dictionaryContentScript.main({} as never)
 
-    expect(installDictionarySelectionLookup).toHaveBeenCalledWith(window, document)
+    expect(installDictionarySelectionLookupController).toHaveBeenCalledWith(
+      window,
+      document,
+    )
   })
 })
-

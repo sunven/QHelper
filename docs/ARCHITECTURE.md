@@ -32,8 +32,8 @@
 │  ├─────────────────────────────────────────────────────────────────────┤   │
 │  │                                                                     │   │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
-│  │  │ 工具注册系统 │  │  状态管理    │  │  错误处理    │              │   │
-│  │  │ ToolRegistry │  │StateManager  │  │ErrorBoundary │              │   │
+│  │  │ 工具目录系统 │  │  状态管理    │  │  错误处理    │              │   │
+│  │  │ Tool Catalog │  │StateManager  │  │ErrorBoundary │              │   │
 │  │  └──────────────┘  └──────────────┘  └──────────────┘              │   │
 │  │                                                                     │   │
 │  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐              │   │
@@ -92,7 +92,7 @@
 | **组件库** | Shadcn/UI | UI 组件 |
 | **图标** | Lucide React | 图标库 |
 | **状态管理** | React Hooks | 本地状态 |
-| **存储** | chrome.storage.local | 数据持久化 |
+| **存储** | chrome.storage.local / chrome.storage.sync | 本机数据持久化；低敏工具偏好通过浏览器账号同步 |
 | **测试** | Vitest + React Testing Library | 单元测试 |
 | **代码质量** | Biome | Linting & Formatting |
 
@@ -129,10 +129,10 @@ qhelper/
 │   │   ├── tabs.ts                 # Tabs API 封装
 │   │   └── runtime.ts              # Runtime API 封装
 │   │
-│   ├── registry/                   # 工具注册系统
-│   │   ├── ToolRegistry.ts         # 注册表核心
+│   ├── registry/                   # 工具元数据定义
 │   │   ├── ToolMetadata.ts         # 元数据类型定义
 │   │   └── tools.ts                # 工具注册集合
+│   ├── tool-catalog.ts             # Tool Catalog：导航、路由、popup 的工具目录 seam
 │   │
 │   ├── state/                      # 状态管理
 │   │   ├── StateManager.ts         # 全局状态管理器
@@ -334,146 +334,27 @@ export enum ToolStatus {
 }
 ```
 
-#### 3.1.2 注册表核心
+#### 3.1.2 Tool Catalog
 
 ```typescript
-// lib/registry/ToolRegistry.ts
+// lib/tool-catalog.ts
 
-import type { ToolMetadata, ToolCategory } from './ToolMetadata';
-import { tools as toolList } from './tools';
+import { ToolCategory } from '@/lib/registry/ToolMetadata';
+import { tools as registeredTools } from '@/lib/registry/tools';
 
 /**
- * 工具注册表
- *
- * 负责工具的注册、查询、搜索和分类
+ * Tool Catalog 是工具身份、分类和路径的 UI seam。
+ * 导航、工具路由和 popup 入口从这里读取工具目录。
  */
-export class ToolRegistry {
-  private static instance: ToolRegistry;
-  private tools: Map<string, ToolMetadata> = new Map();
-  private categoryIndex: Map<ToolCategory, Set<string>> = new Map();
-  private keywordIndex: Map<string, Set<string>> = new Map();
+export const TOOL_CATEGORIES = TOOL_CATEGORY_ORDER.map((category) => ({
+  key: category,
+  name: TOOL_CATEGORY_LABELS[category],
+  tools: registeredTools.filter((tool) => tool.category === category),
+}));
 
-  private constructor() {
-    this.initializeIndexes();
-  }
-
-  /**
-   * 获取单例实例
-   */
-  public static getInstance(): ToolRegistry {
-    if (!ToolRegistry.instance) {
-      ToolRegistry.instance = new ToolRegistry();
-    }
-    return ToolRegistry.instance;
-  }
-
-  /**
-   * 初始化索引
-   */
-  private initializeIndexes(): void {
-    toolList.forEach(tool => this.register(tool));
-  }
-
-  /**
-   * 注册工具
-   */
-  public register(tool: ToolMetadata): void {
-    // 注册主索引
-    this.tools.set(tool.id, tool);
-
-    // 注册分类索引
-    if (!this.categoryIndex.has(tool.category)) {
-      this.categoryIndex.set(tool.category, new Set());
-    }
-    this.categoryIndex.get(tool.category)!.add(tool.id);
-
-    // 注册关键词索引
-    tool.keywords.forEach(keyword => {
-      const key = keyword.toLowerCase();
-      if (!this.keywordIndex.has(key)) {
-        this.keywordIndex.set(key, new Set());
-      }
-      this.keywordIndex.get(key)!.add(tool.id);
-    });
-
-    // 注册名称索引
-    const nameKeys = [
-      tool.name.toLowerCase(),
-      tool.nameEn.toLowerCase(),
-      ...tool.tags,
-    ];
-    nameKeys.forEach(key => {
-      if (!this.keywordIndex.has(key)) {
-        this.keywordIndex.set(key, new Set());
-      }
-      this.keywordIndex.get(key)!.add(tool.id);
-    });
-  }
-
-  /**
-   * 获取工具元数据
-   */
-  public get(id: string): ToolMetadata | undefined {
-    return this.tools.get(id);
-  }
-
-  /**
-   * 获取所有工具
-   */
-  public getAll(): ToolMetadata[] {
-    return Array.from(this.tools.values());
-  }
-
-  /**
-   * 按分类获取工具
-   */
-  public getByCategory(category: ToolCategory): ToolMetadata[] {
-    const ids = this.categoryIndex.get(category);
-    if (!ids) return [];
-    return Array.from(ids)
-      .map(id => this.tools.get(id))
-      .filter((tool): tool is ToolMetadata => tool !== undefined);
-  }
-
-  /**
-   * 搜索工具
-   */
-  public search(query: string): ToolMetadata[] {
-    if (!query.trim()) return this.getAll();
-
-    const lowerQuery = query.toLowerCase();
-    const results = new Set<ToolMetadata>();
-
-    // 精确匹配 ID
-    if (this.tools.has(lowerQuery)) {
-      results.add(this.tools.get(lowerQuery)!);
-    }
-
-    // 关键词匹配
-    for (const [keyword, toolIds] of this.keywordIndex) {
-      if (keyword.includes(lowerQuery)) {
-        toolIds.forEach(id => {
-          const tool = this.tools.get(id);
-          if (tool) results.add(tool);
-        });
-      }
-    }
-
-    return Array.from(results);
-  }
-
-  /**
-   * 获取分类列表
-   */
-  public getCategories(): ToolCategory[] {
-    return Array.from(this.categoryIndex.keys());
-  }
+export function getToolCatalogTool(toolId: string) {
+  return ORDINARY_TOOL_CATALOG_TOOLS.find((tool) => tool.key === toolId);
 }
-
-/**
- * 导出单例
- */
-export const toolRegistry = ToolRegistry.getInstance();
 ```
 
 #### 3.1.3 工具注册文件
@@ -1634,10 +1515,10 @@ console.log('QHelper background service worker started');
          │
          ▼
 ┌──────────────────┐
-│ ToolRegistry     │
-│ 初始化           │
+│ Tool Catalog     │
+│ 派生工具目录     │
 │ - 加载工具元数据 │
-│ - 构建索引       │
+│ - 生成分类/路径  │
 └────────┬─────────┘
          │
          ▼
@@ -1934,7 +1815,7 @@ global.chrome = mockChrome as any;
 ### 阶段 1：基础设施（第 1-4 周）
 
 1. **创建目录结构** - 建立新的文件组织
-2. **实现工具注册系统** - ToolRegistry + 元数据类型
+2. **实现工具目录系统** - Tool Catalog + 元数据类型
 3. **创建状态管理 Hook** - useToolState, useToolHistory
 4. **实现错误边界** - ToolErrorBoundary
 5. **创建标准布局组件** - ToolLayout
@@ -1958,8 +1839,8 @@ global.chrome = mockChrome as any;
 | 决策 | 选择 | 理由 |
 |------|------|------|
 | **状态管理** | React Hooks | 轻量级，无需额外依赖，适合工具场景 |
-| **工具注册** | 声明式 + 自动发现 | 易于添加新工具，无需修改弹窗代码 |
-| **存储** | chrome.storage.local | 本地优先，隐私保护，无需后端 |
+| **工具目录** | Tool Catalog + 声明式元数据 | 导航、路由和 popup 共享同一个工具身份与路径来源 |
+| **存储** | chrome.storage.local + 显式 Synced Setting | 本机数据保持本地优先；低敏工具偏好可随浏览器账号同步 |
 | **AI 集成** | 用户自带密钥 | 零成本给开发者，隐私保护 |
 | **错误处理** | 错误边界 + 友好 UI | 提升用户体验，便于调试 |
 | **测试** | Vitest + React Testing Library | 与 Vite 生态兼容，快速执行 |

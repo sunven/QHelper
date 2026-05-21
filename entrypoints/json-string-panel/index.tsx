@@ -1,21 +1,18 @@
 import {
   getJsonStringSettings,
-  REQUEST_DATA_STORAGE_KEY,
   subscribeJsonStringSettings,
   transformJsonStringToJson,
   type JsonStringSettings,
 } from '@/lib/fe-tools/json-string'
+import {
+  clearCapturedJsonStringRequests,
+  getCapturedJsonStringRequests,
+  subscribeCapturedJsonStringRequests,
+  type CapturedJsonStringRequest,
+} from '@/lib/fe-tools/json-string-request-store'
 import { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import '../../index.css'
-
-type CapturedRequest = {
-  request: {
-    url: string
-  }
-  response: unknown
-  content: string
-}
 
 function parseCapturedContent(content: string) {
   const parsed = JSON.parse(content)
@@ -23,7 +20,7 @@ function parseCapturedContent(content: string) {
 }
 
 function JsonStringPanel() {
-  const [requestData, setRequestData] = useState<CapturedRequest[]>([])
+  const [requestData, setRequestData] = useState<CapturedJsonStringRequest[]>([])
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [settings, setSettings] = useState<JsonStringSettings | null>(null)
 
@@ -36,24 +33,19 @@ function JsonStringPanel() {
       }
     })
 
-    chrome.storage.local.get(REQUEST_DATA_STORAGE_KEY).then((result) => {
+    getCapturedJsonStringRequests().then((requests) => {
       if (mounted) {
-        setRequestData((result[REQUEST_DATA_STORAGE_KEY] as CapturedRequest[] | undefined) ?? [])
+        setRequestData(requests)
       }
     })
 
-    const onStorageChanged = (
-      changes: { [key: string]: chrome.storage.StorageChange },
-      areaName: string,
-    ) => {
-      if (areaName !== 'local' || !changes[REQUEST_DATA_STORAGE_KEY]) {
-        return
-      }
-
-      setRequestData((changes[REQUEST_DATA_STORAGE_KEY].newValue as CapturedRequest[] | undefined) ?? [])
-    }
-
-    chrome.storage.onChanged.addListener(onStorageChanged)
+    const unsubscribeRequests = subscribeCapturedJsonStringRequests(
+      (requests) => {
+        if (mounted) {
+          setRequestData(requests)
+        }
+      },
+    )
     const unsubscribeSettings = subscribeJsonStringSettings((nextSettings) => {
       if (!mounted) {
         return
@@ -67,9 +59,9 @@ function JsonStringPanel() {
 
     return () => {
       mounted = false
-      chrome.storage.onChanged.removeListener(onStorageChanged)
+      unsubscribeRequests()
       unsubscribeSettings()
-      void chrome.storage.local.set({ [REQUEST_DATA_STORAGE_KEY]: [] })
+      void clearCapturedJsonStringRequests()
     }
   }, [])
 

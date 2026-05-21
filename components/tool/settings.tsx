@@ -36,6 +36,7 @@ export function SettingsPage() {
   const [loading, setLoading] = useState(true)
   const [savingTarget, setSavingTarget] = useState<SavingTarget>(null)
   const [error, setError] = useState<string | null>(null)
+  const [syncNotice, setSyncNotice] = useState<string | null>(null)
   const savingDictionary = savingTarget === 'dictionary'
   const savingJsonString = savingTarget === 'jsonString'
   const saving = savingTarget !== null
@@ -88,9 +89,14 @@ export function SettingsPage() {
     setDictionarySettingsState(nextSettings)
     setSavingTarget('dictionary')
     setError(null)
+    setSyncNotice(null)
 
     try {
-      setDictionarySettingsState(await setDictionarySettings(nextSettings))
+      const result = await setDictionarySettings(nextSettings)
+      setDictionarySettingsState(result.settings)
+      setSyncNotice(
+        result.storageArea === 'local' ? '已保存到本机，暂未同步' : null,
+      )
     } catch {
       setError('保存失败，请重试')
       setDictionarySettingsState(
@@ -112,9 +118,14 @@ export function SettingsPage() {
     setJsonStringSettingsState(nextSettings)
     setSavingTarget('jsonString')
     setError(null)
+    setSyncNotice(null)
 
     try {
-      setJsonStringSettingsState(await setJsonStringSettings(nextSettings))
+      const result = await setJsonStringSettings(nextSettings)
+      setJsonStringSettingsState(result.settings)
+      setSyncNotice(
+        result.storageArea === 'local' ? '已保存到本机，暂未同步' : null,
+      )
     } catch {
       setError('保存失败，请重试')
       setJsonStringSettingsState(
@@ -252,6 +263,15 @@ export function SettingsPage() {
           role="alert"
         >
           {error}
+        </p>
+      ) : null}
+
+      {syncNotice ? (
+        <p
+          className="mt-3 border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-950 dark:bg-amber-950/30 dark:text-amber-200 sm:px-5"
+          role="status"
+        >
+          {syncNotice}
         </p>
       ) : null}
     </article>

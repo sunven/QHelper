@@ -1,11 +1,16 @@
-import { get, set } from '@/lib/chrome/storage'
+import {
+  defineSyncedToolSetting,
+  type SyncedToolSettingSaveResult,
+} from '@/lib/chrome/synced-settings'
 
-export const REQUEST_DATA_STORAGE_KEY = 'requestData'
 export const JSON_STRING_SETTINGS_STORAGE_KEY = 'jsonStringSettings'
 
 export type JsonStringSettings = {
   enabled: boolean
 }
+
+export type JsonStringSettingsSaveResult =
+  SyncedToolSettingSaveResult<JsonStringSettings>
 
 export const DEFAULT_JSON_STRING_SETTINGS: JsonStringSettings = {
   enabled: true,
@@ -25,7 +30,7 @@ export type JsonRequestLike = {
   }
 }
 
-function normalizeJsonStringSettings(
+export function normalizeJsonStringSettings(
   value: Partial<JsonStringSettings> | undefined,
 ): JsonStringSettings {
   return {
@@ -36,81 +41,17 @@ function normalizeJsonStringSettings(
   }
 }
 
-export async function getJsonStringSettings(): Promise<JsonStringSettings> {
-  const value = await get<Partial<JsonStringSettings>>(
-    JSON_STRING_SETTINGS_STORAGE_KEY,
-  )
-  return normalizeJsonStringSettings(value)
-}
+export const jsonStringSettings = defineSyncedToolSetting({
+  key: JSON_STRING_SETTINGS_STORAGE_KEY,
+  defaults: DEFAULT_JSON_STRING_SETTINGS,
+  normalize: normalizeJsonStringSettings,
+})
 
-export async function setJsonStringSettings(
-  nextSettings: Partial<JsonStringSettings>,
-): Promise<JsonStringSettings> {
-  const normalized = normalizeJsonStringSettings(nextSettings)
-  await set(JSON_STRING_SETTINGS_STORAGE_KEY, normalized)
-  return normalized
-}
+export const getJsonStringSettings = jsonStringSettings.get
 
-export function subscribeJsonStringSettings(
-  listener: (settings: JsonStringSettings) => void,
-): () => void {
-  const handleSettingsChange = (
-    changes: { [key: string]: chrome.storage.StorageChange },
-    areaName: string,
-  ) => {
-    if (
-      areaName !== 'local' ||
-      !(JSON_STRING_SETTINGS_STORAGE_KEY in changes)
-    ) {
-      return
-    }
+export const setJsonStringSettings = jsonStringSettings.set
 
-    listener(
-      normalizeJsonStringSettings(
-        changes[JSON_STRING_SETTINGS_STORAGE_KEY].newValue as
-          | Partial<JsonStringSettings>
-          | undefined,
-      ),
-    )
-  }
-
-  if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
-    chrome.storage.onChanged.addListener(handleSettingsChange)
-    return () => {
-      chrome.storage.onChanged.removeListener(handleSettingsChange)
-    }
-  }
-
-  if (typeof window === 'undefined') {
-    return () => undefined
-  }
-
-  const handleLocalStorageChange = (event: StorageEvent) => {
-    if (
-      event.key !== JSON_STRING_SETTINGS_STORAGE_KEY ||
-      event.newValue === event.oldValue
-    ) {
-      return
-    }
-
-    try {
-      listener(
-        normalizeJsonStringSettings(
-          event.newValue
-            ? (JSON.parse(event.newValue) as Partial<JsonStringSettings>)
-            : undefined,
-        ),
-      )
-    } catch {
-      listener(DEFAULT_JSON_STRING_SETTINGS)
-    }
-  }
-
-  window.addEventListener('storage', handleLocalStorageChange)
-  return () => {
-    window.removeEventListener('storage', handleLocalStorageChange)
-  }
-}
+export const subscribeJsonStringSettings = jsonStringSettings.subscribe
 
 function parseJsonString(value: string): unknown | false {
   const text = value.trim()

@@ -1,4 +1,7 @@
-import { get, set } from '@/lib/chrome/storage'
+import {
+  defineSyncedToolSetting,
+  type SyncedToolSettingSaveResult,
+} from '@/lib/chrome/synced-settings'
 
 export const DICTIONARY_SETTINGS_STORAGE_KEY = 'dictionarySettings'
 
@@ -6,11 +9,14 @@ export type DictionarySettings = {
   selectionLookupEnabled: boolean
 }
 
+export type DictionarySettingsSaveResult =
+  SyncedToolSettingSaveResult<DictionarySettings>
+
 export const DEFAULT_DICTIONARY_SETTINGS: DictionarySettings = {
   selectionLookupEnabled: true,
 }
 
-function normalizeDictionarySettings(
+export function normalizeDictionarySettings(
   value: Partial<DictionarySettings> | undefined,
 ): DictionarySettings {
   return {
@@ -21,75 +27,14 @@ function normalizeDictionarySettings(
   }
 }
 
-export async function getDictionarySettings(): Promise<DictionarySettings> {
-  const value = await get<Partial<DictionarySettings>>(
-    DICTIONARY_SETTINGS_STORAGE_KEY,
-  )
-  return normalizeDictionarySettings(value)
-}
+export const dictionarySettings = defineSyncedToolSetting({
+  key: DICTIONARY_SETTINGS_STORAGE_KEY,
+  defaults: DEFAULT_DICTIONARY_SETTINGS,
+  normalize: normalizeDictionarySettings,
+})
 
-export async function setDictionarySettings(
-  nextSettings: Partial<DictionarySettings>,
-): Promise<DictionarySettings> {
-  const normalized = normalizeDictionarySettings(nextSettings)
-  await set(DICTIONARY_SETTINGS_STORAGE_KEY, normalized)
-  return normalized
-}
+export const getDictionarySettings = dictionarySettings.get
 
-export function subscribeDictionarySettings(
-  listener: (settings: DictionarySettings) => void,
-): () => void {
-  const handleSettingsChange = (
-    changes: { [key: string]: chrome.storage.StorageChange },
-    areaName: string,
-  ) => {
-    if (areaName !== 'local' || !(DICTIONARY_SETTINGS_STORAGE_KEY in changes)) {
-      return
-    }
+export const setDictionarySettings = dictionarySettings.set
 
-    listener(
-      normalizeDictionarySettings(
-        changes[DICTIONARY_SETTINGS_STORAGE_KEY].newValue as
-          | Partial<DictionarySettings>
-          | undefined,
-      ),
-    )
-  }
-
-  if (typeof chrome !== 'undefined' && chrome.storage?.onChanged) {
-    chrome.storage.onChanged.addListener(handleSettingsChange)
-    return () => {
-      chrome.storage.onChanged.removeListener(handleSettingsChange)
-    }
-  }
-
-  if (typeof window === 'undefined') {
-    return () => undefined
-  }
-
-  const handleLocalStorageChange = (event: StorageEvent) => {
-    if (
-      event.key !== DICTIONARY_SETTINGS_STORAGE_KEY ||
-      event.newValue === event.oldValue
-    ) {
-      return
-    }
-
-    try {
-      listener(
-        normalizeDictionarySettings(
-          event.newValue
-            ? (JSON.parse(event.newValue) as Partial<DictionarySettings>)
-            : undefined,
-        ),
-      )
-    } catch {
-      listener(DEFAULT_DICTIONARY_SETTINGS)
-    }
-  }
-
-  window.addEventListener('storage', handleLocalStorageChange)
-  return () => {
-    window.removeEventListener('storage', handleLocalStorageChange)
-  }
-}
+export const subscribeDictionarySettings = dictionarySettings.subscribe

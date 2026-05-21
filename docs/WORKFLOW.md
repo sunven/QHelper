@@ -72,7 +72,7 @@
 | WF-1.2.4 | 定义 types/ai.ts | WF-1.2.1 | AIProvider 类型导出 |
 | WF-1.2.5 | 创建 types/index.ts 统一导出 | WF-1.2.1 | 所有类型可从 @/types 导入 |
 | WF-1.2.6 | 创建 constants/ 目录 | 无 | 目录创建完成 |
-| WF-1.2.7 | 定义 constants/tools.ts | WF-1.2.6 | TOOL_CATEGORIES 导出 |
+| WF-1.2.7 | 定义 lib/tool-catalog.ts | WF-1.2.6 | Tool Catalog 导出 |
 | WF-1.2.8 | 定义 constants/storage.ts | WF-1.2.6 | STORAGE_KEYS 导出 |
 
 #### 文件结构
@@ -117,23 +117,23 @@
 
 ---
 
-### Sprint 1.4：工具注册系统（第 2-3 周）
+### Sprint 1.4：工具目录系统（第 2-3 周）
 
 #### 任务清单
 
 | ID | 任务 | 依赖 | 验收标准 |
 |----|------|------|----------|
 | WF-1.4.1 | 创建 lib/tools/metadata.ts | WF-1.2.2 | ToolMetadata 接口定义完成 |
-| WF-1.4.2 | 创建 lib/tools/registry.ts | WF-1.4.1 | ToolRegistry 类实现 |
+| WF-1.4.2 | 创建 lib/tool-catalog.ts | WF-1.4.1 | Tool Catalog 工具目录实现 |
 | WF-1.4.3 | 创建 lib/tools/categories.ts | WF-1.4.1 | 工具类别定义 |
 | WF-1.4.4 | 创建 lib/tools/discovery.ts | WF-1.4.2 | 自动发现功能 |
-| WF-1.4.5 | 为 toolRegistry 编写测试 | WF-1.4.2 | 测试通过 |
-| WF-1.4.6 | 重构 popup 使用 toolRegistry | WF-1.4.5 | 弹窗使用注册表 |
+| WF-1.4.5 | 为 Tool Catalog 编写测试 | WF-1.4.2 | 测试通过 |
+| WF-1.4.6 | 重构 popup 使用 Tool Catalog | WF-1.4.5 | 弹窗使用工具目录 |
 
 #### 验收标准
 
-- [ ] toolRegistry 可以注册和获取工具
-- [ ] 按分类和搜索功能正常
+- [ ] Tool Catalog 可以获取工具身份、分类和路径
+- [ ] 按分类展示功能正常
 - [ ] 弹窗不再硬编码工具列表
 
 ---

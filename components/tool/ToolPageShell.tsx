@@ -1,4 +1,4 @@
-import { toolRegistry } from '@/lib/registry/ToolRegistry';
+import { getToolCatalogTool } from '@/lib/tool-catalog';
 import { cn } from '@/lib/utils';
 import type { ReactNode } from 'react';
 
@@ -14,7 +14,7 @@ export function ToolPageShell({
   children,
   className,
 }: ToolPageShellProps) {
-  const tool = toolRegistry.get(toolId);
+  const tool = getToolCatalogTool(toolId);
 
   if (!tool) {
     throw new Error(`Unknown tool: ${toolId}`);

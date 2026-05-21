@@ -1,7 +1,13 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { HistoryEntry } from '@/types/storage';
 import type { ToolHistoryItem } from '@/types/tool';
-import * as chromeStorage from '@/lib/chrome/storage';
+import {
+  getLocalPersistedData,
+  getToolStateStorageKey,
+  removeLocalPersistedData,
+  setLocalPersistedData,
+  subscribeLocalPersistedDataKey,
+} from '@/lib/chrome/local-persisted-data';
 
 /**
  * 历史记录配置选项
@@ -112,7 +118,7 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
   const serialize = compatibilityMode ? undefined : options.serialize;
   const deserialize = compatibilityMode ? undefined : options.deserialize;
 
-  const fullStorageKey = `tool_${toolId}_${storageKey}`;
+  const fullStorageKey = getToolStateStorageKey(toolId, storageKey);
   const [history, setHistory] = useState<HistoryEntry<TInput, TOutput>[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -125,7 +131,7 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
   useEffect(() => {
     const loadHistory = async () => {
       try {
-        const stored = await chromeStorage.get<HistoryEntry<unknown, unknown>[]>(fullStorageKey, []);
+        const stored = await getLocalPersistedData<HistoryEntry<unknown, unknown>[]>(fullStorageKey, []);
         const deserializedHistory = deserialize
           ? stored.map(deserialize)
           : (stored as HistoryEntry<TInput, TOutput>[]);
@@ -144,24 +150,19 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
 
   // 监听其他标签页的更改
   useEffect(() => {
-    const handleStorageChange = (
-      changes: { [key: string]: chrome.storage.StorageChange },
-      areaName: string,
-    ) => {
-      if (areaName === 'local' && fullStorageKey in changes) {
-        const newHistory = (changes[fullStorageKey].newValue as HistoryEntry<unknown, unknown>[]) || [];
-        const deserializedHistory = deserialize
-          ? newHistory.map(deserialize)
-          : (newHistory as HistoryEntry<TInput, TOutput>[]);
+    const unsubscribe = subscribeLocalPersistedDataKey<
+      HistoryEntry<unknown, unknown>[]
+    >(fullStorageKey, (value) => {
+      const newHistory = value || [];
+      const deserializedHistory = deserialize
+        ? newHistory.map(deserialize)
+        : (newHistory as HistoryEntry<TInput, TOutput>[]);
 
-        setHistory(deserializedHistory);
-      }
-    };
-
-    chromeStorage.onChanged(handleStorageChange);
+      setHistory(deserializedHistory);
+    });
 
     return () => {
-      globalThis.chrome?.storage?.onChanged?.removeListener(handleStorageChange);
+      unsubscribe();
     };
   }, [fullStorageKey, deserialize]);
 
@@ -173,7 +174,7 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
         ? trimmedHistory.map(serialize)
         : (trimmedHistory as HistoryEntry<unknown, unknown>[]);
 
-      await chromeStorage.set(fullStorageKey, serializedHistory);
+      await setLocalPersistedData(fullStorageKey, serializedHistory);
     },
     [fullStorageKey, maxHistory, serialize],
   );
@@ -210,7 +211,7 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
   // 清除历史记录
   const clearHistory = useCallback(async () => {
     setHistory([]);
-    await chromeStorage.remove(fullStorageKey);
+    await removeLocalPersistedData(fullStorageKey);
   }, [fullStorageKey]);
 
   // 删除单条历史记录

@@ -1,4 +1,7 @@
-import { TOOL_CATEGORIES, type Tool } from './navigation-config';
+import {
+  TOOL_CATEGORIES,
+  type ToolCatalogTool as Tool,
+} from './tool-catalog';
 import { getCurrentToolIdFromLocation, getNavigationToolPath, getToolsSpaUrl } from './tools-spa';
 
 /**

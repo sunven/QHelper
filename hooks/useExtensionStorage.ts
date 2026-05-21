@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
-import * as storage from '../lib/chrome/storage';
+import {
+  getLocalPersistedData,
+  setLocalPersistedData,
+  subscribeLocalPersistedDataKey,
+} from '@/lib/chrome/local-persisted-data';
 
 /**
  * Chrome Storage React Hook
@@ -11,7 +15,7 @@ export function useExtensionStorage<T>(key: string, defaultValue: T) {
   useEffect(() => {
     const loadValue = async () => {
       try {
-        const storedValue = await storage.get<T>(key);
+        const storedValue = await getLocalPersistedData<T>(key);
         setValue(storedValue ?? defaultValue);
       } catch (error) {
         console.error(`Error loading ${key}:`, error);
@@ -22,27 +26,23 @@ export function useExtensionStorage<T>(key: string, defaultValue: T) {
 
     loadValue();
 
-    const handler = (changes: { [key: string]: chrome.storage.StorageChange }, areaName: string) => {
-      if (areaName === 'local' && key in changes) {
-        setValue((changes[key].newValue ?? defaultValue) as T);
-      }
-    };
-
-    storage.onChanged(handler);
+    const unsubscribe = subscribeLocalPersistedDataKey<T>(key, (nextValue) => {
+      setValue((nextValue ?? defaultValue) as T);
+    });
 
     return () => {
-      chrome.storage.onChanged.removeListener(handler);
+      unsubscribe();
     };
   }, [key, defaultValue]);
 
   const updateValue = async (newValue: T) => {
     try {
       setValue(newValue);
-      await storage.set(key, newValue);
+      await setLocalPersistedData(key, newValue);
     } catch (error) {
       console.error(`Error saving ${key}:`, error);
       // Revert to previous value on error
-      const storedValue = await storage.get<T>(key);
+      const storedValue = await getLocalPersistedData<T>(key);
       setValue(storedValue ?? defaultValue);
     }
   };

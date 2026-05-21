@@ -36,7 +36,10 @@ describe('SettingsPage', () => {
       selectionLookupEnabled: true,
     })
     dictionarySettingsMocks.setDictionarySettings.mockImplementation(
-      async (nextSettings) => nextSettings,
+      async (nextSettings) => ({
+        settings: nextSettings,
+        storageArea: 'sync',
+      }),
     )
     dictionarySettingsMocks.subscribeDictionarySettings.mockReturnValue(
       () => undefined,
@@ -45,7 +48,10 @@ describe('SettingsPage', () => {
       enabled: true,
     })
     jsonStringSettingsMocks.setJsonStringSettings.mockImplementation(
-      async (nextSettings) => nextSettings,
+      async (nextSettings) => ({
+        settings: nextSettings,
+        storageArea: 'sync',
+      }),
     )
     jsonStringSettingsMocks.subscribeJsonStringSettings.mockReturnValue(
       () => undefined,
@@ -98,5 +104,22 @@ describe('SettingsPage', () => {
       )
     })
     expect(checkbox).toHaveAccessibleDescription('已停用')
+  })
+
+  it('shows a local fallback notice when sync save is unavailable', async () => {
+    dictionarySettingsMocks.setDictionarySettings.mockResolvedValueOnce({
+      settings: { selectionLookupEnabled: false },
+      storageArea: 'local',
+    })
+    render(<SettingsPage />)
+
+    const checkbox = await screen.findByRole('checkbox', {
+      name: '启用字典划词翻译',
+    })
+    fireEvent.click(checkbox)
+
+    expect(await screen.findByText('已保存到本机，暂未同步')).toHaveTextContent(
+      '已保存到本机，暂未同步',
+    )
   })
 })

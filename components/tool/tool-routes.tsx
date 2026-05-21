@@ -24,12 +24,10 @@ import { App as UrlParserTool } from '@/components/tool/urlparser';
 import { App as UuidTool } from '@/components/tool/uuid';
 import { App as XmlFormatterTool } from '@/components/tool/xmlformatter';
 import { App as YamlTool } from '@/components/tool/yaml';
-import { ORDINARY_TOOL_IDS } from '@/lib/tools-spa';
-
-export type ToolRoute = {
-  id: string;
-  Component: ComponentType;
-};
+import {
+  createOrdinaryToolRoutes,
+  type ToolRoute,
+} from '@/lib/tool-catalog';
 
 const componentByToolId: Record<string, ComponentType> = {
   json: JsonTool,
@@ -59,7 +57,5 @@ const componentByToolId: Record<string, ComponentType> = {
   downloads: DownloadsTool,
 };
 
-export const toolRoutes: ToolRoute[] = ORDINARY_TOOL_IDS.map((id) => ({
-  id,
-  Component: componentByToolId[id],
-}));
+export const toolRoutes: ToolRoute<ComponentType>[] =
+  createOrdinaryToolRoutes(componentByToolId);

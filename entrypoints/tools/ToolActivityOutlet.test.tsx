@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router';
 import { ToolActivityOutlet } from './ToolActivityOutlet';
 
-vi.mock('./tool-routes', () => ({
+vi.mock('@/components/tool/tool-routes', () => ({
   toolRoutes: [
     {
       id: 'json',
