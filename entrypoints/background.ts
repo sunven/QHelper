@@ -10,6 +10,7 @@ import {
   ensureCopyPageTitleContextMenu,
 } from '@/lib/fe-tools/context-menu'
 import { handleDictionaryFetchMessage } from '@/lib/dictionary/background'
+import { handleStarHistorySvgMessage } from '@/lib/github/star-history-background'
 import type {
   OpenWebSummaryMessage,
   OpenWebSummaryResponse,
@@ -58,6 +59,10 @@ export default defineBackground(() => {
 
   chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
     if (handleDictionaryFetchMessage(message, sendResponse)) {
+      return true
+    }
+
+    if (handleStarHistorySvgMessage(message, sendResponse)) {
       return true
     }
 

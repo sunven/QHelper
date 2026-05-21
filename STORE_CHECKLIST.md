@@ -152,7 +152,7 @@ pnpm build
 cookies: 用于"清除 Cookie"功能，数据不离开浏览器
 tabs: 用于在新标签页打开工具界面，不读取标签页内容
 storage: 用于存储用户偏好设置，仅本地存储
-host_permissions: 仅在 GitHub 仓库首页注入 "Zread" 按钮
+host_permissions: 用于网页总结内容提取；在 GitHub 仓库首页注入 "Zread" 按钮和当前仓库 Star History 浮窗入口
 ```
 
 #### 定价与分发页

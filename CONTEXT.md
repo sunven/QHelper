@@ -28,6 +28,22 @@ _Avoid_: Synced data, cloud state, backup
 The source-of-truth collection of QHelper tools and their user-facing identity. It defines tool names, categories, descriptions, icons, and paths for navigation, popup entry points, and tool routes.
 _Avoid_: Tool registry, navigation config, route map
 
+**Repository Page Helper**:
+An optional QHelper aid that appears in the context of the currently viewed public code repository. A **Repository Page Helper** is not a standalone tool in the **Tool Catalog** and should use the current repository as its subject unless the user explicitly chooses another subject. Multiple **Repository Page Helpers** may coexist when each has a distinct purpose.
+_Avoid_: Global widget, fixed repo helper, tool page
+
+**Repository Home Page**:
+The main page for a code repository, where the repository itself is the subject. A **Repository Home Page** is distinct from repository subpages such as file views, issue lists, pull requests, actions, settings, or discussions.
+_Avoid_: Project page, repo page, GitHub page
+
+**Star History View**:
+A **Repository Page Helper** for a **Repository Home Page** that presents public star-growth history for the current repository. It is repository-specific public metadata, not captured content, request data, tool history, or a **Tool Setting**.
+_Avoid_: Star widget, fixed star chart, repository analytics
+
+**Star History Detail**:
+The external Star History page for a repository's public star-growth history. A **Star History View** may point to a **Star History Detail** when the user wants the full external view.
+_Avoid_: Internal analytics page, embedded report
+
 ## Example Dialogue
 
 Developer: "Should Json String request data be a Synced Setting?"
@@ -53,3 +69,15 @@ Domain expert: "No. Tool history is Persisted Tool Data, so it stays device-loca
 Developer: "Where should a new tool's name and path be declared?"
 
 Domain expert: "In the Tool Catalog. Navigation, popup launch, and route checks should derive from that declaration."
+
+Developer: "Should a GitHub star history helper always show ultraworkers/claw-code?"
+
+Domain expert: "No. A Star History View is a Repository Page Helper, so its subject is the current repository unless the user explicitly chooses another one."
+
+Developer: "Should the Star History View appear on issue, pull request, or file pages?"
+
+Domain expert: "No. It belongs on the Repository Home Page; repository subpages have their own workflows."
+
+Developer: "Should selecting the chart open a fuller Star History page?"
+
+Domain expert: "Yes. The Star History View can point to the Star History Detail for the same repository."

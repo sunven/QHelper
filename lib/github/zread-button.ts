@@ -1,8 +1,13 @@
+import {
+  getRepositoryCoordinates,
+  parseRepoCoordinates,
+  type RepoCoordinates,
+} from './repository';
+
 export const ZREAD_BUTTON_ID = 'qhelper-zread-button';
 export const ZREAD_WRAPPER_SELECTOR = '[data-qhelper-zread-wrapper="true"]';
 const ZREAD_ICON_PATH = 'icons/zread-favicon.ico';
 const PREVIOUS_VSCODE_URL_PREFIX = 'https://vscode.dev/github/';
-const REPOSITORY_NWO_META_SELECTOR = 'meta[name="octolytics-dimension-repository_nwo"]';
 const GLOBAL_HEADER_TARGET_SELECTORS = [
   '.AppHeader-actions',
   '.AppHeader-globalBar-end',
@@ -25,48 +30,11 @@ const PREVIOUS_VSCODE_HEADER_SELECTORS = [
   '.Header-item.mr-0.mr-md-3.flex-order-1.flex-md-order-none',
 ];
 
-export interface RepoCoordinates {
-  owner: string;
-  repo: string;
-}
-
-function normalizePathname(pathname: string): string {
-  if (pathname === '/') {
-    return pathname;
-  }
-
-  return pathname.replace(/\/+$/, '');
-}
-
-export function parseRepoCoordinates(pathname: string): RepoCoordinates | null {
-  const segments = normalizePathname(pathname).split('/').filter(Boolean);
-
-  if (segments.length < 2) {
-    return null;
-  }
-
-  const [owner, repo] = segments;
-  return { owner, repo };
-}
+export { parseRepoCoordinates };
+export type { RepoCoordinates };
 
 export function buildZreadUrl({ owner, repo }: RepoCoordinates): string {
   return `https://zread.ai/${owner}/${repo}`;
-}
-
-function hasRepositoryMetadata(doc: Document, { owner, repo }: RepoCoordinates): boolean {
-  return (
-    doc.querySelector<HTMLMetaElement>(REPOSITORY_NWO_META_SELECTOR)?.content ===
-    `${owner}/${repo}`
-  );
-}
-
-function getRepositoryCoordinates(doc: Document, pathname: string): RepoCoordinates | null {
-  const repoCoordinates = parseRepoCoordinates(pathname);
-  if (!repoCoordinates || !hasRepositoryMetadata(doc, repoCoordinates)) {
-    return null;
-  }
-
-  return repoCoordinates;
 }
 
 function removeInjectedZreadButton(doc: Document): void {
