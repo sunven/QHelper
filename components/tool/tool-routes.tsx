@@ -17,6 +17,7 @@ import { App as PictureSplicingTool } from '@/components/tool/pictureSplicing';
 import { App as ScssTool } from '@/components/tool/scss';
 import { App as SvgOptimizerTool } from '@/components/tool/svgoptimizer';
 import { App as TimestampTool } from '@/components/tool/timestamp';
+import { App as TextPreviewTool } from '@/components/tool/text-preview';
 import { App as TomlTool } from '@/components/tool/toml';
 import { App as TransRadixTool } from '@/components/tool/trans-radix';
 import { App as UglifyTool } from '@/components/tool/uglify';
@@ -55,6 +56,7 @@ const componentByToolId: Record<string, ComponentType> = {
   timestamp: TimestampTool,
   colorTransform: ColorTransformTool,
   downloads: DownloadsTool,
+  'text-preview': TextPreviewTool,
 };
 
 export const toolRoutes: ToolRoute<ComponentType>[] =

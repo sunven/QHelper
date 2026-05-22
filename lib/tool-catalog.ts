@@ -14,6 +14,7 @@ export type ToolCatalogTool = {
   category: ToolCategory
   icon: string
   description?: string
+  preserveActivity: boolean
 }
 
 export type ToolCatalogCategory = {
@@ -25,6 +26,7 @@ export type ToolCatalogCategory = {
 export type ToolRoute<Component> = {
   id: string
   Component: Component
+  preserveActivity: boolean
 }
 
 export const TOOL_CATEGORY_LABELS: Record<ToolCategory, string> = {
@@ -65,6 +67,7 @@ function toCatalogTool(tool: ToolMetadata): ToolCatalogTool {
     category: tool.category,
     icon: tool.icon,
     description: tool.description,
+    preserveActivity: tool.preserveActivity ?? true,
   }
 }
 
@@ -128,6 +131,10 @@ export function createOrdinaryToolRoutes<Component>(
       throw new Error(`Missing tool component for "${id}"`)
     }
 
-    return { id, Component }
+    return {
+      id,
+      Component,
+      preserveActivity: getToolCatalogTool(id)?.preserveActivity ?? true,
+    }
   })
 }

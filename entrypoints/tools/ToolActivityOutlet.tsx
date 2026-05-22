@@ -32,8 +32,12 @@ export function ToolActivityOutlet() {
 
   return (
     <ToolWorkspaceShell activeToolId={activeToolId}>
-      {toolRoutes.map(({ id, Component }) => {
+      {toolRoutes.map(({ id, Component, preserveActivity }) => {
         if (!visitedToolIds.has(id)) {
+          return null;
+        }
+
+        if (!preserveActivity && id !== activeToolId) {
           return null;
         }
 

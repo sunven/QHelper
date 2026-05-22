@@ -74,4 +74,7 @@ export interface ToolMetadata {
 
   // 状态
   status: ToolStatus;
+
+  // 路由行为：默认保留隐藏工具状态，内存较重的工具可选择关闭
+  preserveActivity?: boolean;
 }

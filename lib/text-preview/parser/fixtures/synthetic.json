@@ -1,0 +1,18 @@
+[
+  {
+    "name": "canonical incident snippet",
+    "input": "192.168.80.45\nls -l $(which kubectl)",
+    "expected": [
+      { "type": "ip", "copyValue": "192.168.80.45" },
+      { "type": "command", "copyValue": "ls -l $(which kubectl)" }
+    ]
+  },
+  {
+    "name": "url and unix path",
+    "input": "check https://example.invalid/api/v1 and ~/.kube/config",
+    "expected": [
+      { "type": "url", "copyValue": "https://example.invalid/api/v1" },
+      { "type": "path", "copyValue": "~/.kube/config" }
+    ]
+  }
+]

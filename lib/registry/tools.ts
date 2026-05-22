@@ -25,6 +25,23 @@ export const tools: ToolMetadata[] = [
   },
 
   {
+    id: 'text-preview',
+    name: '文本预览',
+    nameEn: 'Text Preview',
+    category: ToolCategory.COMMON,
+    icon: 'FileText',
+    description: '本地提取文本中的 IP、URL、命令和路径',
+    descriptionEn: 'Extract IPs, URLs, commands, and paths from local text',
+    keywords: ['文本', '预览', '提取', 'ip', 'url', '命令', '路径', 'text', 'preview'],
+    tags: ['text', 'extract', 'ip', 'url', 'command', 'path'],
+    entry: 'tools/text-preview.html',
+    version: '1.0.0',
+    features: [ToolFeature.SINGLE_INPUT, ToolFeature.FILE_INPUT, ToolFeature.HISTORY, ToolFeature.COPY_RESULT, ToolFeature.REAL_TIME],
+    status: ToolStatus.STABLE,
+    preserveActivity: false,
+  },
+
+  {
     id: 'trans-radix',
     name: '进制转换',
     nameEn: 'Radix Converter',

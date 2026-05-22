@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter, Route, Routes, useNavigate } from 'react-router';
 import { ToolActivityOutlet } from './ToolActivityOutlet';
@@ -8,6 +8,7 @@ vi.mock('@/components/tool/tool-routes', () => ({
   toolRoutes: [
     {
       id: 'json',
+      preserveActivity: true,
       Component: () => {
         const [value, setValue] = useState('');
         return (
@@ -21,6 +22,7 @@ vi.mock('@/components/tool/tool-routes', () => ({
     },
     {
       id: 'downloads',
+      preserveActivity: true,
       Component: () => (
         <section>
           <h1>Downloads Mock</h1>
@@ -28,8 +30,36 @@ vi.mock('@/components/tool/tool-routes', () => ({
         </section>
       ),
     },
+    {
+      id: 'text-preview',
+      preserveActivity: false,
+      Component: () => {
+        useEffect(() => {
+          window.dispatchEvent(new CustomEvent('text-preview-mounted'));
+
+          return () => {
+            window.dispatchEvent(new CustomEvent('text-preview-unmounted'));
+          };
+        }, []);
+
+        return (
+          <section>
+            <h1>Text Preview Mock</h1>
+            <p>Large editor</p>
+          </section>
+        );
+      },
+    },
   ],
 }));
+
+vi.mock('@/lib/tools-spa', () => ({
+  DEFAULT_TOOL_ID: 'json',
+  getToolRoutePath: (toolId: string) => `/${toolId}.html`,
+  getToolsSpaPath: (toolId: string) => `tools/${toolId}.html`,
+  isOrdinaryToolId: (toolId: string | null | undefined) =>
+    ['json', 'downloads', 'text-preview'].includes(toolId ?? ''),
+}))
 
 vi.mock('@/components/ToolSideNavigation', () => ({
   ToolSideNavigation: () => <nav data-testid="tool-side-navigation">Tools</nav>,
@@ -45,6 +75,9 @@ function RouteControls() {
       </button>
       <button type="button" onClick={() => void navigate('/json.html')}>
         Go json
+      </button>
+      <button type="button" onClick={() => void navigate('/text-preview.html')}>
+        Go text preview
       </button>
     </div>
   );
@@ -91,5 +124,39 @@ describe('ToolActivityOutlet', () => {
       expect(screen.getByLabelText('JSON input')).toHaveValue('{"a":1}');
     });
     expect(screen.getByRole('status')).toHaveTextContent('{"a":1}');
+  });
+
+  it('unmounts tools that opt out of hidden activity preservation', async () => {
+    const mounted = vi.fn();
+    const unmounted = vi.fn();
+    window.addEventListener('text-preview-mounted', mounted);
+    window.addEventListener('text-preview-unmounted', unmounted);
+
+    render(
+      <MemoryRouter initialEntries={['/text-preview.html']}>
+        <RouteControls />
+        <Routes>
+          <Route path="/:toolId" element={<ToolActivityOutlet />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('Text Preview Mock')).toBeVisible();
+    });
+    expect(mounted).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Go json' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('JSON Mock')).toBeVisible();
+    });
+    await waitFor(() => {
+      expect(unmounted).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.queryByText('Text Preview Mock')).toBeNull();
+
+    window.removeEventListener('text-preview-mounted', mounted);
+    window.removeEventListener('text-preview-unmounted', unmounted);
   });
 });
