@@ -39,6 +39,7 @@ pnpm format
 **Build Output:** `.output/` directory (gitignored)
 
 **Loading the Extension:**
+
 1. Run `pnpm build` or `pnpm dev`
 2. Open Chrome/Chromium and navigate to `chrome://extensions/`
 3. Enable "Developer mode"
@@ -67,6 +68,7 @@ entrypoints/
 ```
 
 Each tool directory contains:
+
 - `index.html` - HTML shell with `<div id="app"></div>`
 - `index.tsx` - React component mounted to the #app div
 - Component files as needed
@@ -83,6 +85,7 @@ import { get, set, remove, clear, onChanged } from '@/lib/chrome/storage';
 ```
 
 Available wrappers:
+
 - `lib/chrome/cookies.ts` - Cookie management (getAll, remove, removeAll)
 - `lib/chrome/storage.ts` - chrome.storage.local wrapper with change listeners
 - `lib/chrome/tabs.ts` - Tab creation and querying
@@ -116,6 +119,7 @@ import { MyComponent } from '@/components/ui/button';
 ### UI Component System
 
 UI components follow shadcn/ui patterns and are located in `components/ui/`:
+
 - CSS variable-based theming (light/dark mode support)
 - OKLCH color space for modern color handling
 - Tailwind CSS utility classes for all styling
@@ -129,6 +133,7 @@ The GitHub integration now targets repository root pages on `github.com` and add
 ## Extension Permissions
 
 From `wxt.config.ts`:
+
 - `cookies` - For clear cookies functionality
 - `tabs` - For tab management
 - `host_permissions: ['<all_urls>']` - For tools that interact with web content
@@ -146,17 +151,3 @@ From `wxt.config.ts`:
 - **Encoding:** String encode/decode, Code beautify, Uglify
 - **Image:** Base64 converter, Image splicing
 - **Other:** Timestamp converter, Color converter, Clear cookies
-
-## Agent skills
-
-### Issue tracker
-
-Issues and PRDs are tracked in GitHub Issues for `sunven/QHelper`. See `docs/agents/issue-tracker.md`.
-
-### Triage labels
-
-This repo uses the default mattpocock/skills triage label vocabulary. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-This repo uses a single-context domain docs layout. See `docs/agents/domain.md`.
