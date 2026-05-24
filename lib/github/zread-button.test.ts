@@ -129,13 +129,23 @@ function renderRepositoryMeta(owner = 'Yeachan-Heo', repo = 'oh-my-codex'): void
 
 function createFakeWindow(pathname = '/Yeachan-Heo/oh-my-codex'): Window & {
   listeners: Record<string, Array<() => void>>;
+  documentListeners: Record<string, Array<(event: Event) => void>>;
   setPathname: (nextPathname: string) => void;
 } {
   const listeners: Record<string, Array<() => void>> = {};
+  const documentListeners: Record<string, Array<(event: Event) => void>> = {};
   let currentPathname = pathname;
+
+  vi.spyOn(document, 'addEventListener').mockImplementation(
+    (eventName: string, listener: EventListenerOrEventListenerObject) => {
+      documentListeners[eventName] ??= [];
+      documentListeners[eventName].push(listener as (event: Event) => void);
+    },
+  );
 
   return {
     listeners,
+    documentListeners,
     location: {
       get pathname() {
         return currentPathname;
@@ -152,6 +162,7 @@ function createFakeWindow(pathname = '/Yeachan-Heo/oh-my-codex'): Window & {
     }),
   } as unknown as Window & {
     listeners: Record<string, Array<() => void>>;
+    documentListeners: Record<string, Array<(event: Event) => void>>;
     setPathname: (nextPathname: string) => void;
   };
 }
@@ -186,6 +197,17 @@ function stubChromeRuntimeGetUrl() {
   });
 
   return { getURL };
+}
+
+function createClickEvent(target: Element): MouseEvent {
+  const event = new MouseEvent('click', {
+    bubbles: true,
+  });
+  Object.defineProperty(event, 'target', {
+    value: target,
+  });
+
+  return event;
 }
 
 afterEach(() => {
@@ -511,6 +533,7 @@ describe('installGitHubZreadButton', () => {
     installGitHubZreadButton(fakeWindow, document);
 
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).not.toBeNull();
+    expect(document.addEventListener).toHaveBeenCalledWith('click', expect.any(Function));
     expect(fakeWindow.addEventListener).toHaveBeenCalledWith('popstate', expect.any(Function));
     expect(mutationObserver.observe).toHaveBeenCalledWith(document.documentElement, {
       childList: true,
@@ -565,6 +588,35 @@ describe('installGitHubZreadButton', () => {
     mutationObserver.notify();
 
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).not.toBeNull();
+  });
+
+  it('closes an open reader dropdown after clicking outside it', () => {
+    renderGitHubHeader();
+    stubMutationObserver();
+    const fakeWindow = createFakeWindow();
+
+    installGitHubZreadButton(fakeWindow, document);
+    const { dropdown } = getReaderDropdown();
+    dropdown?.setAttribute('open', '');
+
+    const outsideButton = document.createElement('button');
+    document.body.append(outsideButton);
+    fakeWindow.documentListeners.click?.[0]?.(createClickEvent(outsideButton));
+
+    expect(dropdown?.hasAttribute('open')).toBe(false);
+  });
+
+  it('keeps an open reader dropdown after clicking inside it', () => {
+    renderGitHubHeader();
+    stubMutationObserver();
+    const fakeWindow = createFakeWindow();
+
+    installGitHubZreadButton(fakeWindow, document);
+    const { dropdown, deepwikiLink } = getReaderDropdown();
+    dropdown?.setAttribute('open', '');
+    fakeWindow.documentListeners.click?.[0]?.(createClickEvent(deepwikiLink as Element));
+
+    expect(dropdown?.hasAttribute('open')).toBe(true);
   });
 
   it('moves the injected Zread button into the global header when GitHub mounts it late', () => {

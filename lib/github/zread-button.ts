@@ -274,6 +274,20 @@ function shouldPromoteToGlobalHeader(doc: Document): boolean {
   return globalHeaderTarget !== null && wrapper.parentElement !== globalHeaderTarget.container;
 }
 
+function closeReaderDropdowns(doc: Document): void {
+  doc.querySelectorAll<HTMLDetailsElement>(`${ZREAD_WRAPPER_SELECTOR} details[open]`).forEach((details) => {
+    details.removeAttribute('open');
+  });
+}
+
+function closeReaderDropdownsOnOutsideClick(doc: Document, event: MouseEvent): void {
+  if (event.target instanceof Element && event.target.closest(ZREAD_WRAPPER_SELECTOR)) {
+    return;
+  }
+
+  closeReaderDropdowns(doc);
+}
+
 export function syncZreadButton(doc: Document, pathname: string): boolean {
   removePreviousVscodeButtons(doc);
   removeInjectedZreadButton(doc);
@@ -339,6 +353,7 @@ export function installGitHubZreadButton(win: Window, doc: Document): void {
 
   doc.addEventListener('turbo:load', rerenderIfPathChanged as EventListener);
   doc.addEventListener('pjax:end', rerenderIfPathChanged as EventListener);
+  doc.addEventListener('click', (event) => closeReaderDropdownsOnOutsideClick(doc, event));
   win.addEventListener('popstate', rerenderIfPathChanged);
 
   const observer = new MutationObserver(() => {
