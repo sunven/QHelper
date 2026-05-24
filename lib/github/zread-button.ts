@@ -14,6 +14,20 @@ const GLOBAL_HEADER_TARGET_SELECTORS = [
   'header [data-testid="app-header-actions"]',
   'header .Header-item:last-child',
 ];
+const LOGGED_OUT_HEADER_LINK_SELECTORS = [
+  'header .HeaderMenu-link--sign-in',
+  'header .HeaderMenu-link--sign-up',
+];
+const HEADER_SEARCH_SELECTORS = [
+  'header [data-testid="top-nav-center"] button[aria-label^="Search or jump"]',
+  'header [data-testid="top-nav-center"] [class*="Search-module__searchButtonGroup"]',
+  'header .AppHeader-search',
+  'header .AppHeader-search qbsearch-input',
+  'header qbsearch-input.search-input',
+  'header qbsearch-input',
+  'header .search-input',
+  'header .search-input-container',
+];
 const PREFERRED_ACTION_LIST_SELECTORS = [
   '#repository-details-container .pagehead-actions',
   '#repository-container-header .pagehead-actions',
@@ -33,8 +47,18 @@ const PREVIOUS_VSCODE_HEADER_SELECTORS = [
 export { parseRepoCoordinates };
 export type { RepoCoordinates };
 
+interface InsertionTarget {
+  container: HTMLElement;
+  before: Element | null;
+  wrapperClassName?: string;
+}
+
 export function buildZreadUrl({ owner, repo }: RepoCoordinates): string {
   return `https://zread.ai/${owner}/${repo}`;
+}
+
+function buildDeepWikiUrl({ owner, repo }: RepoCoordinates): string {
+  return `https://deepwiki.com/${owner}/${repo}`;
 }
 
 function removeInjectedZreadButton(doc: Document): void {
@@ -84,53 +108,96 @@ function getZreadIconUrl(): string | null {
   return getURL(ZREAD_ICON_PATH);
 }
 
-function createZreadAnchor(doc: Document, href: string): HTMLAnchorElement {
+function appendZreadIcon(doc: Document, element: HTMLElement): void {
+  const iconUrl = getZreadIconUrl();
+  if (!iconUrl) {
+    return;
+  }
+
+  const icon = doc.createElement('img');
+  icon.src = iconUrl;
+  icon.alt = '';
+  icon.width = 16;
+  icon.height = 16;
+  icon.loading = 'lazy';
+  icon.decoding = 'async';
+  element.append(icon);
+}
+
+function createReaderMenuLink(doc: Document, href: string, label: string, linkId: string): HTMLAnchorElement {
   const anchor = doc.createElement('a');
-  anchor.id = ZREAD_BUTTON_ID;
   anchor.href = href;
   anchor.target = '_blank';
   anchor.rel = 'noopener noreferrer';
-  anchor.className = 'btn-sm btn d-inline-flex flex-items-center gap-1';
+  anchor.className = 'dropdown-item d-flex flex-items-center gap-2';
+  anchor.dataset.qhelperReaderLink = linkId;
+  anchor.setAttribute('role', 'menuitem');
+  anchor.textContent = label;
 
-  const iconUrl = getZreadIconUrl();
-  if (iconUrl) {
-    const icon = doc.createElement('img');
-    icon.src = iconUrl;
-    icon.alt = '';
-    icon.width = 16;
-    icon.height = 16;
-    icon.loading = 'lazy';
-    icon.decoding = 'async';
-    anchor.append(icon);
-  }
-
-  const label = doc.createElement('span');
-  label.textContent = 'Zread';
-
-  anchor.append(label);
   return anchor;
 }
 
-function createActionListItem(doc: Document, href: string): HTMLLIElement {
+function createReaderDropdown(doc: Document, zreadHref: string, deepwikiHref: string): HTMLDetailsElement {
+  const details = doc.createElement('details');
+  details.className = 'details-reset details-overlay position-relative d-inline-block';
+
+  const summary = doc.createElement('summary');
+  summary.id = ZREAD_BUTTON_ID;
+  summary.className = 'btn-sm btn d-inline-flex flex-items-center gap-1';
+  summary.setAttribute('aria-haspopup', 'menu');
+  summary.setAttribute('aria-label', 'Open reader links');
+
+  appendZreadIcon(doc, summary);
+
+  const label = doc.createElement('span');
+  label.textContent = 'Open in';
+  summary.append(label);
+
+  const caret = doc.createElement('span');
+  caret.className = 'dropdown-caret';
+  caret.setAttribute('aria-hidden', 'true');
+  summary.append(caret);
+
+  const menu = doc.createElement('div');
+  menu.className = 'dropdown-menu dropdown-menu-sw p-1';
+  menu.style.minWidth = '144px';
+  menu.style.marginTop = '4px';
+  menu.style.zIndex = '1000';
+  menu.setAttribute('role', 'menu');
+  menu.append(
+    createReaderMenuLink(doc, zreadHref, 'Zread', 'zread'),
+    createReaderMenuLink(doc, deepwikiHref, 'DeepWiki', 'deepwiki'),
+  );
+
+  details.append(summary, menu);
+  return details;
+}
+
+function createActionListItem(doc: Document, zreadHref: string, deepwikiHref: string): HTMLLIElement {
   const listItem = doc.createElement('li');
   listItem.dataset.qhelperZreadWrapper = 'true';
-  listItem.append(createZreadAnchor(doc, href));
+  listItem.append(createReaderDropdown(doc, zreadHref, deepwikiHref));
   return listItem;
 }
 
-function createGlobalHeaderItem(doc: Document, href: string): HTMLDivElement {
+function createGlobalHeaderItem(
+  doc: Document,
+  zreadHref: string,
+  deepwikiHref: string,
+  className = 'AppHeader-actions-item',
+): HTMLDivElement {
   const wrapper = doc.createElement('div');
   wrapper.dataset.qhelperZreadWrapper = 'true';
-  wrapper.className = 'AppHeader-actions-item';
-  wrapper.append(createZreadAnchor(doc, href));
+  wrapper.className = className;
+  wrapper.append(createReaderDropdown(doc, zreadHref, deepwikiHref));
   return wrapper;
 }
 
-function createHeaderFallback(doc: Document, href: string): HTMLDivElement {
+function createHeaderFallback(doc: Document, zreadHref: string, deepwikiHref: string): HTMLDivElement {
   const wrapper = doc.createElement('div');
   wrapper.dataset.qhelperZreadWrapper = 'true';
   wrapper.className = 'mt-2';
-  wrapper.append(createZreadAnchor(doc, href));
+  wrapper.append(createReaderDropdown(doc, zreadHref, deepwikiHref));
   return wrapper;
 }
 
@@ -145,6 +212,68 @@ function findFirstMatch<T extends Element>(doc: Document, selectors: string[]): 
   return null;
 }
 
+function hasHiddenAncestor(element: Element): boolean {
+  return element.closest('[hidden], [aria-hidden="true"], .d-none') !== null;
+}
+
+function findFirstVisibleMatch<T extends Element>(doc: Document, selectors: string[]): T | null {
+  for (const selector of selectors) {
+    const matches = doc.querySelectorAll<T>(selector);
+    for (const match of matches) {
+      if (!hasHiddenAncestor(match)) {
+        return match;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getSearchReferenceElement(element: HTMLElement): HTMLElement {
+  return element.closest<HTMLElement>('[data-component="ButtonGroup"]') ?? element;
+}
+
+function findGlobalHeaderInsertionTarget(doc: Document): InsertionTarget | null {
+  const searchElement = findFirstVisibleMatch<HTMLElement>(doc, HEADER_SEARCH_SELECTORS);
+  const searchReferenceElement = searchElement ? getSearchReferenceElement(searchElement) : null;
+  if (searchReferenceElement?.parentElement instanceof HTMLElement) {
+    return {
+      container: searchReferenceElement.parentElement,
+      before: searchReferenceElement,
+      wrapperClassName: 'AppHeader-actions-item mr-2',
+    };
+  }
+
+  const actionsContainer = findFirstMatch<HTMLElement>(doc, GLOBAL_HEADER_TARGET_SELECTORS);
+  if (actionsContainer) {
+    return {
+      container: actionsContainer,
+      before: actionsContainer.firstElementChild,
+    };
+  }
+
+  const authLink = findFirstMatch<HTMLElement>(doc, LOGGED_OUT_HEADER_LINK_SELECTORS);
+  const referenceElement = authLink?.closest<HTMLElement>('.HeaderMenu-link-wrap') ?? authLink;
+  if (!referenceElement || !(referenceElement.parentElement instanceof HTMLElement)) {
+    return null;
+  }
+
+  return {
+    container: referenceElement.parentElement,
+    before: referenceElement,
+  };
+}
+
+function shouldPromoteToGlobalHeader(doc: Document): boolean {
+  const wrapper = doc.querySelector<HTMLElement>(ZREAD_WRAPPER_SELECTOR);
+  if (!wrapper) {
+    return false;
+  }
+
+  const globalHeaderTarget = findGlobalHeaderInsertionTarget(doc);
+  return globalHeaderTarget !== null && wrapper.parentElement !== globalHeaderTarget.container;
+}
+
 export function syncZreadButton(doc: Document, pathname: string): boolean {
   removePreviousVscodeButtons(doc);
   removeInjectedZreadButton(doc);
@@ -154,23 +283,27 @@ export function syncZreadButton(doc: Document, pathname: string): boolean {
     return false;
   }
 
-  const href = buildZreadUrl(repoCoordinates);
-  const globalHeaderTarget = findFirstMatch<HTMLElement>(doc, GLOBAL_HEADER_TARGET_SELECTORS);
+  const zreadHref = buildZreadUrl(repoCoordinates);
+  const deepwikiHref = buildDeepWikiUrl(repoCoordinates);
+  const globalHeaderTarget = findGlobalHeaderInsertionTarget(doc);
   if (globalHeaderTarget) {
-    globalHeaderTarget.insertBefore(createGlobalHeaderItem(doc, href), globalHeaderTarget.firstElementChild);
+    globalHeaderTarget.container.insertBefore(
+      createGlobalHeaderItem(doc, zreadHref, deepwikiHref, globalHeaderTarget.wrapperClassName),
+      globalHeaderTarget.before,
+    );
     return true;
   }
 
   const actionList = findFirstMatch<HTMLElement>(doc, PREFERRED_ACTION_LIST_SELECTORS);
 
   if (actionList) {
-    actionList.insertBefore(createActionListItem(doc, href), actionList.firstElementChild);
+    actionList.insertBefore(createActionListItem(doc, zreadHref, deepwikiHref), actionList.firstElementChild);
     return true;
   }
 
   const headerFallback = findFirstMatch<HTMLElement>(doc, HEADER_FALLBACK_SELECTORS);
   if (headerFallback) {
-    headerFallback.append(createHeaderFallback(doc, href));
+    headerFallback.append(createHeaderFallback(doc, zreadHref, deepwikiHref));
     return true;
   }
 
@@ -213,7 +346,7 @@ export function installGitHubZreadButton(win: Window, doc: Document): void {
 
     if (
       getRepositoryCoordinates(doc, win.location.pathname) &&
-      !doc.querySelector(ZREAD_WRAPPER_SELECTOR)
+      (!doc.querySelector(ZREAD_WRAPPER_SELECTOR) || shouldPromoteToGlobalHeader(doc))
     ) {
       attemptRender();
     }

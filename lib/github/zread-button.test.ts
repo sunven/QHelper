@@ -54,6 +54,70 @@ function renderGitHubGlobalHeader(pathname = '/Yeachan-Heo/oh-my-codex/blob/main
   `;
 }
 
+function createGitHubLoggedOutHeader(): HTMLElement {
+  const template = document.createElement('template');
+  template.innerHTML = `
+    <header class="HeaderMktg">
+      <div class="d-flex flex-items-center">
+        <nav>Navigation</nav>
+        <qbsearch-input class="search-input">
+          <div class="search-input-container">Search or jump to...</div>
+        </qbsearch-input>
+        <div class="position-relative HeaderMenu-link-wrap d-lg-inline-block">
+          <a class="HeaderMenu-link HeaderMenu-link--sign-in HeaderMenu-button">Sign in</a>
+        </div>
+        <a class="HeaderMenu-link HeaderMenu-link--sign-up HeaderMenu-button">Sign up</a>
+        <div class="AppHeader-appearanceSettings">
+          <button type="button">Appearance settings</button>
+        </div>
+      </div>
+    </header>
+  `;
+
+  return template.content.firstElementChild as HTMLElement;
+}
+
+function renderGitHubLoggedOutHeader(): void {
+  renderGitHubHeader();
+  document.body.prepend(createGitHubLoggedOutHeader());
+}
+
+function renderGitHubLoggedInHeader(): void {
+  renderGitHubHeader();
+  const template = document.createElement('template');
+  template.innerHTML = `
+    <header class="AppHeader">
+      <div class="AppHeader-globalBar d-flex flex-items-center">
+        <div class="AppHeader-globalBar-start">
+          <a href="/">GitHub</a>
+        </div>
+        <div data-testid="top-nav-center" class="styles-module__center__R3QRv">
+          <div class="Search-module__searchButtonGroup__aetw5" data-component="ButtonGroup">
+            <div>
+              <button type="button" aria-label="Search or jump to...">Type / to search</button>
+            </div>
+          </div>
+          <button type="button" aria-label="Search or jump to..." class="Search-module__smallSearchButton___8Gvn">
+            Search
+          </button>
+          <div class="d-none">
+            <qbsearch-input class="search-input">
+              <div class="search-input-container">Hidden search dialog</div>
+            </qbsearch-input>
+          </div>
+        </div>
+        <div class="AppHeader-globalBar-end">
+          <div class="AppHeader-actions">
+            <button type="button" id="create-menu">Create</button>
+            <button type="button" id="profile-menu">Profile</button>
+          </div>
+        </div>
+      </div>
+    </header>
+  `;
+  document.body.prepend(template.content.firstElementChild as HTMLElement);
+}
+
 function renderRepositoryMeta(owner = 'Yeachan-Heo', repo = 'oh-my-codex'): void {
   document.head.innerHTML = `
     <meta
@@ -169,6 +233,22 @@ describe('buildZreadUrl', () => {
   });
 });
 
+function getReaderDropdown() {
+  const trigger = document.querySelector<HTMLElement>(`#${ZREAD_BUTTON_ID}`);
+  const dropdown = trigger?.closest('details');
+  const menu = dropdown?.querySelector<HTMLElement>('.dropdown-menu');
+  const zreadLink = dropdown?.querySelector<HTMLAnchorElement>('[data-qhelper-reader-link="zread"]');
+  const deepwikiLink = dropdown?.querySelector<HTMLAnchorElement>('[data-qhelper-reader-link="deepwiki"]');
+
+  return {
+    trigger,
+    dropdown,
+    menu,
+    zreadLink,
+    deepwikiLink,
+  };
+}
+
 describe('syncZreadButton', () => {
   it('renders a single Zread button on repository root pages', () => {
     const { getURL } = stubChromeRuntimeGetUrl();
@@ -176,13 +256,18 @@ describe('syncZreadButton', () => {
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
 
-    const button = document.querySelector<HTMLAnchorElement>(`#${ZREAD_BUTTON_ID}`);
-    const icon = button?.querySelector('img');
-    expect(button).not.toBeNull();
-    expect(button?.textContent).toBe('Zread');
-    expect(button?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
-    expect(button?.className).toContain('d-inline-flex');
-    expect(button?.className).toContain('flex-items-center');
+    const { trigger, dropdown, menu, zreadLink, deepwikiLink } = getReaderDropdown();
+    const icon = trigger?.querySelector('img');
+    expect(trigger).not.toBeNull();
+    expect(trigger?.textContent).toBe('Open in');
+    expect(trigger?.tagName).toBe('SUMMARY');
+    expect(trigger?.className).toContain('d-inline-flex');
+    expect(trigger?.className).toContain('flex-items-center');
+    expect(dropdown?.className).toContain('details-overlay');
+    expect(menu?.className).toContain('dropdown-menu');
+    expect(zreadLink?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
+    expect(deepwikiLink?.href).toBe('https://deepwiki.com/Yeachan-Heo/oh-my-codex');
+    expect(deepwikiLink?.textContent).toBe('DeepWiki');
     expect(getURL).toHaveBeenCalledWith('icons/zread-favicon.ico');
     expect(icon?.src).toBe('chrome-extension://qhelper-test/icons/zread-favicon.ico');
     expect(icon?.alt).toBe('');
@@ -196,11 +281,11 @@ describe('syncZreadButton', () => {
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
 
-    const button = document.querySelector<HTMLAnchorElement>(`#${ZREAD_BUTTON_ID}`);
-    expect(button).not.toBeNull();
-    expect(button?.textContent).toBe('Zread');
-    expect(button?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
-    expect(button?.querySelector('img')).toBeNull();
+    const { trigger, zreadLink } = getReaderDropdown();
+    expect(trigger).not.toBeNull();
+    expect(trigger?.textContent).toBe('Open in');
+    expect(zreadLink?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
+    expect(trigger?.querySelector('img')).toBeNull();
   });
 
   it('renders a Zread button in the global header on repository subpages', () => {
@@ -208,13 +293,40 @@ describe('syncZreadButton', () => {
 
     expect(syncZreadButton(document, '/abhigyanpatwari/GitNexus/blob/main/README.md')).toBe(true);
 
-    const button = document.querySelector<HTMLAnchorElement>(`#${ZREAD_BUTTON_ID}`);
-    expect(button).not.toBeNull();
-    expect(button?.href).toBe('https://zread.ai/abhigyanpatwari/GitNexus');
+    const { trigger, zreadLink, deepwikiLink } = getReaderDropdown();
+    expect(trigger).not.toBeNull();
+    expect(zreadLink?.href).toBe('https://zread.ai/abhigyanpatwari/GitNexus');
+    expect(deepwikiLink?.href).toBe('https://deepwiki.com/abhigyanpatwari/GitNexus');
     expect(document.querySelector('.AppHeader-actions > [data-qhelper-zread-wrapper="true"]')).not.toBeNull();
     expect(document.querySelector('.AppHeader-actions')?.firstElementChild).toBe(
       document.querySelector('[data-qhelper-zread-wrapper="true"]'),
     );
+  });
+
+  it('renders the Zread button in the logged-out GitHub header before repository actions', () => {
+    renderGitHubLoggedOutHeader();
+
+    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
+
+    const wrapper = document.querySelector('[data-qhelper-zread-wrapper="true"]');
+    expect(wrapper?.closest('header')).not.toBeNull();
+    expect(wrapper?.className).toContain('mr-2');
+    expect(wrapper?.nextElementSibling).toBe(document.querySelector('qbsearch-input.search-input'));
+    expect(document.querySelector('.pagehead-actions > [data-qhelper-zread-wrapper="true"]')).toBeNull();
+  });
+
+  it('renders the Zread button before the search field in logged-in GitHub headers', () => {
+    renderGitHubLoggedInHeader();
+
+    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
+
+    const wrapper = document.querySelector('[data-qhelper-zread-wrapper="true"]');
+    expect(wrapper?.closest('header')).not.toBeNull();
+    expect(wrapper?.className).toContain('mr-2');
+    expect(wrapper?.nextElementSibling).toBe(document.querySelector('[data-component="ButtonGroup"]'));
+    expect(wrapper?.closest('.d-none')).toBeNull();
+    expect(document.querySelector('.AppHeader-actions > [data-qhelper-zread-wrapper="true"]')).toBeNull();
+    expect(document.querySelector('.pagehead-actions > [data-qhelper-zread-wrapper="true"]')).toBeNull();
   });
 
   it('does not render on non-repository two-segment paths', () => {
@@ -303,8 +415,8 @@ describe('syncZreadButton', () => {
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
 
-    const fallbackButton = document.querySelector<HTMLAnchorElement>(`#${ZREAD_BUTTON_ID}`);
-    expect(fallbackButton).not.toBeNull();
+    const { trigger } = getReaderDropdown();
+    expect(trigger).not.toBeNull();
     expect(document.querySelector('#repository-details-container > div[data-qhelper-zread-wrapper="true"]')).not.toBeNull();
   });
 
@@ -453,6 +565,23 @@ describe('installGitHubZreadButton', () => {
     mutationObserver.notify();
 
     expect(document.querySelector(`#${ZREAD_BUTTON_ID}`)).not.toBeNull();
+  });
+
+  it('moves the injected Zread button into the global header when GitHub mounts it late', () => {
+    renderGitHubHeader();
+    const mutationObserver = stubMutationObserver();
+    const fakeWindow = createFakeWindow();
+
+    installGitHubZreadButton(fakeWindow, document);
+    expect(document.querySelector('.pagehead-actions > [data-qhelper-zread-wrapper="true"]')).not.toBeNull();
+
+    document.body.prepend(createGitHubLoggedOutHeader());
+    mutationObserver.notify();
+
+    const wrapper = document.querySelector('[data-qhelper-zread-wrapper="true"]');
+    expect(wrapper?.closest('header')).not.toBeNull();
+    expect(document.querySelector('.pagehead-actions > [data-qhelper-zread-wrapper="true"]')).toBeNull();
+    expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
   });
 
   it('does not rerender from mutation observations when the button is already present', () => {
