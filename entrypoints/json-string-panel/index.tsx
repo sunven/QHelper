@@ -12,6 +12,7 @@ import {
 } from '@/lib/fe-tools/json-string-request-store'
 import { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
+import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
 
 function parseCapturedContent(content: string) {

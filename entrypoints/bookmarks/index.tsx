@@ -22,6 +22,7 @@ import {
   checkBookmarkUrls,
   collectBookmarkUrlTargets,
 } from '@/lib/bookmarks/dead-link-checker'
+import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
 
 function normalizeSearchQuery(value: string) {

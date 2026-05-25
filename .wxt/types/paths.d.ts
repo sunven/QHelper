@@ -10,6 +10,7 @@ declare module "wxt/browser" {
     | "/content-scripts/dictionary.js"
     | "/content-scripts/github.js"
     | "/content-scripts/unpkg.js"
+    | "/content-scripts/v2ex-base64.js"
     | "/content-scripts/web-summary.js"
     | "/devtools.html"
     | "/icons/q-128.png"

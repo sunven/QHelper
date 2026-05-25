@@ -9,6 +9,7 @@ import { useToolHistory } from '@/hooks/useToolHistory';
 import { useToolState } from '@/hooks/useToolState';
 import { CopyButton } from '@/components/tool/CopyButton';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
+import { decodeUtf8Base64, encodeUtf8Base64 } from '@/lib/base64';
 
 type EncodeType =
   | 'htmlEscape'
@@ -101,9 +102,7 @@ export function ConvertTool() {
 
   function base64Encode() {
     try {
-      setResult(btoa(encodeURIComponent(srcText).replace(/%([0-9A-F]{2})/g, (_match, p1) =>
-        String.fromCharCode(parseInt(`0x${p1}`, 16)),
-      )));
+      setResult(encodeUtf8Base64(srcText));
     } catch {
       setResult('Base64 编码失败');
     }
@@ -111,12 +110,7 @@ export function ConvertTool() {
 
   function base64Decode() {
     try {
-      setResult(decodeURIComponent(
-        atob(srcText)
-          .split('')
-          .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, '0')}`)
-          .join(''),
-      ));
+      setResult(decodeUtf8Base64(srcText));
     } catch {
       setResult('Base64 解码失败');
     }

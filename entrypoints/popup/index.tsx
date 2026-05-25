@@ -33,6 +33,7 @@ import {
 } from '@/lib/tool-catalog'
 import { getToolsSpaPath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
+import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
 
 type PopupTool = {
