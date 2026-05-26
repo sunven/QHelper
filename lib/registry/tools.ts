@@ -303,22 +303,6 @@ export const tools: ToolMetadata[] = [
   },
 
   {
-    id: 'scss',
-    name: 'SCSS 编译器',
-    nameEn: 'SCSS Compiler',
-    category: ToolCategory.WEB_FORMAT,
-    icon: 'FileJs',
-    description: 'SCSS/SASS 编译为 CSS',
-    descriptionEn: 'Compile SCSS/SASS to CSS',
-    keywords: ['scss', 'sass', '编译', 'css', 'compile'],
-    tags: ['scss', 'sass', 'css', 'compile', 'preprocessor'],
-    entry: 'tools/scss.html',
-    version: '1.0.0',
-    features: [ToolFeature.SINGLE_INPUT, ToolFeature.COPY_RESULT, ToolFeature.EXPORT],
-    status: ToolStatus.STABLE,
-  },
-
-  {
     id: 'svgoptimizer',
     name: 'SVG 优化器',
     nameEn: 'SVG Optimizer',

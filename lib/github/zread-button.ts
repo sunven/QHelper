@@ -61,6 +61,10 @@ function buildDeepWikiUrl({ owner, repo }: RepoCoordinates): string {
   return `https://deepwiki.com/${owner}/${repo}`;
 }
 
+function buildGithubDevUrl({ owner, repo }: RepoCoordinates): string {
+  return `https://github.dev/${owner}/${repo}`;
+}
+
 function removeInjectedZreadButton(doc: Document): void {
   doc.querySelectorAll(ZREAD_WRAPPER_SELECTOR).forEach((element) => {
     element.remove();
@@ -137,7 +141,12 @@ function createReaderMenuLink(doc: Document, href: string, label: string, linkId
   return anchor;
 }
 
-function createReaderDropdown(doc: Document, zreadHref: string, deepwikiHref: string): HTMLDetailsElement {
+function createReaderDropdown(
+  doc: Document,
+  zreadHref: string,
+  deepwikiHref: string,
+  githubDevHref: string,
+): HTMLDetailsElement {
   const details = doc.createElement('details');
   details.className = 'details-reset details-overlay position-relative d-inline-block';
 
@@ -167,16 +176,22 @@ function createReaderDropdown(doc: Document, zreadHref: string, deepwikiHref: st
   menu.append(
     createReaderMenuLink(doc, zreadHref, 'Zread', 'zread'),
     createReaderMenuLink(doc, deepwikiHref, 'DeepWiki', 'deepwiki'),
+    createReaderMenuLink(doc, githubDevHref, 'github.dev', 'github-dev'),
   );
 
   details.append(summary, menu);
   return details;
 }
 
-function createActionListItem(doc: Document, zreadHref: string, deepwikiHref: string): HTMLLIElement {
+function createActionListItem(
+  doc: Document,
+  zreadHref: string,
+  deepwikiHref: string,
+  githubDevHref: string,
+): HTMLLIElement {
   const listItem = doc.createElement('li');
   listItem.dataset.qhelperZreadWrapper = 'true';
-  listItem.append(createReaderDropdown(doc, zreadHref, deepwikiHref));
+  listItem.append(createReaderDropdown(doc, zreadHref, deepwikiHref, githubDevHref));
   return listItem;
 }
 
@@ -184,20 +199,26 @@ function createGlobalHeaderItem(
   doc: Document,
   zreadHref: string,
   deepwikiHref: string,
+  githubDevHref: string,
   className = 'AppHeader-actions-item',
 ): HTMLDivElement {
   const wrapper = doc.createElement('div');
   wrapper.dataset.qhelperZreadWrapper = 'true';
   wrapper.className = className;
-  wrapper.append(createReaderDropdown(doc, zreadHref, deepwikiHref));
+  wrapper.append(createReaderDropdown(doc, zreadHref, deepwikiHref, githubDevHref));
   return wrapper;
 }
 
-function createHeaderFallback(doc: Document, zreadHref: string, deepwikiHref: string): HTMLDivElement {
+function createHeaderFallback(
+  doc: Document,
+  zreadHref: string,
+  deepwikiHref: string,
+  githubDevHref: string,
+): HTMLDivElement {
   const wrapper = doc.createElement('div');
   wrapper.dataset.qhelperZreadWrapper = 'true';
   wrapper.className = 'mt-2';
-  wrapper.append(createReaderDropdown(doc, zreadHref, deepwikiHref));
+  wrapper.append(createReaderDropdown(doc, zreadHref, deepwikiHref, githubDevHref));
   return wrapper;
 }
 
@@ -299,10 +320,17 @@ export function syncZreadButton(doc: Document, pathname: string): boolean {
 
   const zreadHref = buildZreadUrl(repoCoordinates);
   const deepwikiHref = buildDeepWikiUrl(repoCoordinates);
+  const githubDevHref = buildGithubDevUrl(repoCoordinates);
   const globalHeaderTarget = findGlobalHeaderInsertionTarget(doc);
   if (globalHeaderTarget) {
     globalHeaderTarget.container.insertBefore(
-      createGlobalHeaderItem(doc, zreadHref, deepwikiHref, globalHeaderTarget.wrapperClassName),
+      createGlobalHeaderItem(
+        doc,
+        zreadHref,
+        deepwikiHref,
+        githubDevHref,
+        globalHeaderTarget.wrapperClassName,
+      ),
       globalHeaderTarget.before,
     );
     return true;
@@ -311,13 +339,16 @@ export function syncZreadButton(doc: Document, pathname: string): boolean {
   const actionList = findFirstMatch<HTMLElement>(doc, PREFERRED_ACTION_LIST_SELECTORS);
 
   if (actionList) {
-    actionList.insertBefore(createActionListItem(doc, zreadHref, deepwikiHref), actionList.firstElementChild);
+    actionList.insertBefore(
+      createActionListItem(doc, zreadHref, deepwikiHref, githubDevHref),
+      actionList.firstElementChild,
+    );
     return true;
   }
 
   const headerFallback = findFirstMatch<HTMLElement>(doc, HEADER_FALLBACK_SELECTORS);
   if (headerFallback) {
-    headerFallback.append(createHeaderFallback(doc, zreadHref, deepwikiHref));
+    headerFallback.append(createHeaderFallback(doc, zreadHref, deepwikiHref, githubDevHref));
     return true;
   }
 

@@ -14,7 +14,6 @@ import { App as JsonSchemaTool } from '@/components/tool/jsonschema';
 import { App as MarkdownTool } from '@/components/tool/markdown';
 import { App as PasswordTool } from '@/components/tool/password';
 import { App as PictureSplicingTool } from '@/components/tool/pictureSplicing';
-import { App as ScssTool } from '@/components/tool/scss';
 import { App as SvgOptimizerTool } from '@/components/tool/svgoptimizer';
 import { App as TimestampTool } from '@/components/tool/timestamp';
 import { App as TextPreviewTool } from '@/components/tool/text-preview';
@@ -45,7 +44,6 @@ const componentByToolId: Record<string, ComponentType> = {
   urlparser: UrlParserTool,
   filemerge: FileMergeTool,
   csstool: CssTool,
-  scss: ScssTool,
   svgoptimizer: SvgOptimizerTool,
   cron: CronTool,
   csv2json: Csv2JsonTool,

@@ -261,6 +261,7 @@ function getReaderDropdown() {
   const menu = dropdown?.querySelector<HTMLElement>('.dropdown-menu');
   const zreadLink = dropdown?.querySelector<HTMLAnchorElement>('[data-qhelper-reader-link="zread"]');
   const deepwikiLink = dropdown?.querySelector<HTMLAnchorElement>('[data-qhelper-reader-link="deepwiki"]');
+  const githubDevLink = dropdown?.querySelector<HTMLAnchorElement>('[data-qhelper-reader-link="github-dev"]');
 
   return {
     trigger,
@@ -268,6 +269,7 @@ function getReaderDropdown() {
     menu,
     zreadLink,
     deepwikiLink,
+    githubDevLink,
   };
 }
 
@@ -278,7 +280,7 @@ describe('syncZreadButton', () => {
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
 
-    const { trigger, dropdown, menu, zreadLink, deepwikiLink } = getReaderDropdown();
+    const { trigger, dropdown, menu, zreadLink, deepwikiLink, githubDevLink } = getReaderDropdown();
     const icon = trigger?.querySelector('img');
     expect(trigger).not.toBeNull();
     expect(trigger?.textContent).toBe('Open in');
@@ -290,6 +292,8 @@ describe('syncZreadButton', () => {
     expect(zreadLink?.href).toBe('https://zread.ai/Yeachan-Heo/oh-my-codex');
     expect(deepwikiLink?.href).toBe('https://deepwiki.com/Yeachan-Heo/oh-my-codex');
     expect(deepwikiLink?.textContent).toBe('DeepWiki');
+    expect(githubDevLink?.href).toBe('https://github.dev/Yeachan-Heo/oh-my-codex');
+    expect(githubDevLink?.textContent).toBe('github.dev');
     expect(getURL).toHaveBeenCalledWith('icons/zread-favicon.ico');
     expect(icon?.src).toBe('chrome-extension://qhelper-test/icons/zread-favicon.ico');
     expect(icon?.alt).toBe('');
@@ -315,10 +319,11 @@ describe('syncZreadButton', () => {
 
     expect(syncZreadButton(document, '/abhigyanpatwari/GitNexus/blob/main/README.md')).toBe(true);
 
-    const { trigger, zreadLink, deepwikiLink } = getReaderDropdown();
+    const { trigger, zreadLink, deepwikiLink, githubDevLink } = getReaderDropdown();
     expect(trigger).not.toBeNull();
     expect(zreadLink?.href).toBe('https://zread.ai/abhigyanpatwari/GitNexus');
     expect(deepwikiLink?.href).toBe('https://deepwiki.com/abhigyanpatwari/GitNexus');
+    expect(githubDevLink?.href).toBe('https://github.dev/abhigyanpatwari/GitNexus');
     expect(document.querySelector('.AppHeader-actions > [data-qhelper-zread-wrapper="true"]')).not.toBeNull();
     expect(document.querySelector('.AppHeader-actions')?.firstElementChild).toBe(
       document.querySelector('[data-qhelper-zread-wrapper="true"]'),

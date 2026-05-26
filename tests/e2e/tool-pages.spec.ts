@@ -24,7 +24,6 @@ const toolPages = [
   'urlparser',
   'filemerge',
   'pictureSplicing',
-  'scss',
   'uglify',
 ]
 
