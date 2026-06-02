@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { App as BcryptHashTool } from '@/components/tool/bcrypt-hash';
 import { App as CodeBeautifyTool } from '@/components/tool/codebeautify';
 import { App as ColorTransformTool } from '@/components/tool/colorTransform';
 import { App as ConvertTool } from '@/components/tool/convert';
@@ -39,6 +40,7 @@ const componentByToolId: Record<string, ComponentType> = {
   pictureSplicing: PictureSplicingTool,
   uuid: UuidTool,
   password: PasswordTool,
+  'bcrypt-hash': BcryptHashTool,
   markdown: MarkdownTool,
   htmlformat: HtmlFormatTool,
   urlparser: UrlParserTool,

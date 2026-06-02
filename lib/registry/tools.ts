@@ -221,6 +221,22 @@ export const tools: ToolMetadata[] = [
     status: ToolStatus.STABLE,
   },
 
+  {
+    id: 'bcrypt-hash',
+    name: 'Bcrypt Hash',
+    nameEn: 'Bcrypt Hash',
+    category: ToolCategory.SECURITY,
+    icon: 'Hash',
+    description: '生成并校验 Bcrypt 密码 Hash',
+    descriptionEn: 'Generate and verify Bcrypt password hashes',
+    keywords: ['bcrypt', 'hash', '密码', '加密', '校验', 'verify', 'password'],
+    tags: ['bcrypt', 'hash', 'password', 'security', 'verify'],
+    entry: 'tools/bcrypt-hash.html',
+    version: '1.0.0',
+    features: [ToolFeature.SINGLE_INPUT, ToolFeature.COPY_RESULT],
+    status: ToolStatus.STABLE,
+  },
+
   // ===== Web 格式 =====
   {
     id: 'markdown',

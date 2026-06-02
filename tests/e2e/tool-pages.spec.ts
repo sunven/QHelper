@@ -21,6 +21,7 @@ const toolPages = [
   'xmlformatter',
   'uuid',
   'password',
+  'bcrypt-hash',
   'urlparser',
   'filemerge',
   'pictureSplicing',
