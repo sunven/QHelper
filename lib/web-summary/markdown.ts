@@ -1,4 +1,9 @@
-import { marked } from 'marked'
+import { Marked, marked } from 'marked'
+
+const markdownParser = new Marked({
+  gfm: true,
+  breaks: true,
+})
 
 marked.setOptions({
   gfm: true,
@@ -55,4 +60,8 @@ export function sanitizeRenderedMarkdown(html: string): string {
 
 export function renderSafeMarkdown(markdown: string): string {
   return sanitizeRenderedMarkdown(marked.parse(normalizeModelMarkdown(markdown)) as string)
+}
+
+export function renderMarkdownContent(markdown: string): string {
+  return sanitizeRenderedMarkdown(markdownParser.parse(markdown, { async: false }))
 }
