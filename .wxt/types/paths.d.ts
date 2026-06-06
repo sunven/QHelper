@@ -9,6 +9,7 @@ declare module "wxt/browser" {
     | "/bookmarks.html"
     | "/content-scripts/dictionary.js"
     | "/content-scripts/github.js"
+    | "/content-scripts/markdown-file.js"
     | "/content-scripts/unpkg.js"
     | "/content-scripts/v2ex-base64.js"
     | "/content-scripts/web-summary.js"
@@ -21,7 +22,6 @@ declare module "wxt/browser" {
     | "/libs/difflib.js"
     | "/libs/diffview.js"
     | "/popup.html"
-    | "/scss-worker.html"
     | "/sidepanel.html"
     | "/tools.html"
     | `/tools/${string}`
