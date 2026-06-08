@@ -1,6 +1,6 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { defineConfig } from 'wxt';
 import {
   ORDINARY_TOOL_IDS,
@@ -82,6 +82,27 @@ function writeToolsRouteAliases(outDir: string) {
   return aliases;
 }
 
+function copyTesseractAssets(outDir: string) {
+  const targetDir = join(outDir, 'libs/tesseract');
+  mkdirSync(targetDir, { recursive: true });
+
+  const assets = [
+    require.resolve('tesseract.js/dist/worker.min.js'),
+    require.resolve('tesseract.js-core/tesseract-core-lstm.wasm.js'),
+    require.resolve('tesseract.js-core/tesseract-core-simd-lstm.wasm.js'),
+    require.resolve('tesseract.js-core/tesseract-core-relaxedsimd-lstm.wasm.js'),
+  ];
+
+  for (const assetPath of assets) {
+    copyFileSync(assetPath, join(targetDir, basename(assetPath)));
+  }
+
+  return assets.map((assetPath) => ({
+    type: 'asset' as const,
+    fileName: `libs/tesseract/${basename(assetPath)}`,
+  }));
+}
+
 export default defineConfig({
   modules: ['@wxt-dev/module-react'],
   dev: {
@@ -128,6 +149,7 @@ export default defineConfig({
       const aliases = writeToolsRouteAliases(wxt.config.outDir);
       output.publicAssets.push(
         ...aliases.map((fileName) => ({ type: 'asset' as const, fileName })),
+        ...copyTesseractAssets(wxt.config.outDir),
       );
     },
     'prepare:publicPaths': (_, paths) => {

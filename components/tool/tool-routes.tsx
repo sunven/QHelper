@@ -13,6 +13,7 @@ import { App as ImageBase64Tool } from '@/components/tool/imagebase64';
 import { App as JsonTool } from '@/components/tool/json';
 import { App as JsonSchemaTool } from '@/components/tool/jsonschema';
 import { App as MarkdownTool } from '@/components/tool/markdown';
+import { App as OcrTool } from '@/components/tool/ocr';
 import { App as PasswordTool } from '@/components/tool/password';
 import { App as PictureSplicingTool } from '@/components/tool/pictureSplicing';
 import { App as SvgOptimizerTool } from '@/components/tool/svgoptimizer';
@@ -38,6 +39,7 @@ const componentByToolId: Record<string, ComponentType> = {
   uglify: UglifyTool,
   imagebase64: ImageBase64Tool,
   pictureSplicing: PictureSplicingTool,
+  ocr: OcrTool,
   uuid: UuidTool,
   password: PasswordTool,
   'bcrypt-hash': BcryptHashTool,

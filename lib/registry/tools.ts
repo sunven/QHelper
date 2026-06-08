@@ -139,6 +139,23 @@ export const tools: ToolMetadata[] = [
     status: ToolStatus.STABLE,
   },
 
+  {
+    id: 'ocr',
+    name: 'OCR 文字识别',
+    nameEn: 'OCR Text Recognition',
+    category: ToolCategory.IMAGE,
+    icon: 'ScanText',
+    description: '从图片中提取可复制文本',
+    descriptionEn: 'Extract copyable text from images',
+    keywords: ['ocr', '图片', '文字', '识别', 'image', 'text', 'recognition'],
+    tags: ['ocr', 'image', 'text', 'recognition'],
+    entry: 'tools/ocr.html',
+    version: '1.0.0',
+    features: [ToolFeature.FILE_INPUT, ToolFeature.DRAG_DROP, ToolFeature.COPY_RESULT, ToolFeature.EXPORT],
+    status: ToolStatus.STABLE,
+    preserveActivity: false,
+  },
+
   // ===== 其他工具 =====
   {
     id: 'timestamp',
