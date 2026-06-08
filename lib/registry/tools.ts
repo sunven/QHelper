@@ -156,6 +156,23 @@ export const tools: ToolMetadata[] = [
     preserveActivity: false,
   },
 
+  {
+    id: 'qrcode',
+    name: '二维码',
+    nameEn: 'QR Code',
+    category: ToolCategory.IMAGE,
+    icon: 'QrCode',
+    description: '生成二维码并从图片或摄像头识别二维码',
+    descriptionEn: 'Generate QR codes and scan them from images or camera',
+    keywords: ['二维码', '生成', '识别', '扫码', 'qr', 'qrcode', 'scan', 'camera'],
+    tags: ['qr', 'qrcode', 'generate', 'scan', 'camera'],
+    entry: 'tools/qrcode.html',
+    version: '1.0.0',
+    features: [ToolFeature.SINGLE_INPUT, ToolFeature.FILE_INPUT, ToolFeature.COPY_RESULT, ToolFeature.EXPORT],
+    status: ToolStatus.STABLE,
+    preserveActivity: false,
+  },
+
   // ===== 其他工具 =====
   {
     id: 'timestamp',

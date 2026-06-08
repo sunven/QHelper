@@ -16,6 +16,7 @@ import { App as MarkdownTool } from '@/components/tool/markdown';
 import { App as OcrTool } from '@/components/tool/ocr';
 import { App as PasswordTool } from '@/components/tool/password';
 import { App as PictureSplicingTool } from '@/components/tool/pictureSplicing';
+import { App as QrCodeTool } from '@/components/tool/qrcode';
 import { App as SvgOptimizerTool } from '@/components/tool/svgoptimizer';
 import { App as TimestampTool } from '@/components/tool/timestamp';
 import { App as TextPreviewTool } from '@/components/tool/text-preview';
@@ -40,6 +41,7 @@ const componentByToolId: Record<string, ComponentType> = {
   imagebase64: ImageBase64Tool,
   pictureSplicing: PictureSplicingTool,
   ocr: OcrTool,
+  qrcode: QrCodeTool,
   uuid: UuidTool,
   password: PasswordTool,
   'bcrypt-hash': BcryptHashTool,
