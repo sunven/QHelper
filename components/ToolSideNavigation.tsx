@@ -1,6 +1,7 @@
 import {
   BinaryIcon,
   BracketsCurlyIcon,
+  CaretRightIcon,
   ClockIcon,
   DatabaseIcon,
   GlobeIcon,
@@ -208,6 +209,10 @@ function ToolSideNavigationContent({
                   >
                     {categoryIcons[category.key] ?? <ToolboxIcon />}
                     <span>{category.name}</span>
+                    <CaretRightIcon
+                      aria-hidden="true"
+                      className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"
+                    />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>

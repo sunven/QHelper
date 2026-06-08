@@ -84,6 +84,15 @@ describe('ToolSideNavigation', () => {
     });
   });
 
+  it('renders collapse indicators for tool categories', () => {
+    renderWithSidebar(<ToolSideNavigation />);
+
+    const currentCategoryButton = screen.getByRole('button', { name: '常用' });
+
+    expect(currentCategoryButton).toHaveAttribute('aria-expanded', 'true');
+    expect(currentCategoryButton.querySelector('svg[aria-hidden="true"]')).toHaveClass('ml-auto');
+  });
+
   it('delegates tool clicks to the existing navigation helper', () => {
     renderWithSidebar(<ToolSideNavigation />);
 
