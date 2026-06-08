@@ -9,6 +9,7 @@ declare module "wxt/browser" {
     | "/bookmarks.html"
     | "/content-scripts/dictionary.js"
     | "/content-scripts/github.js"
+    | "/content-scripts/markdown-file.js"
     | "/content-scripts/unpkg.js"
     | "/content-scripts/v2ex-base64.js"
     | "/content-scripts/web-summary.js"

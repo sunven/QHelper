@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeModelMarkdown, renderSafeMarkdown } from './markdown'
+import { normalizeModelMarkdown, renderMarkdownContent, renderSafeMarkdown } from './markdown'
 
 describe('web-summary/markdown', () => {
   it('unwraps outer markdown code fences from model output', () => {
@@ -25,5 +25,12 @@ describe('web-summary/markdown', () => {
     expect(html).not.toContain('javascript:alert')
     expect(html).not.toContain('onclick=')
     expect(html).not.toContain('<script>')
+  })
+
+  it('renders file markdown without model-output normalization', () => {
+    const html = renderMarkdownContent('```markdown\n# Kept as code\n```')
+
+    expect(html).toContain('<pre><code')
+    expect(html).toContain('# Kept as code')
   })
 })
