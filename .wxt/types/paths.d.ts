@@ -21,7 +21,6 @@ declare module "wxt/browser" {
     | "/libs/difflib.js"
     | "/libs/diffview.js"
     | "/popup.html"
-    | "/scss-worker.html"
     | "/sidepanel.html"
     | "/tools.html"
     | `/tools/${string}`
