@@ -3,6 +3,10 @@ import {
   parseRepoCoordinates,
   type RepoCoordinates,
 } from './repository';
+import {
+  installRepositoryPageHelper,
+  type RepositoryPageHelperAdapter,
+} from './repository-page-helper';
 
 export const ZREAD_BUTTON_ID = 'qhelper-zread-button';
 export const ZREAD_WRAPPER_SELECTOR = '[data-qhelper-zread-wrapper="true"]';
@@ -356,50 +360,20 @@ export function syncZreadButton(doc: Document, pathname: string): boolean {
 }
 
 export function installGitHubZreadButton(win: Window, doc: Document): void {
-  let lastPathname = win.location.pathname;
-  let retryTimer: number | undefined;
+  installRepositoryPageHelper(win, doc, createGitHubZreadButtonHelper(doc));
+}
 
-  const attemptRender = () => {
-    if (retryTimer !== undefined) {
-      win.clearTimeout(retryTimer);
-      retryTimer = undefined;
-    }
-
-    const rendered = syncZreadButton(doc, win.location.pathname);
-    if (getRepositoryCoordinates(doc, win.location.pathname) && !rendered) {
-      retryTimer = win.setTimeout(attemptRender, 250);
-    }
+export function createGitHubZreadButtonHelper(
+  doc: Document,
+): RepositoryPageHelperAdapter {
+  return {
+    render: (pathname) => syncZreadButton(doc, pathname),
+    shouldRetry: (pathname) => getRepositoryCoordinates(doc, pathname) !== null,
+    shouldRecoverFromMutation: (pathname) =>
+      getRepositoryCoordinates(doc, pathname) !== null &&
+      (!doc.querySelector(ZREAD_WRAPPER_SELECTOR) || shouldPromoteToGlobalHeader(doc)),
+    onInstall: () => {
+      doc.addEventListener('click', (event) => closeReaderDropdownsOnOutsideClick(doc, event));
+    },
   };
-
-  const rerenderIfPathChanged = () => {
-    if (win.location.pathname === lastPathname) {
-      return;
-    }
-
-    lastPathname = win.location.pathname;
-    attemptRender();
-  };
-
-  attemptRender();
-
-  doc.addEventListener('turbo:load', rerenderIfPathChanged as EventListener);
-  doc.addEventListener('pjax:end', rerenderIfPathChanged as EventListener);
-  doc.addEventListener('click', (event) => closeReaderDropdownsOnOutsideClick(doc, event));
-  win.addEventListener('popstate', rerenderIfPathChanged);
-
-  const observer = new MutationObserver(() => {
-    rerenderIfPathChanged();
-
-    if (
-      getRepositoryCoordinates(doc, win.location.pathname) &&
-      (!doc.querySelector(ZREAD_WRAPPER_SELECTOR) || shouldPromoteToGlobalHeader(doc))
-    ) {
-      attemptRender();
-    }
-  });
-
-  observer.observe(doc.documentElement, {
-    childList: true,
-    subtree: true,
-  });
 }

@@ -1,28 +1,47 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { installGitHubStarHistoryView, installGitHubZreadButton } = vi.hoisted(() => ({
-  installGitHubStarHistoryView: vi.fn(),
-  installGitHubZreadButton: vi.fn(),
-}));
+const {
+  createGitHubStarHistoryViewHelper,
+  createGitHubZreadButtonHelper,
+  installRepositoryPageHelpers,
+  starHistoryHelper,
+  zreadHelper,
+} = vi.hoisted(() => {
+  const starHistoryHelper = { render: vi.fn() };
+  const zreadHelper = { render: vi.fn() };
+
+  return {
+    createGitHubStarHistoryViewHelper: vi.fn(() => starHistoryHelper),
+    createGitHubZreadButtonHelper: vi.fn(() => zreadHelper),
+    installRepositoryPageHelpers: vi.fn(),
+    starHistoryHelper,
+    zreadHelper,
+  };
+});
 
 vi.mock('wxt/utils/define-content-script', () => ({
   defineContentScript: <T>(config: T) => config,
 }));
 
+vi.mock('@/lib/github/repository-page-helper', () => ({
+  installRepositoryPageHelpers,
+}));
+
 vi.mock('@/lib/github/star-history-view', () => ({
-  installGitHubStarHistoryView,
+  createGitHubStarHistoryViewHelper,
 }));
 
 vi.mock('@/lib/github/zread-button', () => ({
-  installGitHubZreadButton,
+  createGitHubZreadButtonHelper,
 }));
 
 import githubContentScript from '../entrypoints/github.content';
 
 describe('entrypoints/github.content.ts', () => {
   beforeEach(() => {
-    installGitHubStarHistoryView.mockClear();
-    installGitHubZreadButton.mockClear();
+    createGitHubStarHistoryViewHelper.mockClear();
+    createGitHubZreadButtonHelper.mockClear();
+    installRepositoryPageHelpers.mockClear();
   });
 
   it('registers the GitHub content script and delegates to shared GitHub helpers', () => {
@@ -31,7 +50,11 @@ describe('entrypoints/github.content.ts', () => {
 
     githubContentScript.main({} as never);
 
-    expect(installGitHubZreadButton).toHaveBeenCalledWith(window, document);
-    expect(installGitHubStarHistoryView).toHaveBeenCalledWith(window, document);
+    expect(createGitHubZreadButtonHelper).toHaveBeenCalledWith(document);
+    expect(createGitHubStarHistoryViewHelper).toHaveBeenCalledWith(document);
+    expect(installRepositoryPageHelpers).toHaveBeenCalledWith(window, document, [
+      zreadHelper,
+      starHistoryHelper,
+    ]);
   });
 });

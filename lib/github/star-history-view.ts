@@ -4,6 +4,10 @@ import {
   type RepoCoordinates,
 } from './repository';
 import {
+  installRepositoryPageHelper,
+  type RepositoryPageHelperAdapter,
+} from './repository-page-helper';
+import {
   STAR_HISTORY_SVG_MESSAGE,
   type StarHistorySvgResponse,
 } from './star-history-background';
@@ -613,54 +617,24 @@ export function installGitHubStarHistoryView(
   doc: Document,
   deps: StarHistoryViewDeps = {},
 ): void {
-  let lastPathname = win.location.pathname;
-  let retryTimer: number | undefined;
+  installRepositoryPageHelper(
+    win,
+    doc,
+    createGitHubStarHistoryViewHelper(doc, deps),
+  );
+}
 
-  const attemptRender = () => {
-    if (retryTimer !== undefined) {
-      win.clearTimeout(retryTimer);
-      retryTimer = undefined;
-    }
-
-    const rendered = syncStarHistoryView(doc, win.location.pathname, deps);
-    if (
-      getRepositoryCoordinates(doc, win.location.pathname) &&
-      isRepositoryHomePath(win.location.pathname) &&
-      !rendered
-    ) {
-      retryTimer = win.setTimeout(attemptRender, 250);
-    }
+export function createGitHubStarHistoryViewHelper(
+  doc: Document,
+  deps: StarHistoryViewDeps = {},
+): RepositoryPageHelperAdapter {
+  return {
+    render: (pathname) => syncStarHistoryView(doc, pathname, deps),
+    shouldRetry: (pathname) =>
+      getRepositoryCoordinates(doc, pathname) !== null && isRepositoryHomePath(pathname),
+    shouldRecoverFromMutation: (pathname) =>
+      getRepositoryCoordinates(doc, pathname) !== null &&
+      isRepositoryHomePath(pathname) &&
+      !doc.querySelector(STAR_HISTORY_ROOT_SELECTOR),
   };
-
-  const rerenderIfPathChanged = () => {
-    if (win.location.pathname === lastPathname) {
-      return;
-    }
-
-    lastPathname = win.location.pathname;
-    attemptRender();
-  };
-
-  attemptRender();
-
-  doc.addEventListener('turbo:load', rerenderIfPathChanged as EventListener);
-  doc.addEventListener('pjax:end', rerenderIfPathChanged as EventListener);
-  win.addEventListener('popstate', rerenderIfPathChanged);
-
-  const observer = new MutationObserver(() => {
-    rerenderIfPathChanged();
-
-    if (
-      getRepositoryCoordinates(doc, win.location.pathname) &&
-      isRepositoryHomePath(win.location.pathname) &&
-      !doc.querySelector(STAR_HISTORY_ROOT_SELECTOR)
-    ) {
-      attemptRender();
-    }
-  });
-
-  observer.observe(doc.documentElement, {
-    childList: true,
-    subtree: true,
-  });
 }

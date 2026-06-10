@@ -36,6 +36,10 @@ _Avoid_: Popup-only tool, special tool, action config
 An optional QHelper aid that appears in the context of the currently viewed public code repository. A **Repository Page Helper** is not a standalone tool in the **Tool Catalog** and should use the current repository as its subject unless the user explicitly chooses another subject. Multiple **Repository Page Helpers** may coexist when each has a distinct purpose.
 _Avoid_: Global widget, fixed repo helper, tool page
 
+**Repository Page Helper Lifecycle**:
+The shared install loop for **Repository Page Helpers** on GitHub pages. It owns GitHub SPA navigation events, path-change detection, retry timing, and DOM-mutation recovery. It does not render a helper or decide that helper's repository-specific placement; those belong to each **Repository Page Helper** adapter.
+_Avoid_: GitHub observer, page watcher, helper scheduler
+
 **Repository Home Page**:
 The main page for a code repository, where the repository itself is the subject. A **Repository Home Page** is distinct from repository subpages such as file views, issue lists, pull requests, actions, settings, or discussions.
 _Avoid_: Project page, repo page, GitHub page
@@ -101,3 +105,7 @@ Domain expert: "No. It belongs on the Repository Home Page; repository subpages 
 Developer: "Should selecting the chart open a fuller Star History page?"
 
 Domain expert: "Yes. The Star History View can point to the Star History Detail for the same repository."
+
+Developer: "Should each Repository Page Helper install its own GitHub SPA navigation and DOM recovery loop?"
+
+Domain expert: "No. That is the Repository Page Helper Lifecycle. Each helper adapter should provide render and recovery decisions while the lifecycle owns GitHub navigation and retry mechanics."
