@@ -256,6 +256,22 @@ export const tools: ToolMetadata[] = [
   },
 
   {
+    id: 'aes-gcm',
+    name: 'AES-GCM 加解密',
+    nameEn: 'AES-GCM Encrypt/Decrypt',
+    category: ToolCategory.SECURITY,
+    icon: 'ShieldCheck',
+    description: '使用口令进行 AES-GCM 文本加解密',
+    descriptionEn: 'Encrypt and decrypt text with AES-GCM passphrases',
+    keywords: ['aes', 'gcm', '加密', '解密', 'crypto', 'encrypt', 'decrypt'],
+    tags: ['aes', 'gcm', 'crypto', 'encrypt', 'decrypt', 'security'],
+    entry: 'tools/aes-gcm.html',
+    version: '1.0.0',
+    features: [ToolFeature.SINGLE_INPUT, ToolFeature.COPY_RESULT],
+    status: ToolStatus.STABLE,
+  },
+
+  {
     id: 'bcrypt-hash',
     name: 'Bcrypt Hash',
     nameEn: 'Bcrypt Hash',

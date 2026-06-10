@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { App as AesGcmTool } from '@/components/tool/aes-gcm';
 import { App as BcryptHashTool } from '@/components/tool/bcrypt-hash';
 import { App as CodeBeautifyTool } from '@/components/tool/codebeautify';
 import { App as ColorTransformTool } from '@/components/tool/colorTransform';
@@ -44,6 +45,7 @@ const componentByToolId: Record<string, ComponentType> = {
   qrcode: QrCodeTool,
   uuid: UuidTool,
   password: PasswordTool,
+  'aes-gcm': AesGcmTool,
   'bcrypt-hash': BcryptHashTool,
   markdown: MarkdownTool,
   htmlformat: HtmlFormatTool,
