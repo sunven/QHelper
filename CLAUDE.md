@@ -151,3 +151,17 @@ From `wxt.config.ts`:
 - **Encoding:** String encode/decode, Code beautify, Uglify
 - **Image:** Base64 converter, Image splicing
 - **Other:** Timestamp converter, Color converter, Clear cookies
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked as local markdown files under `.scratch/`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The repo uses the default five-label triage vocabulary. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repo with root `CONTEXT.md` and root `docs/adr/` when ADRs are added. See `docs/agents/domain.md`.

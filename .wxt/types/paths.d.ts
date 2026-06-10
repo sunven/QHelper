@@ -13,6 +13,7 @@ declare module "wxt/browser" {
     | "/content-scripts/unpkg.js"
     | "/content-scripts/v2ex-base64.js"
     | "/content-scripts/web-summary.js"
+    | "/content-scripts/zread.js"
     | "/devtools.html"
     | "/icons/q-128.png"
     | "/icons/q-16.png"
