@@ -1,7 +1,4 @@
-import {
-  defineSyncedToolSetting,
-  type SyncedToolSettingSaveResult,
-} from '@/lib/chrome/synced-settings'
+import { defineSetting } from '@/lib/settings'
 
 export const JSON_STRING_SETTINGS_STORAGE_KEY = 'jsonStringSettings'
 
@@ -9,12 +6,16 @@ export type JsonStringSettings = {
   enabled: boolean
 }
 
-export type JsonStringSettingsSaveResult =
-  SyncedToolSettingSaveResult<JsonStringSettings>
-
-export const DEFAULT_JSON_STRING_SETTINGS: JsonStringSettings = {
+export const jsonStringSettings = defineSetting(JSON_STRING_SETTINGS_STORAGE_KEY, {
   enabled: true,
-}
+})
+
+export const DEFAULT_JSON_STRING_SETTINGS = jsonStringSettings.defaults
+export const getJsonStringSettings = jsonStringSettings.get
+export const setJsonStringSettings = jsonStringSettings.set
+export const subscribeJsonStringSettings = jsonStringSettings.subscribe
+export const normalizeJsonStringSettings = (v: Partial<JsonStringSettings> | undefined) =>
+  ({ ...jsonStringSettings.defaults, ...v })
 
 type HeaderLike = {
   name?: string
@@ -29,29 +30,6 @@ export type JsonRequestLike = {
     headers?: HeaderLike[]
   }
 }
-
-export function normalizeJsonStringSettings(
-  value: Partial<JsonStringSettings> | undefined,
-): JsonStringSettings {
-  return {
-    enabled:
-      typeof value?.enabled === 'boolean'
-        ? value.enabled
-        : DEFAULT_JSON_STRING_SETTINGS.enabled,
-  }
-}
-
-export const jsonStringSettings = defineSyncedToolSetting({
-  key: JSON_STRING_SETTINGS_STORAGE_KEY,
-  defaults: DEFAULT_JSON_STRING_SETTINGS,
-  normalize: normalizeJsonStringSettings,
-})
-
-export const getJsonStringSettings = jsonStringSettings.get
-
-export const setJsonStringSettings = jsonStringSettings.set
-
-export const subscribeJsonStringSettings = jsonStringSettings.subscribe
 
 function parseJsonString(value: string): unknown | false {
   const text = value.trim()

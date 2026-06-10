@@ -5,7 +5,7 @@ QHelper is a browser extension that provides developer-focused tools and optiona
 ## Language
 
 **Tool Setting**:
-A user preference that controls how a QHelper tool behaves. A **Tool Setting** is not captured content, request data, tool history, or an API credential.
+A user preference that controls how a QHelper tool behaves. A **Tool Setting** is defined via `defineSetting(key, defaults)` in `lib/settings.ts`, which returns `{get, set, subscribe, reset}`. The module handles sync/local fallback internally; definitions are declarations, not implementations. A **Tool Setting** is not captured content, request data, tool history, or an API credential.
 _Avoid_: Tool data, runtime state, cache
 
 **Tool Setting Definition**:
