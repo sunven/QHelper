@@ -241,16 +241,14 @@ qhelper/
 
 ## 3. 核心模块设计
 
-### 3.1 工具注册系统 (Tool Registry)
+### 3.1 Tool Catalog 与工具元数据
 
-**目标：** 消除硬编码，实现工具自动发现和注册。
+**目标：** 工具身份、分类、路径和 Launch Entry 从同一个 Tool Catalog 派生，避免 popup、工具侧栏和构建配置各自维护一份目录。
 
 #### 3.1.1 元数据类型定义
 
 ```typescript
 // lib/registry/ToolMetadata.ts
-
-import type { LucideIconName } from 'lucide-react';
 
 /**
  * 工具分类枚举
@@ -275,19 +273,13 @@ export interface ToolMetadata {
   name: string;                    // 显示名称（中文）
   nameEn: string;                  // 英文名称（用于搜索）
   category: ToolCategory;          // 分类
-  icon: LucideIconName;            // 图标名称（lucide-react）
+  icon: string;                    // 稳定图标 token，由 surface adapter 映射到 React 图标
 
   // 描述
   description: string;             // 简短描述
+  descriptionEn: string;           // 英文描述
   keywords: string[];              // 搜索关键词
   tags: string[];                  // 功能标签
-
-  // 入口点
-  entry: string;                   // SPA 路由入口路径（如 'tools/json.html'）
-  componentPath?: string;          // 组件路径（可选，用于动态导入）
-
-  // 权限
-  permissions?: chrome.permissions.Permissions; // 所需权限
 
   // 版本
   version: string;                 // 工具版本
@@ -297,6 +289,9 @@ export interface ToolMetadata {
 
   // 状态
   status: ToolStatus;              // 开发状态
+
+  // 路由行为：默认保留隐藏工具状态，内存较重的工具可选择关闭
+  preserveActivity?: boolean;
 }
 
 /**
@@ -343,8 +338,9 @@ import { ToolCategory } from '@/lib/registry/ToolMetadata';
 import { tools as registeredTools } from '@/lib/registry/tools';
 
 /**
- * Tool Catalog 是工具身份、分类和路径的 UI seam。
- * 导航、工具路由和 popup 入口从这里读取工具目录。
+ * Tool Catalog 是工具身份、分类、路径和 Launch Entry 的 seam。
+ * 普通工具路径从 tool id 派生，注册元数据不重复声明 entry。
+ * popup、工具侧栏和构建 alias 都从 Launch Entry 读取可启动入口。
  */
 export const TOOL_CATEGORIES = TOOL_CATEGORY_ORDER.map((category) => ({
   key: category,
@@ -355,9 +351,75 @@ export const TOOL_CATEGORIES = TOOL_CATEGORY_ORDER.map((category) => ({
 export function getToolCatalogTool(toolId: string) {
   return ORDINARY_TOOL_CATALOG_TOOLS.find((tool) => tool.key === toolId);
 }
+
+export type LaunchSurface =
+  | 'popup-main'
+  | 'popup-header'
+  | 'tool-sidebar'
+  | 'build-alias';
+
+export type LaunchIntent =
+  | {
+      kind: 'ordinary-tool-page';
+      toolId: string;
+      extensionPath: string;
+      preserveActivity: boolean;
+    }
+  | {
+      kind: 'system-page';
+      page: 'settings';
+      extensionPath: string;
+    }
+  | {
+      kind: 'extension-page';
+      page: 'bookmarks';
+      extensionPath: string;
+    }
+  | {
+      kind: 'side-panel-action';
+      action: 'open-web-summary';
+    }
+  | {
+      kind: 'browser-command';
+      command: 'clear-cookies';
+    };
+
+export type ToolCatalogLaunchEntry = {
+  id: string;
+  name: string;
+  description?: string;
+  category?: ToolCategory;
+  icon: string;
+  surfaces: readonly LaunchSurface[];
+  intent: LaunchIntent;
+  risk?: {
+    level: 'destructive';
+    confirmMessage: string;
+  };
+};
+
+export type LaunchDirectory = {
+  surface: LaunchSurface;
+  groups: Array<{
+    category: ToolCategory;
+    name: string;
+    entries: ToolCatalogLaunchEntry[];
+  }>;
+  entries: ToolCatalogLaunchEntry[];
+};
+
+export type ToolPageAlias = {
+  id: string;
+  path: string;
+};
+
+export function getLaunchDirectory(surface: LaunchSurface): LaunchDirectory;
+export function getToolsSpaAliases(): ToolPageAlias[];
 ```
 
 #### 3.1.3 工具注册文件
+
+普通工具的 `tools/<id>.html` 路径由 Tool Catalog 派生。新增普通工具时只在注册元数据里声明身份、分类、描述和行为标志，不要重复添加 `entry` 字段。
 
 ```typescript
 // lib/registry/tools.ts
@@ -381,7 +443,6 @@ export const tools: ToolMetadata[] = [
     description: 'JSON 格式化、压缩、diff 对比',
     keywords: ['json', '格式化', '解析', '格式', 'formatter'],
     tags: ['json', 'format', 'diff'],
-    entry: 'tools/json.html',
     version: '1.0.0',
     features: [
       'single_input',
@@ -402,7 +463,6 @@ export const tools: ToolMetadata[] = [
     description: '二进制、八进制、十进制、十六进制转换',
     keywords: ['进制', '转换', '二进制', '十六进制', 'radix', 'base'],
     tags: ['convert', 'number', 'base'],
-    entry: 'tools/trans-radix.html',
     version: '1.0.0',
     features: ['single_input', 'real_time'],
     status: ToolStatus.STABLE,
@@ -418,7 +478,6 @@ export const tools: ToolMetadata[] = [
     description: 'Base64、URL、HTML 实体编解码',
     keywords: ['编码', '解码', 'base64', 'url', 'encode', 'decode'],
     tags: ['encode', 'decode', 'base64', 'url'],
-    entry: 'tools/convert.html',
     version: '1.0.0',
     features: ['single_input', 'copy_result'],
     status: ToolStatus.STABLE,
@@ -433,7 +492,6 @@ export const tools: ToolMetadata[] = [
     description: 'JavaScript/HTML/CSS 代码美化',
     keywords: ['美化', '格式化', '代码', 'beautify', 'format'],
     tags: ['code', 'beautify', 'format'],
-    entry: 'tools/codebeautify.html',
     version: '1.0.0',
     features: ['single_input', 'copy_result', 'export'],
     status: ToolStatus.STABLE,
@@ -448,7 +506,6 @@ export const tools: ToolMetadata[] = [
     description: 'JavaScript 代码压缩混淆',
     keywords: ['压缩', '混淆', 'uglify', 'minify'],
     tags: ['code', 'minify', 'compress'],
-    entry: 'tools/uglify.html',
     version: '1.0.0',
     features: ['single_input', 'copy_result', 'export'],
     status: ToolStatus.STABLE,
@@ -464,7 +521,6 @@ export const tools: ToolMetadata[] = [
     description: '图片转 Base64 编码',
     keywords: ['图片', 'base64', '转换', 'image', 'base64'],
     tags: ['image', 'base64', 'convert'],
-    entry: 'tools/imagebase64.html',
     version: '1.0.0',
     features: ['file_input', 'drag_drop', 'copy_result'],
     status: ToolStatus.STABLE,
@@ -479,7 +535,6 @@ export const tools: ToolMetadata[] = [
     description: '多张图片纵向/横向拼接',
     keywords: ['图片', '拼接', '合并', 'image', 'splice', 'merge'],
     tags: ['image', 'splice', 'merge'],
-    entry: 'tools/pictureSplicing.html',
     version: '1.0.0',
     features: ['file_input', 'drag_drop', 'export'],
     status: ToolStatus.STABLE,
@@ -495,7 +550,6 @@ export const tools: ToolMetadata[] = [
     description: 'Unix 时间戳与日期时间互转',
     keywords: ['时间戳', '日期', '转换', 'timestamp', 'date', 'time'],
     tags: ['time', 'timestamp', 'date', 'convert'],
-    entry: 'tools/timestamp.html',
     version: '1.0.0',
     features: ['real_time'],
     status: ToolStatus.STABLE,
@@ -510,7 +564,6 @@ export const tools: ToolMetadata[] = [
     description: 'RGB、HEX、HSL 颜色格式转换',
     keywords: ['颜色', '转换', 'rgb', 'hex', 'hsl', 'color'],
     tags: ['color', 'convert', 'rgb', 'hex', 'hsl'],
-    entry: 'tools/colorTransform.html',
     version: '1.0.0',
     features: ['real_time'],
     status: ToolStatus.STABLE,
@@ -526,7 +579,6 @@ export const tools: ToolMetadata[] = [
     description: 'JSON Web Token 解码和验证',
     keywords: ['jwt', 'token', '解码', 'decode', 'auth'],
     tags: ['jwt', 'token', 'auth', 'decode'],
-    entry: 'tools/jwt',
     version: '1.0.0',
     features: ['single_input', 'copy_result'],
     status: ToolStatus.BETA,
@@ -541,7 +593,6 @@ export const tools: ToolMetadata[] = [
     description: 'SHA-1、SHA-256、SHA-512、bcrypt 哈希生成',
     keywords: ['哈希', 'hash', 'sha', 'bcrypt', '加密'],
     tags: ['hash', 'sha', 'bcrypt', 'crypto'],
-    entry: 'tools/hash',
     version: '1.0.0',
     features: ['single_input', 'copy_result'],
     status: ToolStatus.BETA,
@@ -556,7 +607,6 @@ export const tools: ToolMetadata[] = [
     description: '二维码生成和扫描',
     keywords: ['二维码', 'qr', '生成', '扫描'],
     tags: ['qr', 'qrcode', 'barcode'],
-    entry: 'tools/qrcode',
     version: '1.0.0',
     features: ['single_input', 'file_input', 'export'],
     status: ToolStatus.BETA,
@@ -571,7 +621,6 @@ export const tools: ToolMetadata[] = [
     description: 'UUID/GUID 生成、验证、格式化',
     keywords: ['uuid', 'guid', '生成', 'id'],
     tags: ['uuid', 'guid', 'id', 'generate'],
-    entry: 'tools/uuid.html',
     version: '1.0.0',
     features: ['copy_result', 'history'],
     status: ToolStatus.BETA,
@@ -586,7 +635,6 @@ export const tools: ToolMetadata[] = [
     description: '安全密码生成',
     keywords: ['密码', '生成', '安全', 'password'],
     tags: ['password', 'generate', 'security'],
-    entry: 'tools/password.html',
     version: '1.0.0',
     features: ['copy_result', 'history'],
     status: ToolStatus.BETA,
@@ -602,7 +650,6 @@ export const tools: ToolMetadata[] = [
     description: 'Markdown 编辑和预览',
     keywords: ['markdown', 'md', '编辑', '预览'],
     tags: ['markdown', 'md', 'editor'],
-    entry: 'tools/markdown.html',
     version: '1.0.0',
     features: ['single_input', 'export', 'history'],
     status: ToolStatus.BETA,
@@ -617,7 +664,6 @@ export const tools: ToolMetadata[] = [
     description: 'HTML 美化、压缩、格式化',
     keywords: ['html', '格式化', '美化', '压缩'],
     tags: ['html', 'format', 'beautify'],
-    entry: 'tools/html-format',
     version: '1.0.0',
     features: ['single_input', 'copy_result', 'export'],
     status: ToolStatus.BETA,
@@ -632,7 +678,6 @@ export const tools: ToolMetadata[] = [
     description: 'CSS 格式化、压缩、autoprefixer',
     keywords: ['css', '格式化', '压缩', 'prefix'],
     tags: ['css', 'format', 'minify'],
-    entry: 'tools/css-format',
     version: '1.0.0',
     features: ['single_input', 'copy_result', 'export'],
     status: ToolStatus.BETA,
@@ -647,7 +692,6 @@ export const tools: ToolMetadata[] = [
     description: 'SCSS/SASS 编译为 CSS',
     keywords: ['scss', 'sass', '编译', 'css'],
     tags: ['scss', 'sass', 'compile', 'css'],
-    entry: 'tools/scss.html',
     version: '1.0.0',
     features: ['single_input', 'copy_result', 'export'],
     status: ToolStatus.BETA,
@@ -662,7 +706,6 @@ export const tools: ToolMetadata[] = [
     description: 'SVG 压缩和优化',
     keywords: ['svg', '优化', '压缩'],
     tags: ['svg', 'optimize', 'compress'],
-    entry: 'tools/svg',
     version: '1.0.0',
     features: ['file_input', 'drag_drop', 'copy_result', 'export'],
     status: ToolStatus.BETA,
@@ -678,7 +721,6 @@ export const tools: ToolMetadata[] = [
     description: 'Cron 表达式解析和生成',
     keywords: ['cron', '表达式', '定时', 'schedule'],
     tags: ['cron', 'schedule', 'expression'],
-    entry: 'tools/cron.html',
     version: '1.0.0',
     features: ['single_input', 'ai_generate'],
     status: ToolStatus.BETA,
@@ -693,7 +735,6 @@ export const tools: ToolMetadata[] = [
     description: 'YAML 与 JSON 互转',
     keywords: ['yaml', 'json', '转换'],
     tags: ['yaml', 'json', 'convert'],
-    entry: 'tools/yaml.html',
     version: '1.0.0',
     features: ['single_input', 'copy_result', 'export'],
     status: ToolStatus.BETA,
@@ -708,7 +749,6 @@ export const tools: ToolMetadata[] = [
     description: 'TOML 解析和转换为 JSON',
     keywords: ['toml', '解析', 'json'],
     tags: ['toml', 'parse', 'json'],
-    entry: 'tools/toml.html',
     version: '1.0.0',
     features: ['single_input', 'copy_result', 'export'],
     status: ToolStatus.BETA,
@@ -723,7 +763,6 @@ export const tools: ToolMetadata[] = [
     description: 'JSON Schema 验证和生成',
     keywords: ['json', 'schema', '验证', 'generate'],
     tags: ['json', 'schema', 'validate'],
-    entry: 'tools/json.html-schema',
     version: '1.0.0',
     features: ['single_input', 'ai_generate'],
     status: ToolStatus.BETA,
@@ -738,7 +777,6 @@ export const tools: ToolMetadata[] = [
     description: 'XML 格式化、压缩、与 JSON 互转',
     keywords: ['xml', '格式化', 'json', '转换'],
     tags: ['xml', 'format', 'json'],
-    entry: 'tools/xml',
     version: '1.0.0',
     features: ['single_input', 'copy_result', 'export'],
     status: ToolStatus.BETA,
@@ -754,7 +792,6 @@ export const tools: ToolMetadata[] = [
     description: '使用 AI 从自然语言生成正则表达式',
     keywords: ['ai', '正则', 'regex', '生成'],
     tags: ['ai', 'regex', 'generate'],
-    entry: 'tools/ai-regex',
     version: '1.0.0',
     features: ['single_input', 'ai_generate', 'copy_result', 'history'],
     status: ToolStatus.EXPERIMENTAL,

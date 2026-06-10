@@ -6,6 +6,7 @@ import {
   TOOLS_ROUTE_BASE,
   TOOLS_SPA_ENTRY,
   getToolsSpaPath as getCatalogToolsSpaPath,
+  getToolsSpaAliases,
   isOrdinaryToolId,
 } from './tool-catalog';
 
@@ -15,11 +16,13 @@ export {
   TOOL_SETTINGS_ID,
   TOOLS_ROUTE_BASE,
   TOOLS_SPA_ENTRY,
+  getToolsSpaAliases,
   isOrdinaryToolId,
 };
 
 export function getToolRoutePath(toolId: string): string {
-  return `/${encodeURIComponent(toolId)}.html`;
+  const routePrefix = `${TOOLS_ROUTE_BASE}/`;
+  return `/${getToolsSpaPath(toolId).slice(routePrefix.length)}`;
 }
 
 export function getToolsSpaPath(toolId: string): string {

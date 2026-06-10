@@ -3,6 +3,7 @@ import {
   DEFAULT_TOOL_ID,
   getCurrentToolIdFromLocation,
   getToolIdFromPathname,
+  getToolRoutePath,
   getToolsSpaPath,
   getToolsSpaUrl,
   isToolsSpaLocation,
@@ -13,6 +14,8 @@ describe('tools-spa routing helpers', () => {
     expect(DEFAULT_TOOL_ID).toBe('json');
     expect(getToolsSpaPath('json')).toBe('tools/json.html');
     expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html');
+    expect(getToolRoutePath('jsonschema')).toBe('/jsonschema.html');
+    expect(getToolRoutePath('settings')).toBe('/settings.html');
   });
 
   it('detects current tool from SPA pathname', () => {

@@ -28,37 +28,12 @@ import { removeAll } from '@/lib/chrome/cookies'
 import { create } from '@/lib/chrome/tabs'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import {
-  ORDINARY_TOOL_CATALOG_TOOLS,
-  TOOL_CATEGORY_LABELS,
+  getLaunchDirectory,
+  type ToolCatalogLaunchEntry,
 } from '@/lib/tool-catalog'
-import { getToolsSpaPath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
 import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
-
-type PopupTool = {
-  id: string
-  name: string
-  description: string
-  url: string
-  icon: string
-  type: 'jump' | 'clearCookie' | 'webSummary'
-  category: ToolCategory
-}
-
-const ALL_CATEGORY = 'all'
-
-const CATEGORY_ORDER: Array<typeof ALL_CATEGORY | ToolCategory> = [
-  ALL_CATEGORY,
-  ToolCategory.COMMON,
-  ToolCategory.ENCODING,
-  ToolCategory.IMAGE,
-  ToolCategory.SECURITY,
-  ToolCategory.WEB_FORMAT,
-  ToolCategory.DATA_FORMAT,
-  ToolCategory.AI,
-  ToolCategory.OTHER,
-]
 
 const toolIconByName: Record<string, Icon> = {
   ArrowsLeftRight: ArrowsLeftRightIcon,
@@ -82,18 +57,16 @@ const toolIconByName: Record<string, Icon> = {
   Wrench: WrenchIcon,
 }
 
-const categoryIconMap: Record<ToolCategory | typeof ALL_CATEGORY, Icon> =
-  {
-    all: SparkleIcon,
-    [ToolCategory.COMMON]: SparkleIcon,
-    [ToolCategory.ENCODING]: ArrowsLeftRightIcon,
-    [ToolCategory.IMAGE]: ImageIcon,
-    [ToolCategory.SECURITY]: ShieldCheckIcon,
-    [ToolCategory.WEB_FORMAT]: LinkIcon,
-    [ToolCategory.DATA_FORMAT]: BracketsCurlyIcon,
-    [ToolCategory.AI]: SparkleIcon,
-    [ToolCategory.OTHER]: WrenchIcon,
-  }
+const categoryIconMap: Record<ToolCategory, Icon> = {
+  [ToolCategory.COMMON]: SparkleIcon,
+  [ToolCategory.ENCODING]: ArrowsLeftRightIcon,
+  [ToolCategory.IMAGE]: ImageIcon,
+  [ToolCategory.SECURITY]: ShieldCheckIcon,
+  [ToolCategory.WEB_FORMAT]: LinkIcon,
+  [ToolCategory.DATA_FORMAT]: BracketsCurlyIcon,
+  [ToolCategory.AI]: SparkleIcon,
+  [ToolCategory.OTHER]: WrenchIcon,
+}
 
 const categoryAccentMap: Record<
   ToolCategory,
@@ -163,66 +136,28 @@ const categoryAccentMap: Record<
   },
 }
 
-const clearCookieTool: PopupTool = {
-  id: 'clear-cookie',
-  name: '清除 Cookie',
-  description:
-    '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
-  url: '',
-  icon: 'Trash',
-  type: 'clearCookie',
-  category: ToolCategory.OTHER,
-}
-
-const webSummaryTool: PopupTool = {
-  id: 'web-summary-launch',
-  name: '网页总结',
-  description: '打开侧边栏总结当前网页内容。',
-  url: '',
-  icon: 'Sparkle',
-  type: 'webSummary',
-  category: ToolCategory.AI,
-}
-
-const bookmarksTool: PopupTool = {
-  id: 'bookmarks',
-  name: '书签',
-  description: '查看浏览器书签树。',
-  url: 'bookmarks.html',
-  icon: 'BookmarkSimple',
-  type: 'jump',
-  category: ToolCategory.OTHER,
-}
-
-const specialTools: PopupTool[] = [
-  webSummaryTool,
-  bookmarksTool,
-  clearCookieTool,
-]
-
-async function openSettings() {
+async function handleLaunchEntryClick(entry: ToolCatalogLaunchEntry) {
   try {
-    await create(getToolsSpaPath('settings'))
-  } catch (error) {
-    const message = error instanceof Error ? error.message : '操作失败'
-    alert(message)
-  }
-}
-
-async function handleToolClick(tool: PopupTool) {
-  try {
-    if (tool.type === 'jump') {
-      await create(tool.url)
-      return
+    switch (entry.intent.kind) {
+      case 'ordinary-tool-page':
+      case 'system-page':
+      case 'extension-page':
+        await create(entry.intent.extensionPath)
+        return
+      case 'side-panel-action':
+        await chrome.runtime.sendMessage({ type: 'OPEN_WEB_SUMMARY' })
+        return
+      case 'browser-command':
+        if (
+          entry.risk?.level === 'destructive' &&
+          !window.confirm(entry.risk.confirmMessage)
+        ) {
+          return
+        }
+        await removeAll()
+        alert('Cookie 已清除')
+        return
     }
-
-    if (tool.type === 'webSummary') {
-      await chrome.runtime.sendMessage({ type: 'OPEN_WEB_SUMMARY' })
-      return
-    }
-
-    await removeAll()
-    alert('Cookie 已清除')
   } catch (error) {
     const message = error instanceof Error ? error.message : '操作失败'
     alert(message)
@@ -232,14 +167,6 @@ async function handleToolClick(tool: PopupTool) {
 function getToolIcon(iconName: string) {
   const Icon = toolIconByName[iconName] || WrenchIcon
   return <Icon data-icon="inline-start" weight="duotone" />
-}
-
-function getCategoryLabel(categoryId: ToolCategory | typeof ALL_CATEGORY) {
-  if (categoryId === ALL_CATEGORY) {
-    return '全部'
-  }
-
-  return TOOL_CATEGORY_LABELS[categoryId]
 }
 
 function App() {
@@ -260,34 +187,10 @@ function App() {
     }
   }, [])
 
-  const allTools = useMemo<PopupTool[]>(() => {
-    const registryTools = ORDINARY_TOOL_CATALOG_TOOLS.map((tool) => ({
-      id: tool.key,
-      name: tool.name,
-      description: tool.description ?? '',
-      url: getToolsSpaPath(tool.key),
-      icon: tool.icon,
-      type: 'jump' as const,
-      category: tool.category,
-    }))
-
-    return [...registryTools, ...specialTools]
-  }, [])
-
-  const groupedTools = useMemo(() => {
-    const groups = new Map<ToolCategory, PopupTool[]>()
-
-    for (const tool of allTools) {
-      const items = groups.get(tool.category) || []
-      items.push(tool)
-      groups.set(tool.category, items)
-    }
-
-    return groups
-  }, [allTools])
-
-  const renderToolCard = (tool: PopupTool) => (
-    <ToolButton tool={tool} />
+  const popupDirectory = useMemo(() => getLaunchDirectory('popup-main'), [])
+  const settingsEntry = useMemo(
+    () => getLaunchDirectory('popup-header').entries[0],
+    [],
   )
 
   return (
@@ -309,28 +212,24 @@ function App() {
               size="icon-sm"
               aria-label="打开设置"
               data-testid="popup-settings-link"
-              title="设置"
-              onClick={() => void openSettings()}
+              title={settingsEntry?.name ?? '设置'}
+              onClick={() => {
+                if (settingsEntry) {
+                  void handleLaunchEntryClick(settingsEntry)
+                }
+              }}
               className="rounded-sm"
             >
               <GearSixIcon aria-hidden weight="duotone" />
             </Button>
           </header>
 
-          {CATEGORY_ORDER.filter(
-            (categoryId) => categoryId !== ALL_CATEGORY,
-          ).map((categoryId) => {
-            const tools = groupedTools.get(categoryId)
-            if (!tools || tools.length === 0) {
-              return null
-            }
-
-            const Icon = categoryIconMap[categoryId]
-            const accent = categoryAccentMap[categoryId]
-
+          {popupDirectory.groups.map((group) => {
+            const Icon = categoryIconMap[group.category]
+            const accent = categoryAccentMap[group.category]
             return (
               <section
-                key={categoryId}
+                key={group.category}
                 className={cn(
                   'flex flex-col gap-0.5 border-l-2 pl-1',
                   accent.section,
@@ -346,15 +245,17 @@ function App() {
                     <Icon data-icon="inline-start" weight="duotone" />
                   </span>
                   <span className="font-medium text-foreground">
-                    {getCategoryLabel(categoryId)}
+                    {group.name}
                   </span>
                   <span className={cn('font-medium', accent.count)}>
-                    {tools.length}
+                    {group.entries.length}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-4 gap-0.5">
-                  {tools.map(renderToolCard)}
+                  {group.entries.map((entry) => (
+                    <ToolButton key={entry.id} entry={entry} />
+                  ))}
                 </div>
               </section>
             )
@@ -365,19 +266,18 @@ function App() {
   )
 }
 
-function ToolButton({ tool }: { tool: PopupTool }) {
-  const accent = categoryAccentMap[tool.category]
+function ToolButton({ entry }: { entry: ToolCatalogLaunchEntry }) {
+  const accent = categoryAccentMap[entry.category ?? ToolCategory.OTHER]
 
   return (
     <Button
-      key={tool.id}
       type="button"
       variant="ghost"
       size="sm"
-      data-testid={`tool-${tool.id}`}
-      aria-label={`${tool.name}: ${tool.description}`}
-      title={tool.description}
-      onClick={() => handleToolClick(tool)}
+      data-testid={`tool-${entry.id}`}
+      aria-label={`${entry.name}: ${entry.description ?? ''}`}
+      title={entry.description}
+      onClick={() => handleLaunchEntryClick(entry)}
       className={cn(
         'h-7 w-full justify-start gap-1.5 rounded-sm px-1.5 text-left',
         accent.tool,
@@ -390,9 +290,9 @@ function ToolButton({ tool }: { tool: PopupTool }) {
             accent.toolIcon,
           )}
         >
-          {getToolIcon(tool.icon)}
+          {getToolIcon(entry.icon)}
         </span>
-        <span className="min-w-0 truncate">{tool.name}</span>
+        <span className="min-w-0 truncate">{entry.name}</span>
       </div>
     </Button>
   )

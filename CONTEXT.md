@@ -25,8 +25,12 @@ Device-local information that lets a QHelper tool resume or display prior work o
 _Avoid_: Synced data, cloud state, backup
 
 **Tool Catalog**:
-The source-of-truth collection of QHelper tools and their user-facing identity. It defines tool names, categories, descriptions, icons, and paths for navigation, popup entry points, and tool routes.
+The source-of-truth collection of QHelper tools and their user-facing identity. It defines tool names, categories, category order, category labels, descriptions, stable icon tokens, and paths for navigation, popup entry points, and tool routes. Ordinary tool paths are derived by the **Tool Catalog** from the tool id unless an entry is explicitly not an ordinary tool page. The **Tool Catalog** does not own React icon modules or visual accent styles; those belong to the surface adapter.
 _Avoid_: Tool registry, navigation config, route map
+
+**Launch Entry**:
+A user-startable QHelper destination or command declared by the **Tool Catalog**. A **Launch Entry** describes identity, surface visibility, and launch intent for ordinary tool pages, system pages such as settings, extension pages such as bookmarks, side panel actions, and browser commands such as clearing cookies. A **Launch Entry** does not execute Chrome behavior itself; execution belongs to the adapter that consumes the catalog in its surface. Destructive browser commands are still **Launch Entries**, but must declare their risk so the adapter can confirm before execution.
+_Avoid_: Popup-only tool, special tool, action config
 
 **Repository Page Helper**:
 An optional QHelper aid that appears in the context of the currently viewed public code repository. A **Repository Page Helper** is not a standalone tool in the **Tool Catalog** and should use the current repository as its subject unless the user explicitly chooses another subject. Multiple **Repository Page Helpers** may coexist when each has a distinct purpose.
@@ -68,7 +72,23 @@ Domain expert: "No. Tool history is Persisted Tool Data, so it stays device-loca
 
 Developer: "Where should a new tool's name and path be declared?"
 
-Domain expert: "In the Tool Catalog. Navigation, popup launch, and route checks should derive from that declaration."
+Domain expert: "In the Tool Catalog. Navigation, popup launch, and route checks should derive from that declaration. For ordinary tools, the path should derive from the tool id instead of being repeated per tool."
+
+Developer: "Should popup entries like settings, bookmarks, web summary, and clear cookies live in popup code?"
+
+Domain expert: "No. They are Launch Entries in the Tool Catalog. The catalog describes the entry and launch intent; the popup adapter executes the Chrome behavior."
+
+Developer: "Should every Launch Entry appear in every QHelper surface?"
+
+Domain expert: "No. Surface visibility belongs in the Launch Entry so popup, sidebar, route aliases, and build outputs do not each invent their own filters."
+
+Developer: "Should the popup keep its own launch entry list, category order, or icon identity?"
+
+Domain expert: "No. The popup is a Tool Catalog consumer. It may adapt catalog entries into Chrome behavior and rendered icons, but it should not maintain a second catalog."
+
+Developer: "Should a destructive browser command like clearing cookies stay outside the Tool Catalog?"
+
+Domain expert: "No. It is a Launch Entry with explicit risk metadata. The catalog describes the risk; the adapter handles confirmation and execution."
 
 Developer: "Should a GitHub star history helper always show ultraworkers/claw-code?"
 

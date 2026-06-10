@@ -63,9 +63,6 @@ export interface ToolMetadata {
   keywords: string[];
   tags: string[];
 
-  // 入口点
-  entry: string;
-
   // 版本
   version: string;
 

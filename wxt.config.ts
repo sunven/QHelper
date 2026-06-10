@@ -3,10 +3,9 @@ import { createRequire } from 'node:module';
 import { basename, dirname, join } from 'node:path';
 import { defineConfig } from 'wxt';
 import {
-  ORDINARY_TOOL_IDS,
-  TOOL_SETTINGS_ID,
   TOOLS_ROUTE_BASE,
   TOOLS_SPA_ENTRY,
+  getToolsSpaAliases,
 } from './lib/tools-spa';
 
 const require = createRequire(import.meta.url);
@@ -69,9 +68,7 @@ function writeToolsRouteAliases(outDir: string) {
   }
 
   const html = readFileSync(htmlPath, 'utf8');
-  const aliases = [...ORDINARY_TOOL_IDS, TOOL_SETTINGS_ID].map(
-    (toolId) => `${TOOLS_ROUTE_BASE}/${toolId}.html`,
-  );
+  const aliases = getToolsSpaAliases().map((alias) => alias.path);
 
   for (const alias of aliases) {
     const aliasPath = join(outDir, alias);

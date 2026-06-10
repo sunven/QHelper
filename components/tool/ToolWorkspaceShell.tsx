@@ -26,7 +26,7 @@ import {
   getToolCatalogCategoryForTool,
   getToolCatalogTool,
 } from '@/lib/tool-catalog'
-import { getToolsSpaPath } from '@/lib/tools-spa'
+import { DEFAULT_TOOL_ID, getToolsSpaPath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
 
 type ToolWorkspaceShellProps = {
@@ -69,7 +69,7 @@ export function ToolWorkspaceShell({
                   <BreadcrumbItem className="hidden h-7 items-center md:flex">
                     <BreadcrumbLink
                       className="inline-flex h-7 items-center leading-none"
-                      href={`/${getToolsSpaPath('json')}`}
+                      href={`/${getToolsSpaPath(DEFAULT_TOOL_ID)}`}
                     >
                       QHelper Tools
                     </BreadcrumbLink>

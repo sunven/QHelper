@@ -9,6 +9,7 @@ test.describe('Extension Popup', () => {
     await expect(popup.getToolButton('timestamp')).toBeVisible();
     await expect(popup.getToolButton('imagebase64')).toBeVisible();
     await expect(popup.getToolButton('web-summary-launch')).toBeVisible();
+    await expect(popup.getToolButton('clear-cookie')).toBeVisible();
   });
 
   test('clicking JSON tool opens new tab', async ({ popupPage, extensionId }) => {
@@ -68,5 +69,28 @@ test.describe('Extension Popup', () => {
       '设置',
     );
     await settingsPage.close();
+  });
+
+  test('asks before running the clear cookie command', async ({ popupPage }) => {
+    const popup = new PopupPage(popupPage);
+
+    await popupPage.evaluate(() => {
+      window.confirm = (message?: string) => {
+        (
+          window as Window & { __qhelperConfirmMessage?: string }
+        ).__qhelperConfirmMessage = message ?? '';
+        return false;
+      };
+    });
+
+    await popup.getToolButton('clear-cookie').click();
+
+    const confirmMessage = await popupPage.evaluate(
+      () =>
+        (window as Window & { __qhelperConfirmMessage?: string })
+          .__qhelperConfirmMessage,
+    );
+
+    expect(confirmMessage).toContain('这会清除浏览器 Cookie');
   });
 });
