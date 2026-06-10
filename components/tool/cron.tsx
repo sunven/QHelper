@@ -17,6 +17,8 @@ interface CronState {
 }
 
 function CronParser() {
+  const expressionInputId = 'cron-expression-input';
+  const expressionErrorId = 'cron-expression-error';
   const [state, setState] = useState<CronState>({
     expression: '0 0 * * *',
     isValid: true,
@@ -132,12 +134,21 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
           </div>
 
           <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
-            <label className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-300">Cron 表达式</label>
+            <label
+              htmlFor={expressionInputId}
+              className="mb-1 block text-sm font-semibold text-slate-700 dark:text-slate-300"
+            >
+              Cron 表达式
+            </label>
             <div className="flex gap-1.5">
               <Input
+                id={expressionInputId}
+                type="text"
                 value={state.expression}
                 onChange={(e) => handleExpressionChange(e.target.value)}
                 placeholder="* * * * *"
+                aria-invalid={!state.isValid}
+                aria-describedby={state.error ? expressionErrorId : undefined}
                 className="flex-1 font-mono text-sm"
               />
               <Button
@@ -150,7 +161,10 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map(d => `  ${d.toLocal
               </Button>
             </div>
             {state.error && (
-              <p className="mt-1.5 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+              <p
+                id={expressionErrorId}
+                className="mt-1.5 flex items-center gap-1 text-xs text-red-600 dark:text-red-400"
+              >
                 <Calendar className="h-3.5 w-3.5" />
                 {state.error}
               </p>

@@ -13,7 +13,7 @@ test.describe('Cron Parser Tool', () => {
   test('parses valid cron expression and shows next runs', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'cron');
 
-    const input = page.locator('input[type="text"]').first();
+    const input = page.getByRole('textbox', { name: 'Cron 表达式' });
     await input.clear();
     await input.fill('0 0 * * *');
 
@@ -25,12 +25,11 @@ test.describe('Cron Parser Tool', () => {
   test('shows error indicator for invalid cron', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'cron');
 
-    const input = page.locator('input[type="text"]').first();
+    const input = page.getByRole('textbox', { name: 'Cron 表达式' });
     await input.clear();
     await input.fill('invalid-cron-xyz!!!');
 
-    const borderInput = page.locator('input[class*="border-red"]');
-    await expect(borderInput).toBeVisible({ timeout: 5000 });
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
 
     await page.close();
   });
@@ -40,7 +39,7 @@ test.describe('Cron Parser Tool', () => {
 
     await page.locator('button').filter({ hasText: '每分钟' }).click();
 
-    const input = page.locator('input[type="text"]').first();
+    const input = page.getByRole('textbox', { name: 'Cron 表达式' });
     await expect(input).toHaveValue('* * * * *');
 
     await page.close();
