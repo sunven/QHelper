@@ -7,9 +7,27 @@ import * as chromeCookies from './cookies';
 
 describe('chrome/cookies', () => {
   const mockCookies = [
-    { name: 'session', value: 'abc123', domain: '.example.com' },
-    { name: 'user', value: 'john', domain: '.example.com' },
-    { name: 'pref', value: 'dark', domain: '.test.com' },
+    {
+      name: 'session',
+      value: 'abc123',
+      domain: '.example.com',
+      path: '/',
+      secure: true,
+    },
+    {
+      name: 'user',
+      value: 'john',
+      domain: '.example.com',
+      path: '/account',
+      secure: false,
+    },
+    {
+      name: 'pref',
+      value: 'dark',
+      domain: '.test.com',
+      path: '/settings',
+      secure: true,
+    },
   ];
 
   const mockChrome = {
@@ -77,9 +95,9 @@ describe('chrome/cookies', () => {
 
       expect(mockChrome.cookies.getAll).toHaveBeenCalled();
       expect(mockChrome.cookies.remove).toHaveBeenCalledTimes(3);
-      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'session', url: 'https://.example.com' });
-      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'user', url: 'https://.example.com' });
-      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'pref', url: 'https://.test.com' });
+      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'session', url: 'https://example.com/' });
+      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'user', url: 'http://example.com/account' });
+      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'pref', url: 'https://test.com/settings' });
     });
 
     it('should handle empty cookie list', async () => {
@@ -93,18 +111,18 @@ describe('chrome/cookies', () => {
 
     it('should handle cookies with different domains correctly', async () => {
       const cookies = [
-        { name: 'c1', value: 'v1', domain: 'example.com' },
-        { name: 'c2', value: 'v2', domain: '.example.com' },
-        { name: 'c3', value: 'v3', domain: '.sub.example.com' },
+        { name: 'c1', value: 'v1', domain: 'example.com', path: '/', secure: true },
+        { name: 'c2', value: 'v2', domain: '.example.com', path: '/nested', secure: true },
+        { name: 'c3', value: 'v3', domain: '.sub.example.com', path: '/prefs', secure: false },
       ];
       mockChrome.cookies.getAll.mockResolvedValue(cookies);
       mockChrome.cookies.remove.mockResolvedValue({});
 
       await chromeCookies.removeAll();
 
-      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'c1', url: 'https://example.com' });
-      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'c2', url: 'https://.example.com' });
-      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'c3', url: 'https://.sub.example.com' });
+      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'c1', url: 'https://example.com/' });
+      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'c2', url: 'https://example.com/nested' });
+      expect(mockChrome.cookies.remove).toHaveBeenCalledWith({ name: 'c3', url: 'http://sub.example.com/prefs' });
     });
   });
 });

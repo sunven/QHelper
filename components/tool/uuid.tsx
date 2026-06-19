@@ -8,6 +8,39 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Copy, RefreshCw, Trash2 } from 'lucide-react';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
 
+type UUIDOptions = {
+  uppercase?: boolean;
+  withoutHyphens?: boolean;
+}
+
+function formatUUID(uuid: string, options: UUIDOptions): string {
+  const value = options.withoutHyphens ? uuid.replace(/-/g, '') : uuid;
+  return options.uppercase ? value.toUpperCase() : value;
+}
+
+function buildUUIDFromRandomBytes(bytes: Uint8Array): string {
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+  const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0'));
+  return `${hex.slice(0, 4).join('')}-${hex.slice(4, 6).join('')}-${hex.slice(6, 8).join('')}-${hex.slice(8, 10).join('')}-${hex.slice(10, 16).join('')}`;
+}
+
+export function generateUUID(options: UUIDOptions = {}): string {
+  if (globalThis.crypto?.randomUUID) {
+    return formatUUID(globalThis.crypto.randomUUID(), options);
+  }
+
+  if (!globalThis.crypto?.getRandomValues) {
+    throw new Error('Web Crypto API is not available');
+  }
+
+  return formatUUID(
+    buildUUIDFromRandomBytes(globalThis.crypto.getRandomValues(new Uint8Array(16))),
+    options,
+  );
+}
+
 export function UUIDGenerator() {
   const [uuids, setUuids] = useState<string[]>(['']);
   const [count, setCount] = useState(1);
@@ -15,29 +48,10 @@ export function UUIDGenerator() {
   const [withoutHyphens, setWithoutHyphens] = useState(false);
 
   /**
-   * 生成 UUID v4
-   */
-  function generateUUID(): string {
-    let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
-
-    uuid = uuid.replace(/[xy]/g, (c) => {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-
-    if (withoutHyphens) {
-      uuid = uuid.replace(/-/g, '');
-    }
-
-    return uppercase ? uuid.toUpperCase() : uuid;
-  }
-
-  /**
    * 生成指定数量的 UUID
    */
   function handleGenerate() {
-    const newUuids = Array.from({ length: count }, () => generateUUID());
+    const newUuids = Array.from({ length: count }, () => generateUUID({ uppercase, withoutHyphens }));
     setUuids(newUuids);
   }
 

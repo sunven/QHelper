@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest'
-import { buildDownloadFileName, mergeInputText, mergeRemoteText, parseMergeInput } from './merge'
+import {
+  MAX_MERGE_REMOTE_TEXT_CONCURRENCY,
+  buildDownloadFileName,
+  mergeInputText,
+  mergeRemoteText,
+  parseMergeInput,
+} from './merge'
 
 describe('parseMergeInput', () => {
   it('trims lines, ignores blanks, and preserves plain URL lines', () => {
@@ -57,6 +63,26 @@ describe('mergeRemoteText', () => {
       'network failed',
     )
     expect(fetcher).toHaveBeenCalledTimes(2)
+  })
+
+  it('limits concurrent remote fetches while preserving output order', async () => {
+    const urls = Array.from({ length: 12 }, (_value, index) => `https://example.com/${index}.js`)
+    let activeFetches = 0
+    let peakFetches = 0
+    const fetcher = vi.fn(async (url: string) => {
+      activeFetches += 1
+      peakFetches = Math.max(peakFetches, activeFetches)
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      activeFetches -= 1
+
+      return `loaded:${url}`
+    })
+
+    await expect(mergeRemoteText(urls, fetcher)).resolves.toBe(
+      urls.map((url) => `loaded:${url}`).join('\n'),
+    )
+    expect(peakFetches).toBeLessThanOrEqual(MAX_MERGE_REMOTE_TEXT_CONCURRENCY)
+    expect(fetcher).toHaveBeenCalledTimes(urls.length)
   })
 })
 

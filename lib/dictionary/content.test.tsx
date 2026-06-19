@@ -123,6 +123,46 @@ describe('dictionary/content', () => {
     })
   })
 
+  it.each([
+    ['empty response', ''],
+    ['invalid JSON', '{bad json'],
+  ])('opens the panel without data for an %s', (_label, response) => {
+    document.body.innerHTML = '<p>hello</p>'
+    const range = document.createRange()
+    const textNode = document.querySelector('p')?.firstChild as Text
+    range.setStart(textNode, 0)
+    range.setEnd(textNode, 5)
+    Object.defineProperty(range, 'getBoundingClientRect', {
+      value: () => ({
+        right: 120,
+        top: 80,
+      }),
+    })
+    mockSelection('hello', range)
+    const runtime = {
+      sendMessage: vi.fn((_message, callback?: (response: unknown) => void) => {
+        callback?.(response)
+      }),
+    }
+
+    installDictionarySelectionLookup(window, document, {
+      runtime,
+      createRoot: () => ({ render: vi.fn(), unmount: vi.fn() }),
+    })
+
+    document.dispatchEvent(new MouseEvent('mouseup'))
+
+    expect(() => ballStore.getSnapshot().onActive()).not.toThrow()
+    expect(panelStore.getSnapshot()).toMatchObject({
+      show: true,
+      x: 120,
+      y: 0,
+      query: 'hello',
+      data: undefined,
+      range,
+    })
+  })
+
   it('closes the panel on outside clicks but not inside the dictionary panel', () => {
     installDictionarySelectionLookup(window, document, {
       createRoot: () => ({ render: vi.fn(), unmount: vi.fn() }),

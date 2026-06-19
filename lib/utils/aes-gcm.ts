@@ -1,4 +1,5 @@
 export const DEFAULT_AES_GCM_ITERATIONS = 210_000
+export const MAX_AES_GCM_ITERATIONS = 1_000_000
 
 const AES_GCM_SALT_BYTES = 16
 const AES_GCM_IV_BYTES = 12
@@ -72,6 +73,7 @@ function isPayload(value: unknown): value is AesGcmPayload {
     candidate.kdf === 'PBKDF2-SHA-256' &&
     Number.isInteger(candidate.iterations) &&
     Number(candidate.iterations) > 0 &&
+    Number(candidate.iterations) <= MAX_AES_GCM_ITERATIONS &&
     typeof candidate.salt === 'string' &&
     typeof candidate.iv === 'string' &&
     typeof candidate.ciphertext === 'string'

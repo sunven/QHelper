@@ -71,7 +71,16 @@ function parseDictionaryData(response: unknown): DictionaryData | undefined {
     return undefined
   }
 
-  return JSON.parse(response) as DictionaryData
+  try {
+    const data = JSON.parse(response) as unknown
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return undefined
+    }
+
+    return data as DictionaryData
+  } catch {
+    return undefined
+  }
 }
 
 export function installDictionarySelectionLookup(

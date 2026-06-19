@@ -15,6 +15,28 @@ interface SvgState {
   optimizedSize: number;
 }
 
+export function optimizeSvgContent(input: string) {
+  const result = optimize(input, {
+    multipass: true,
+    plugins: [
+      {
+        name: 'preset-default',
+        params: {
+          overrides: {
+            cleanupIds: false,
+          },
+        },
+      },
+    ],
+  });
+
+  return {
+    output: result.data,
+    originalSize: new Blob([input]).size,
+    optimizedSize: new Blob([result.data]).size,
+  };
+}
+
 function SvgOptimizer() {
   const [state, setState] = useState<SvgState>({
     input: '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100">\n  <circle cx="50" cy="50" r="40" fill="red" />\n</svg>',
@@ -37,27 +59,14 @@ function SvgOptimizer() {
     }
 
     try {
-      const result = optimize(state.input, {
-        multipass: true,
-        plugins: [
-          {
-            name: 'preset-default',
-            params: {
-              overrides: {
-                removeViewBox: false,
-                cleanupIds: false,
-              },
-            },
-          },
-        ],
-      });
+      const result = optimizeSvgContent(state.input);
 
       setState((prev) => ({
         ...prev,
-        output: result.data,
+        output: result.output,
         error: null,
-        originalSize: new Blob([state.input]).size,
-        optimizedSize: new Blob([result.data]).size,
+        originalSize: result.originalSize,
+        optimizedSize: result.optimizedSize,
       }));
     } catch (err) {
       const message = err instanceof Error ? err.message : '无效的 SVG';

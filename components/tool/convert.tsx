@@ -54,78 +54,79 @@ export function ConvertTool() {
   );
 
   // 执行编解码并添加历史记录
-  function executeEncode(type: EncodeType, encodeFn: () => void) {
-    encodeFn();
-    if (srcText && result) {
-      addHistory(srcText, result, { type });
+  function executeEncode(type: EncodeType, encodeFn: () => string) {
+    const nextResult = encodeFn();
+    setResult(nextResult);
+    if (srcText && nextResult) {
+      addHistory(srcText, nextResult, { type });
     }
   }
 
-  function htmlEscape() {
+  function htmlEscape(): string {
     const div = document.createElement('div');
     div.textContent = srcText;
-    setResult(div.innerHTML);
+    return div.innerHTML;
   }
 
-  function htmlUnescape() {
+  function htmlUnescape(): string {
     const div = document.createElement('div');
     div.innerHTML = srcText;
-    setResult(div.textContent || '');
+    return div.textContent || '';
   }
 
-  function uniEncode() {
+  function uniEncode(): string {
     let str = '';
     for (let i = 0; i < srcText.length; i++) {
       const code = srcText.charCodeAt(i).toString(16);
       str += `\u0000${'0000'.substring(0, 4 - code.length)}${code}`;
     }
-    setResult(str);
+    return str;
   }
 
-  function uniDecode() {
-    setResult(srcText.replace(/\\u([\d\w]{4})/gi, (_match, code) => {
+  function uniDecode(): string {
+    return srcText.replace(/\\u([\d\w]{4})/gi, (_match, code) => {
       return String.fromCharCode(parseInt(code, 16));
-    }));
+    });
   }
 
-  function utf8Encode() {
-    setResult(encodeURIComponent(srcText));
+  function utf8Encode(): string {
+    return encodeURIComponent(srcText);
   }
 
-  function utf8Decode() {
+  function utf8Decode(): string {
     try {
-      setResult(decodeURIComponent(srcText));
+      return decodeURIComponent(srcText);
     } catch {
-      setResult('解码失败，请检查输入');
+      return '解码失败，请检查输入';
     }
   }
 
-  function base64Encode() {
+  function base64Encode(): string {
     try {
-      setResult(encodeUtf8Base64(srcText));
+      return encodeUtf8Base64(srcText);
     } catch {
-      setResult('Base64 编码失败');
+      return 'Base64 编码失败';
     }
   }
 
-  function base64Decode() {
+  function base64Decode(): string {
     try {
-      setResult(decodeUtf8Base64(srcText));
+      return decodeUtf8Base64(srcText);
     } catch {
-      setResult('Base64 解码失败');
+      return 'Base64 解码失败';
     }
   }
 
-  function md5Encode() {
+  function md5Encode(): string {
     try {
-      setResult(md5(srcText));
+      return md5(srcText);
     } catch {
-      setResult('MD5 编码失败');
+      return 'MD5 编码失败';
     }
   }
 
-  function html2js() {
-    setResult(JSON.stringify(srcText));
+  function html2js(): string {
+    return JSON.stringify(srcText);
   }
 
   function handleEncode(type: EncodeType) {

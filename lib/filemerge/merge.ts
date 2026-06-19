@@ -2,6 +2,8 @@ const SCRIPT_SRC_PATTERN = /src=['"](.*)['"]/i
 
 export type TextFetcher = (url: string) => Promise<string>
 
+export const MAX_MERGE_REMOTE_TEXT_CONCURRENCY = 5
+
 export function parseMergeInput(input: string): string[] {
   return input
     .split('\n')
@@ -24,7 +26,20 @@ export async function fetchRemoteText(url: string): Promise<string> {
 }
 
 export async function mergeRemoteText(urls: string[], fetcher: TextFetcher = fetchRemoteText): Promise<string> {
-  const values = await Promise.all(urls.map((url) => fetcher(url)))
+  const values = new Array<string>(urls.length)
+  let nextIndex = 0
+
+  async function worker() {
+    while (nextIndex < urls.length) {
+      const currentIndex = nextIndex
+      nextIndex += 1
+      values[currentIndex] = await fetcher(urls[currentIndex])
+    }
+  }
+
+  const workerCount = Math.min(MAX_MERGE_REMOTE_TEXT_CONCURRENCY, urls.length)
+  await Promise.all(Array.from({ length: workerCount }, () => worker()))
+
   return values.reduce((previous, current) => previous + current + '\n', '').trimEnd()
 }
 

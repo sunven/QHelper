@@ -69,4 +69,20 @@ describe('aes-gcm', () => {
       ),
     ).rejects.toThrow('Invalid AES-GCM payload')
   })
+
+  it('rejects payloads with excessive KDF iterations before decryption', () => {
+    expect(() =>
+      parseAesGcmPayload(
+        JSON.stringify({
+          v: 1,
+          alg: 'AES-GCM',
+          kdf: 'PBKDF2-SHA-256',
+          iterations: 1_000_001,
+          salt: 'AAAAAAAAAAAAAAAAAAAAAA==',
+          iv: 'AAAAAAAAAAAAAAAA',
+          ciphertext: 'AA==',
+        }),
+      ),
+    ).toThrow('Invalid AES-GCM payload')
+  })
 })

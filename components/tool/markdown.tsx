@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { useToolHistory } from '@/hooks/useToolHistory';
 import type { ToolHistoryItem } from '@/types';
 import { ToolPageShell } from '@/components/tool/ToolPageShell';
+import { sanitizeRenderedMarkdown } from '@/lib/web-summary/markdown';
 
 const renderer = new marked.Renderer();
 renderer.code = ({ text, lang }: Tokens.Code) => {
@@ -72,7 +73,7 @@ greet('QHelper');
 
   // 更新 HTML 预览
   useEffect(() => {
-    const html = marked.parse(state.input) as string;
+    const html = sanitizeRenderedMarkdown(marked.parse(state.input) as string);
     setState((prev) => ({ ...prev, html }));
   }, [state.input]);
 

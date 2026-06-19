@@ -13,16 +13,14 @@ test.describe('SVG Optimizer Tool', () => {
   test('optimizes SVG input', async ({ context, extensionId }) => {
     const page = await openToolPage(context, extensionId, 'svgoptimizer');
 
-    const textarea = page.locator('textarea').first();
-    if (await textarea.isVisible()) {
-      const svgInput = '<svg xmlns="http://www.w3.org/2000/svg"><g><!-- comment --><rect width="100" height="100"/></g></svg>';
-      await textarea.fill(svgInput);
+    const textareas = page.locator('textarea');
+    const svgInput = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><g><!-- comment --><rect id="keep-me" width="100" height="100"/></g></svg>';
+    await textareas.first().fill(svgInput);
 
-      const optimizeButton = page.getByRole('button', { name: /优化|压缩/ });
-      if (await optimizeButton.isVisible()) {
-        await optimizeButton.click();
-      }
-    }
+    await expect(textareas.nth(1)).toHaveValue(/<svg/);
+    await expect(textareas.nth(1)).toHaveValue(/viewBox="0 0 100 100"/);
+    await expect(textareas.nth(1)).toHaveValue(/id="keep-me"/);
+    await expect(textareas.nth(1)).not.toHaveValue(/comment/);
 
     await page.close();
   });
