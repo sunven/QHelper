@@ -53,6 +53,9 @@ describe('ToolSideNavigation', () => {
             expect.objectContaining({
               key: 'json',
             }),
+            expect.objectContaining({
+              key: 'context-hub',
+            }),
           ]),
         }),
       ]),

@@ -24,6 +24,22 @@ export const tools: ToolMetadata[] = [
   },
 
   {
+    id: 'context-hub',
+    name: 'Context Hub',
+    nameEn: 'Context Hub',
+    category: ToolCategory.COMMON,
+    icon: 'Sparkle',
+    description: '本地识别开发数据并推荐下一步工具',
+    descriptionEn: 'Detect structured developer data locally and recommend next actions',
+    keywords: ['context', 'hub', '识别', '推荐', 'json', 'url', 'jwt', 'cron'],
+    tags: ['context', 'detect', 'recommend', 'local'],
+    version: '1.0.0',
+    features: [ToolFeature.SINGLE_INPUT, ToolFeature.REAL_TIME],
+    status: ToolStatus.BETA,
+    preserveActivity: false,
+  },
+
+  {
     id: 'text-preview',
     name: '文本预览',
     nameEn: 'Text Preview',

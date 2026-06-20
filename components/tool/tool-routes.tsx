@@ -3,6 +3,7 @@ import { App as AesGcmTool } from '@/components/tool/aes-gcm';
 import { App as BcryptHashTool } from '@/components/tool/bcrypt-hash';
 import { App as CodeBeautifyTool } from '@/components/tool/codebeautify';
 import { App as ColorTransformTool } from '@/components/tool/colorTransform';
+import { App as ContextHubTool } from '@/components/tool/context-hub';
 import { App as ConvertTool } from '@/components/tool/convert';
 import { App as CronTool } from '@/components/tool/cron';
 import { App as Csv2JsonTool } from '@/components/tool/csv2json';
@@ -35,6 +36,7 @@ import {
 
 const componentByToolId: Record<string, ComponentType> = {
   json: JsonTool,
+  'context-hub': ContextHubTool,
   'trans-radix': TransRadixTool,
   convert: ConvertTool,
   codebeautify: CodeBeautifyTool,

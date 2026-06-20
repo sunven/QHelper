@@ -57,6 +57,11 @@ describe('tool-catalog', () => {
               name: 'JSON 格式化',
               path: '/tools/json.html',
             }),
+            expect.objectContaining({
+              key: 'context-hub',
+              name: 'Context Hub',
+              path: '/tools/context-hub.html',
+            }),
           ]),
         }),
       ]),
@@ -75,6 +80,7 @@ describe('tool-catalog', () => {
     expect(directory.entries.map((entry) => entry.id)).toEqual(
       expect.arrayContaining([
         'json',
+        'context-hub',
         'web-summary-launch',
         'bookmarks',
         'clear-cookie',
