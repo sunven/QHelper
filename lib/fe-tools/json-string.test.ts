@@ -120,17 +120,17 @@ describe('fe-tools/json-string', () => {
     })
   })
 
-  it('normalizes Json String settings to enabled by default', () => {
-    expect(normalizeJsonStringSettings(undefined)).toEqual({ enabled: true })
-    expect(normalizeJsonStringSettings({ enabled: false })).toEqual({
-      enabled: false,
+  it('normalizes Json String settings to disabled by default', () => {
+    expect(normalizeJsonStringSettings(undefined)).toEqual({ enabled: false })
+    expect(normalizeJsonStringSettings({ enabled: true })).toEqual({
+      enabled: true,
     })
   })
 
   it('keeps compatible get and set exports on the definition', async () => {
-    await expect(getJsonStringSettings()).resolves.toEqual({ enabled: true })
-    await expect(setJsonStringSettings({ enabled: false })).resolves.toEqual({
-      settings: { enabled: false },
+    await expect(getJsonStringSettings()).resolves.toEqual({ enabled: false })
+    await expect(setJsonStringSettings({ enabled: true })).resolves.toEqual({
+      settings: { enabled: true },
       storageArea: 'sync',
     })
   })

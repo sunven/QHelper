@@ -7,7 +7,7 @@ export type DictionarySettings = {
 }
 
 export const dictionarySettings = defineSetting(DICTIONARY_SETTINGS_STORAGE_KEY, {
-  selectionLookupEnabled: true,
+  selectionLookupEnabled: false,
 })
 
 export const DEFAULT_DICTIONARY_SETTINGS = dictionarySettings.defaults

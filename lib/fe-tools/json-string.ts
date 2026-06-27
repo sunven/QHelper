@@ -7,7 +7,7 @@ export type JsonStringSettings = {
 }
 
 export const jsonStringSettings = defineSetting(JSON_STRING_SETTINGS_STORAGE_KEY, {
-  enabled: true,
+  enabled: false,
 })
 
 export const DEFAULT_JSON_STRING_SETTINGS = jsonStringSettings.defaults

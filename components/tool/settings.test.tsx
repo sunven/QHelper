@@ -19,7 +19,7 @@ const v2exBase64SettingsMocks = vi.hoisted(() => ({
 }))
 
 vi.mock('@/lib/dictionary/settings', () => ({
-  DEFAULT_DICTIONARY_SETTINGS: { selectionLookupEnabled: true },
+  DEFAULT_DICTIONARY_SETTINGS: { selectionLookupEnabled: false },
   getDictionarySettings: dictionarySettingsMocks.getDictionarySettings,
   setDictionarySettings: dictionarySettingsMocks.setDictionarySettings,
   subscribeDictionarySettings:
@@ -27,7 +27,7 @@ vi.mock('@/lib/dictionary/settings', () => ({
 }))
 
 vi.mock('@/lib/fe-tools/json-string', () => ({
-  DEFAULT_JSON_STRING_SETTINGS: { enabled: true },
+  DEFAULT_JSON_STRING_SETTINGS: { enabled: false },
   getJsonStringSettings: jsonStringSettingsMocks.getJsonStringSettings,
   setJsonStringSettings: jsonStringSettingsMocks.setJsonStringSettings,
   subscribeJsonStringSettings:
@@ -52,7 +52,7 @@ describe('SettingsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     dictionarySettingsMocks.getDictionarySettings.mockResolvedValue({
-      selectionLookupEnabled: true,
+      selectionLookupEnabled: false,
     })
     dictionarySettingsMocks.setDictionarySettings.mockImplementation(
       async (nextSettings) => ({
@@ -64,7 +64,7 @@ describe('SettingsPage', () => {
       () => undefined,
     )
     jsonStringSettingsMocks.getJsonStringSettings.mockResolvedValue({
-      enabled: true,
+      enabled: false,
     })
     jsonStringSettingsMocks.setJsonStringSettings.mockImplementation(
       async (nextSettings) => ({
@@ -105,10 +105,10 @@ describe('SettingsPage', () => {
       name: '启用 Json String',
     })
 
-    expect(dictionaryCheckbox).toBeChecked()
-    expect(dictionaryCheckbox).toHaveAccessibleDescription('已启用')
-    expect(jsonStringCheckbox).toBeChecked()
-    expect(jsonStringCheckbox).toHaveAccessibleDescription('已启用')
+    expect(dictionaryCheckbox).not.toBeChecked()
+    expect(dictionaryCheckbox).toHaveAccessibleDescription('已停用')
+    expect(jsonStringCheckbox).not.toBeChecked()
+    expect(jsonStringCheckbox).toHaveAccessibleDescription('已停用')
     expect(
       screen.queryByRole('checkbox', { name: '启用 V2EX Base64' }),
     ).not.toBeInTheDocument()
@@ -127,10 +127,10 @@ describe('SettingsPage', () => {
 
     await waitFor(() => {
       expect(dictionarySettingsMocks.setDictionarySettings).toHaveBeenCalledWith(
-        { selectionLookupEnabled: false },
+        { selectionLookupEnabled: true },
       )
     })
-    expect(checkbox).toHaveAccessibleDescription('已停用')
+    expect(checkbox).toHaveAccessibleDescription('已启用')
   })
 
   it('persists Json String enabled changes', async () => {
@@ -143,15 +143,15 @@ describe('SettingsPage', () => {
 
     await waitFor(() => {
       expect(jsonStringSettingsMocks.setJsonStringSettings).toHaveBeenCalledWith(
-        { enabled: false },
+        { enabled: true },
       )
     })
-    expect(checkbox).toHaveAccessibleDescription('已停用')
+    expect(checkbox).toHaveAccessibleDescription('已启用')
   })
 
   it('shows a local fallback notice when sync save is unavailable', async () => {
     dictionarySettingsMocks.setDictionarySettings.mockResolvedValueOnce({
-      settings: { selectionLookupEnabled: false },
+      settings: { selectionLookupEnabled: true },
       storageArea: 'local',
     })
     render(<SettingsPage />)

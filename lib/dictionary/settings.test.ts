@@ -30,12 +30,12 @@ describe('dictionary/settings', () => {
     })
   })
 
-  it('normalizes dictionary settings to enabled by default', () => {
+  it('normalizes dictionary settings to disabled by default', () => {
     expect(normalizeDictionarySettings(undefined)).toEqual({
-      selectionLookupEnabled: true,
-    })
-    expect(normalizeDictionarySettings({ selectionLookupEnabled: false })).toEqual({
       selectionLookupEnabled: false,
+    })
+    expect(normalizeDictionarySettings({ selectionLookupEnabled: true })).toEqual({
+      selectionLookupEnabled: true,
     })
   })
 
