@@ -1,43 +1,28 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type {
   FileHandleStore,
   LocalFileAccess,
-  TextPreviewFileSystemFileHandle,
 } from '@/lib/text-preview/fileSystemAccessTypes'
 import { getDefaultFileHandleStore } from '@/lib/text-preview/fileHandleStore'
 import { getDefaultLocalFileAccess } from '@/lib/text-preview/localFile'
 import {
-  addFileBackedWorkspaceTabs,
   addWorkspaceTab,
   closeWorkspaceTab,
   createInitialWorkspace,
   getActiveTab,
-  markWorkspaceTabConflict,
-  markWorkspaceTabHandleMissing,
-  markWorkspaceTabPermissionNeeded,
-  markWorkspaceTabSaved,
-  markWorkspaceTabSaveFailed,
-  markWorkspaceTabSaving,
-  reloadFileBackedWorkspaceTab,
   renameWorkspaceTab,
   selectWorkspaceTab,
   updateWorkspaceTabInput,
-  type FileBackedTabInput,
-  type WorkspaceTab,
 } from '@/lib/text-preview/workspace'
+import {
+  createWorkspaceSession,
+  type SaveAllWorkspaceFilesSummary,
+  type WorkspaceSessionStateStore,
+} from '@/lib/text-preview/workspaceSession'
 import {
   createWorkspacePersistence,
   type WorkspacePersistence,
 } from '@/lib/text-preview/workspacePersistence'
-
-type SaveAllSummary = {
-  conflicts: string[]
-  failed: string[]
-  handleMissing: string[]
-  permissionNeeded: string[]
-  saved: string[]
-  skippedClean: string[]
-}
 
 type WorkspaceControllerServices = {
   fileAccess: LocalFileAccess
@@ -59,13 +44,33 @@ export function useWorkspaceController(
         createWorkspacePersistence({ handleStore }),
     }
   })
-  const [workspace, setWorkspace] = useState(() => createInitialWorkspace())
+  const [workspace, setWorkspaceState] = useState(() => createInitialWorkspace())
+  const workspaceRef = useRef(workspace)
+  workspaceRef.current = workspace
+  const stateStore = useMemo<WorkspaceSessionStateStore>(
+    () => ({
+      getWorkspace() {
+        return workspaceRef.current
+      },
+      updateWorkspace(updater) {
+        setWorkspaceState((current) => {
+          const next = updater(current)
+          workspaceRef.current = next
+          return next
+        })
+      },
+    }),
+    [],
+  )
+  const [session] = useState(() =>
+    createWorkspaceSession({
+      ...services,
+      stateStore,
+    }),
+  )
   const [workspaceWarning, setWorkspaceWarning] = useState('')
   const [liveMessage, setLiveMessage] = useState('')
   const [hasLoaded, setHasLoaded] = useState(false)
-  const sessionHandlesRef = useRef(
-    new Map<string, TextPreviewFileSystemFileHandle>(),
-  )
 
   const activeTab = getActiveTab(workspace)
   const fileAccessSupported = services.fileAccess.isSupported()
@@ -74,11 +79,12 @@ export function useWorkspaceController(
     let cancelled = false
 
     async function loadInitialWorkspace() {
-      const result = await services.persistence.loadWorkspaceData()
+      const result = await session.loadInitialWorkspace({
+        shouldApply: () => !cancelled,
+      })
       if (cancelled) {
         return
       }
-      setWorkspace(result.state)
       setWorkspaceWarning(result.warning ?? '')
       setHasLoaded(true)
     }
@@ -88,112 +94,49 @@ export function useWorkspaceController(
     return () => {
       cancelled = true
     }
-  }, [services.persistence])
+  }, [session])
 
   useEffect(() => {
     if (!hasLoaded) {
       return
     }
 
-    const result = services.persistence.saveWorkspaceData(workspace)
+    const result = session.saveWorkspaceData(workspace)
     if (!result.ok) {
       window.setTimeout(() => setWorkspaceWarning(result.warning ?? ''), 0)
     }
-  }, [hasLoaded, services.persistence, workspace])
-
-  async function getHandle(fileId: string) {
-    const sessionHandle = sessionHandlesRef.current.get(fileId)
-    if (sessionHandle) {
-      return sessionHandle
-    }
-
-    const storedHandle = await services.handleStore.get(fileId)
-    if (storedHandle) {
-      sessionHandlesRef.current.set(fileId, storedHandle)
-    }
-    return storedHandle
-  }
-
-  async function saveFileTab(tab: WorkspaceTab, force: boolean) {
-    if (tab.source.kind !== 'local-file') {
-      return 'skipped'
-    }
-
-    const handle = await getHandle(tab.source.fileId)
-    if (!handle) {
-      setWorkspace((state) => markWorkspaceTabHandleMissing(state, tab.id))
-      return 'handle-missing'
-    }
-
-    const textToSave = tab.input
-    setWorkspace((state) => markWorkspaceTabSaving(state, tab.id))
-    const result = await services.fileAccess.saveTextFile({
-      force,
-      handle,
-      text: textToSave,
-      expectedSignature: tab.source.lastKnownSignature,
-    })
-
-    if (result.kind === 'saved') {
-      setWorkspace((state) => {
-        const currentTab = state.tabs.find((candidate) => candidate.id === tab.id)
-        const saved = markWorkspaceTabSaved(state, tab.id, result.signature)
-        if (currentTab && currentTab.input !== textToSave) {
-          return updateWorkspaceTabInput(saved, tab.id, currentTab.input)
-        }
-        return saved
-      })
-      return 'saved'
-    }
-
-    if (result.kind === 'conflict') {
-      setWorkspace((state) =>
-        markWorkspaceTabConflict(state, tab.id, result.diskSignature),
-      )
-      return 'conflict'
-    }
-
-    if (result.kind === 'permission-needed') {
-      setWorkspace((state) => markWorkspaceTabPermissionNeeded(state, tab.id))
-      return 'permission-needed'
-    }
-
-    setWorkspace((state) =>
-      markWorkspaceTabSaveFailed(state, tab.id, result.message),
-    )
-    return 'failed'
-  }
+  }, [hasLoaded, session, workspace])
 
   const actions = {
     addTab() {
-      setWorkspace((state) => addWorkspaceTab(state))
+      stateStore.updateWorkspace((state) => addWorkspaceTab(state))
       setLiveMessage('已新建标签。')
     },
 
     selectTab(tabId: string) {
-      setWorkspace((state) => selectWorkspaceTab(state, tabId))
+      stateStore.updateWorkspace((state) => selectWorkspaceTab(state, tabId))
     },
 
     updateActiveInput(input: string) {
-      setWorkspace((state) =>
+      stateStore.updateWorkspace((state) =>
         updateWorkspaceTabInput(state, getActiveTab(state).id, input),
       )
     },
 
     renameTab(tabId: string, title: string) {
-      setWorkspace((state) => renameWorkspaceTab(state, tabId, title))
+      stateStore.updateWorkspace((state) =>
+        renameWorkspaceTab(state, tabId, title),
+      )
     },
 
     closeTab(tabId: string) {
-      setWorkspace((state) => closeWorkspaceTab(state, tabId))
+      stateStore.updateWorkspace((state) => closeWorkspaceTab(state, tabId))
       setLiveMessage('已删除标签。')
     },
 
     async clearWorkspace() {
-      const result = await services.persistence.clearWorkspaceData()
-      setWorkspace(createInitialWorkspace())
+      const result = await session.clearWorkspace()
       setWorkspaceWarning(result.warning ?? '')
-      sessionHandlesRef.current.clear()
       setLiveMessage(
         result.ok
           ? '已清空本机保存内容和文件授权。'
@@ -202,147 +145,67 @@ export function useWorkspaceController(
     },
 
     async openFiles() {
-      if (!services.fileAccess.isSupported()) {
+      const result = await session.openFiles()
+      if (result.kind === 'unsupported') {
         setWorkspaceWarning(
           '当前浏览器不支持打开并保存本地文件。请使用 Chrome 或 Edge。',
         )
         return
       }
-
-      const result = await services.fileAccess.openTextFiles()
-      if (result.cancelled) {
+      if (result.kind === 'cancelled') {
         return
       }
 
-      const filesToAdd: FileBackedTabInput[] = []
-      const warnings: string[] = []
+      const warnings = [
+        ...result.handleWarnings,
+        ...result.rejected.map((rejected) =>
+          rejected.reason === 'too-large'
+            ? `${rejected.name} 超过 1MB，未打开。`
+            : `${rejected.name} 读取失败，未打开。`,
+        ),
+      ]
 
-      for (const file of result.files) {
-        const storeResult = await services.handleStore.put(
-          file.fileId,
-          file.handle,
-        )
-        sessionHandlesRef.current.set(file.fileId, file.handle)
-        if (!storeResult.ok && storeResult.warning) {
-          warnings.push(storeResult.warning)
-        }
-        filesToAdd.push({
-          fileId: file.fileId,
-          input: file.text,
-          name: file.name,
-          signature: file.signature,
-        })
-      }
-
-      for (const rejected of result.rejected) {
-        if (rejected.reason === 'too-large') {
-          warnings.push(`${rejected.name} 超过 1MB，未打开。`)
-        } else {
-          warnings.push(`${rejected.name} 读取失败，未打开。`)
-        }
-      }
-
-      if (filesToAdd.length > 0) {
-        setWorkspace((state) => addFileBackedWorkspaceTabs(state, filesToAdd))
-        setLiveMessage(`已打开 ${filesToAdd.length} 个文件。`)
+      if (result.openedCount > 0) {
+        setLiveMessage(`已打开 ${result.openedCount} 个文件。`)
       }
 
       setWorkspaceWarning(warnings.join(' '))
     },
 
     async saveActiveFile(force = false) {
-      const tab = getActiveTab(workspace)
-      const result = await saveFileTab(tab, force)
-      if (result === 'saved') {
+      const result = await session.saveActiveFile(force)
+      if (result.kind === 'saved') {
         setLiveMessage('已保存当前文件。')
       }
     },
 
     async saveAllFiles() {
-      const summary: SaveAllSummary = {
-        conflicts: [],
-        failed: [],
-        handleMissing: [],
-        permissionNeeded: [],
-        saved: [],
-        skippedClean: [],
-      }
-
-      for (const tab of workspace.tabs) {
-        if (tab.source.kind !== 'local-file') {
-          continue
-        }
-        if (tab.fileStatus.kind === 'clean') {
-          summary.skippedClean.push(tab.source.name)
-          continue
-        }
-        if (tab.fileStatus.kind === 'conflict') {
-          summary.conflicts.push(tab.source.name)
-          continue
-        }
-
-        const result = await saveFileTab(tab, false)
-        if (result === 'saved') {
-          summary.saved.push(tab.source.name)
-        }
-        if (result === 'permission-needed') {
-          summary.permissionNeeded.push(tab.source.name)
-        }
-        if (result === 'handle-missing') {
-          summary.handleMissing.push(tab.source.name)
-        }
-        if (result === 'conflict') {
-          summary.conflicts.push(tab.source.name)
-        }
-        if (result === 'failed') {
-          summary.failed.push(tab.source.name)
-        }
-      }
-
+      const summary = await session.saveAllFiles()
       const message = formatSaveAllSummary(summary)
       setLiveMessage(message)
       setWorkspaceWarning(message)
     },
 
     async reloadActiveFile() {
-      const tab = getActiveTab(workspace)
-      if (tab.source.kind !== 'local-file') {
-        return
-      }
-
-      const handle = await getHandle(tab.source.fileId)
-      if (!handle) {
-        setWorkspace((state) => markWorkspaceTabHandleMissing(state, tab.id))
-        return
-      }
-
-      const result = await services.fileAccess.reloadTextFile(handle)
+      const result = await session.reloadActiveFile({
+        tooLargeMessage: () => '文件超过 1MB，未重新载入。',
+      })
       if (result.kind === 'reloaded') {
-        setWorkspace((state) =>
-          reloadFileBackedWorkspaceTab(
-            state,
-            tab.id,
-            result.text,
-            result.signature,
-          ),
-        )
         setLiveMessage('已重新载入本地文件。')
         return
       }
 
-      const message =
-        result.kind === 'too-large' ? '文件超过 1MB，未重新载入。' : result.message
-      setWorkspace((state) =>
-        markWorkspaceTabSaveFailed(state, tab.id, message),
-      )
-      setWorkspaceWarning(message)
+      if (result.kind === 'too-large' || result.kind === 'failed') {
+        setWorkspaceWarning(
+          result.kind === 'too-large'
+            ? '文件超过 1MB，未重新载入。'
+            : result.message,
+        )
+      }
     },
 
     downloadActiveFileCopy() {
-      const tab = getActiveTab(workspace)
-      const name =
-        tab.source.kind === 'local-file' ? tab.source.name : `${tab.title}.txt`
-      services.fileAccess.createDownloadFallback(name, tab.input)
+      session.downloadActiveFileCopy()
     },
   }
 
@@ -357,7 +220,7 @@ export function useWorkspaceController(
   }
 }
 
-function formatSaveAllSummary(summary: SaveAllSummary) {
+function formatSaveAllSummary(summary: SaveAllWorkspaceFilesSummary) {
   const parts: string[] = []
 
   if (summary.saved.length > 0) {

@@ -28,6 +28,10 @@ _Avoid_: Sync failure, offline mode, backup
 Device-local information that lets a QHelper tool resume or display prior work on the same browser profile. Persisted Tool Data includes tool state and tool history, but not a **Synced Setting**.
 _Avoid_: Synced data, cloud state, backup
 
+**Text Preview Workspace**:
+The **Persisted Tool Data** for the Text Preview tool. It contains open text tabs, the active tab, each tab's source, and local-file save status; it may reference recoverable local file handles, but it is not a **Tool Setting** or a **Synced Setting**.
+_Avoid_: Text preview cache, editor state, file backup
+
 **Tool Catalog**:
 The source-of-truth collection of QHelper tools and their user-facing identity. It defines tool names, categories, category order, category labels, descriptions, stable icon tokens, and paths for navigation, popup entry points, and tool routes. Ordinary tool paths are derived by the **Tool Catalog** from the tool id unless an entry is explicitly not an ordinary tool page. The **Tool Catalog** does not own React icon modules or visual accent styles; those belong to the surface adapter.
 _Avoid_: Tool registry, navigation config, route map
@@ -77,6 +81,10 @@ Domain expert: "No. Use the Local Setting Fallback so the current device keeps w
 Developer: "Should tool history use the Synced Setting path?"
 
 Domain expert: "No. Tool history is Persisted Tool Data, so it stays device-local."
+
+Developer: "Should the Text Preview Workspace sync across devices?"
+
+Domain expert: "No. It is Persisted Tool Data. The text tabs and local-file handles stay device-local."
 
 Developer: "Where should a new tool's name and path be declared?"
 

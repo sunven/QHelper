@@ -7,12 +7,21 @@ export type V2exBase64Settings = {
 }
 
 export const normalizeV2exBase64Entries = (value: unknown): string[] => {
-  if (!Array.isArray(value)) return []
-  return value.filter((e): e is string => typeof e === 'string').map(e => e.trim()).filter(Boolean)
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .filter((entry): entry is string => typeof entry === 'string')
+    .map((entry) => entry.trim())
+    .filter(Boolean)
 }
 
-export const normalizeV2exBase64Settings = (v: Partial<V2exBase64Settings> | undefined): V2exBase64Settings =>
-  ({ entries: normalizeV2exBase64Entries(v?.entries) })
+export const normalizeV2exBase64Settings = (
+  value: Partial<V2exBase64Settings> | undefined,
+): V2exBase64Settings => ({
+  entries: normalizeV2exBase64Entries(value?.entries),
+})
 
 export const v2exBase64Settings = defineSetting<V2exBase64Settings>(
   V2EX_BASE64_SETTINGS_STORAGE_KEY,

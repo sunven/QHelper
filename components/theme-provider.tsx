@@ -24,19 +24,11 @@ const ThemeProviderContext = React.createContext<
 >(undefined)
 
 function isTheme(value: string | null): value is Theme {
-  if (value === null) {
-    return false
-  }
-
-  return THEME_VALUES.includes(value as Theme)
+  return value !== null && THEME_VALUES.includes(value as Theme)
 }
 
 function getSystemTheme(): ResolvedTheme {
-  if (window.matchMedia(COLOR_SCHEME_QUERY).matches) {
-    return 'dark'
-  }
-
-  return 'light'
+  return window.matchMedia(COLOR_SCHEME_QUERY).matches ? 'dark' : 'light'
 }
 
 function disableTransitionsTemporarily() {
@@ -70,11 +62,19 @@ function isEditableTarget(target: EventTarget | null) {
   const editableParent = target.closest(
     "input, textarea, select, [contenteditable='true']",
   )
-  if (editableParent) {
-    return true
+  return Boolean(editableParent)
+}
+
+function getNextTheme(currentTheme: Theme): ResolvedTheme {
+  if (currentTheme === 'dark') {
+    return 'light'
   }
 
-  return false
+  if (currentTheme === 'light') {
+    return 'dark'
+  }
+
+  return getSystemTheme() === 'dark' ? 'light' : 'dark'
 }
 
 export function ThemeProvider({
@@ -158,14 +158,7 @@ export function ThemeProvider({
       }
 
       setThemeState((currentTheme) => {
-        const nextTheme =
-          currentTheme === 'dark'
-            ? 'light'
-            : currentTheme === 'light'
-              ? 'dark'
-              : getSystemTheme() === 'dark'
-                ? 'light'
-                : 'dark'
+        const nextTheme = getNextTheme(currentTheme)
 
         localStorage.setItem(storageKey, nextTheme)
         return nextTheme

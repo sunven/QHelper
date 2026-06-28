@@ -4,13 +4,13 @@
 export async function getAll(
   details?: chrome.cookies.GetAllDetails | undefined,
 ): Promise<chrome.cookies.Cookie[]> {
-  return await chrome.cookies.getAll(details ?? {});
+  return chrome.cookies.getAll(details ?? {});
 }
 
 export async function remove(
   details: { name: string; url: string },
 ): Promise<chrome.cookies.CookieDetails | null> {
-  return await chrome.cookies.remove(details);
+  return chrome.cookies.remove(details);
 }
 
 function getCookieRemovalUrl(cookie: chrome.cookies.Cookie): string {

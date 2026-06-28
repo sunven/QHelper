@@ -19,6 +19,18 @@ async function writeClipboard(value: string): Promise<void> {
   await navigator.clipboard.writeText(value)
 }
 
+function getCopyButtonLabel(state: CopyState) {
+  if (state === 'copied') {
+    return '已复制'
+  }
+
+  if (state === 'failed') {
+    return '复制失败'
+  }
+
+  return '复制'
+}
+
 export function V2exBase64Overlay({
   entries,
   copyText = writeClipboard,
@@ -200,7 +212,7 @@ export function V2exBase64Overlay({
                         <Copy aria-hidden="true" />
                       )}
                       <span>
-                        {copied ? '已复制' : failed ? '复制失败' : '复制'}
+                        {getCopyButtonLabel(state)}
                       </span>
                     </button>
                   </div>

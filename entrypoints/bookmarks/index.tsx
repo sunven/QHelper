@@ -221,13 +221,7 @@ function BookmarkLinkStatusCell({
   result: BookmarkLinkCheckResult | undefined
   status: BookmarkLinkCheckStatus
 }) {
-  const detail = result
-    ? result.statusCode
-      ? `${statusLabel[status]} ${result.statusCode}`
-      : result.reason
-        ? `${statusLabel[status]}: ${result.reason}`
-        : statusLabel[status]
-    : statusLabel[status]
+  const detail = getBookmarkLinkStatusDetail(result, status)
 
   return (
     <span
@@ -237,6 +231,27 @@ function BookmarkLinkStatusCell({
       <span className="truncate">{detail}</span>
     </span>
   )
+}
+
+function getBookmarkLinkStatusDetail(
+  result: BookmarkLinkCheckResult | undefined,
+  status: BookmarkLinkCheckStatus,
+) {
+  const label = statusLabel[status]
+
+  if (!result) {
+    return label
+  }
+
+  if (result.statusCode) {
+    return `${label} ${result.statusCode}`
+  }
+
+  if (result.reason) {
+    return `${label}: ${result.reason}`
+  }
+
+  return label
 }
 
 function BookmarkCopyButton({
