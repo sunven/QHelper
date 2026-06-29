@@ -72,10 +72,16 @@ export function SettingsPage() {
         <div className="grid gap-4 px-4 py-4 sm:px-5">
           <div className="grid gap-2">
             <Label htmlFor={v2exBase64EntriesId}>可转 Base64 的字符串</Label>
+            <p
+              id={`${v2exBase64EntriesId}-hint`}
+              className="text-xs leading-5 text-slate-500 dark:text-slate-400"
+            >
+              一行一个，空行会自动忽略。
+            </p>
             <Textarea
               id={v2exBase64EntriesId}
               value={v2exBase64.draft}
-              aria-describedby={`${v2exBase64EntriesId}-status`}
+              aria-describedby={`${v2exBase64EntriesId}-hint ${v2exBase64EntriesId}-status`}
               disabled={v2exBase64.disabled}
               placeholder="user@example.com&#10;13800138000"
               className="min-h-28 resize-y font-mono"
