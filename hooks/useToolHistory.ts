@@ -1,30 +1,34 @@
-import { useState, useCallback, useEffect } from 'react';
-import type { HistoryEntry } from '@/types/storage';
-import type { ToolHistoryItem } from '@/types/tool';
+import { useCallback, useEffect, useState } from 'react'
 import {
   getLocalPersistedData,
   getToolStateStorageKey,
   removeLocalPersistedData,
   setLocalPersistedData,
   subscribeLocalPersistedDataKey,
-} from '@/lib/chrome/local-persisted-data';
+} from '@/lib/chrome/local-persisted-data'
+import type { HistoryEntry } from '@/types/storage'
+import type { ToolHistoryItem } from '@/types/tool'
 
 /**
  * 历史记录配置选项
  */
 interface ModernHistoryOptions<TInput, TOutput> {
   /** 最大历史记录条数，默认为 50 */
-  maxHistory?: number;
+  maxHistory?: number
   /** 存储键名前缀，默认为 'history' */
-  storageKey?: string;
+  storageKey?: string
   /** 是否自动记录，默认为 true */
-  autoRecord?: boolean;
+  autoRecord?: boolean
   /** 过滤函数，返回 false 时不记录该条历史 */
-  filter?: (entry: HistoryEntry<TInput, TOutput>) => boolean;
+  filter?: (entry: HistoryEntry<TInput, TOutput>) => boolean
   /** 自定义序列化函数 */
-  serialize?: (entry: HistoryEntry<TInput, TOutput>) => HistoryEntry<unknown, unknown>;
+  serialize?: (
+    entry: HistoryEntry<TInput, TOutput>,
+  ) => HistoryEntry<unknown, unknown>
   /** 自定义反序列化函数 */
-  deserialize?: (entry: HistoryEntry<unknown, unknown>) => HistoryEntry<TInput, TOutput>;
+  deserialize?: (
+    entry: HistoryEntry<unknown, unknown>,
+  ) => HistoryEntry<TInput, TOutput>
 }
 
 /**
@@ -32,46 +36,46 @@ interface ModernHistoryOptions<TInput, TOutput> {
  */
 interface CompatibilityHistoryOptions {
   /** 兼容模式最大历史记录条数配置 */
-  maxSize?: number;
+  maxSize?: number
   /** 兼容模式存储键配置 */
-  key?: string;
+  key?: string
 }
 
-type HistoryOptions<TInput, TOutput> = ModernHistoryOptions<TInput, TOutput> | CompatibilityHistoryOptions;
+type HistoryOptions<TInput, TOutput> =
+  | ModernHistoryOptions<TInput, TOutput>
+  | CompatibilityHistoryOptions
 
 interface HistoryActions<TInput, TOutput> {
-  loading: boolean;
-  addHistory: (input: TInput, output: TOutput, metadata?: Record<string, unknown>) => HistoryEntry<TInput, TOutput>;
-  clearHistory: () => Promise<void>;
-  removeHistory: (id: string) => Promise<void>;
-  searchHistory: (
-    query: string,
-    fields?: ('input' | 'output' | 'metadata')[],
-  ) => HistoryEntry<TInput, TOutput>[];
-  filterByTimeRange: (startTime: number, endTime: number) => HistoryEntry<TInput, TOutput>[];
-  getRecent: (count: number) => HistoryEntry<TInput, TOutput>[];
+  loading: boolean
+  addHistory: (
+    input: TInput,
+    output: TOutput,
+    metadata?: Record<string, unknown>,
+  ) => HistoryEntry<TInput, TOutput>
+  clearHistory: () => Promise<void>
+  removeHistory: (id: string) => Promise<void>
 }
 
 type ModernHistoryReturn<TInput, TOutput> = HistoryActions<TInput, TOutput> & {
-  history: HistoryEntry<TInput, TOutput>[];
+  history: HistoryEntry<TInput, TOutput>[]
   addToHistory: (
     item: TInput | ToolHistoryItem,
     metadata?: Record<string, unknown>,
-  ) => HistoryEntry<TInput, TOutput>;
-};
+  ) => HistoryEntry<TInput, TOutput>
+}
 
 type CompatibilityHistoryReturn<TState> = HistoryActions<TState, TState> & {
-  history: TState[];
+  history: TState[]
   addToHistory: (
     item: TState | ToolHistoryItem,
     metadata?: Record<string, unknown>,
-  ) => HistoryEntry<TState, TState>;
-};
+  ) => HistoryEntry<TState, TState>
+}
 
 function isCompatibilityOptions<TInput, TOutput>(
   options: HistoryOptions<TInput, TOutput>,
 ): options is CompatibilityHistoryOptions {
-  return 'maxSize' in options || 'key' in options;
+  return 'maxSize' in options || 'key' in options
 }
 
 /**
@@ -87,97 +91,100 @@ function isCompatibilityOptions<TInput, TOutput>(
  *
  * @example
  * ```tsx
- * const { history, addHistory, clearHistory, searchHistory } = useToolHistory<string, string>(
+ * const { history, addHistory, clearHistory } = useToolHistory<string, string>(
  *   'json',
  *   { maxHistory: 100 }
  * );
  *
  * // 记录历史
  * addHistory(input, output, { language: 'json' });
- *
- * // 搜索历史
- * const results = searchHistory('my data');
  * ```
  */
 export function useToolHistory<TState = unknown>(
   toolId: string,
   options: CompatibilityHistoryOptions,
-): CompatibilityHistoryReturn<TState>;
+): CompatibilityHistoryReturn<TState>
 export function useToolHistory<TInput = unknown, TOutput = unknown>(
   toolId: string,
   options?: ModernHistoryOptions<TInput, TOutput>,
-): ModernHistoryReturn<TInput, TOutput>;
+): ModernHistoryReturn<TInput, TOutput>
 export function useToolHistory<TInput = unknown, TOutput = unknown>(
   toolId: string,
   options: HistoryOptions<TInput, TOutput> = {},
 ): ModernHistoryReturn<TInput, TOutput> | CompatibilityHistoryReturn<TInput> {
-  const compatibilityMode = isCompatibilityOptions(options);
-  const maxHistory = compatibilityMode ? options.maxSize ?? 50 : options.maxHistory ?? 50;
-  const storageKey = compatibilityMode ? options.key ?? 'history' : options.storageKey ?? 'history';
-  const filter = compatibilityMode ? undefined : options.filter;
-  const serialize = compatibilityMode ? undefined : options.serialize;
-  const deserialize = compatibilityMode ? undefined : options.deserialize;
+  const compatibilityMode = isCompatibilityOptions(options)
+  const maxHistory = compatibilityMode
+    ? (options.maxSize ?? 50)
+    : (options.maxHistory ?? 50)
+  const storageKey = compatibilityMode
+    ? (options.key ?? 'history')
+    : (options.storageKey ?? 'history')
+  const filter = compatibilityMode ? undefined : options.filter
+  const serialize = compatibilityMode ? undefined : options.serialize
+  const deserialize = compatibilityMode ? undefined : options.deserialize
 
-  const fullStorageKey = getToolStateStorageKey(toolId, storageKey);
-  const [history, setHistory] = useState<HistoryEntry<TInput, TOutput>[]>([]);
-  const [loading, setLoading] = useState(true);
+  const fullStorageKey = getToolStateStorageKey(toolId, storageKey)
+  const [history, setHistory] = useState<HistoryEntry<TInput, TOutput>[]>([])
+  const [loading, setLoading] = useState(true)
 
   // 生成历史记录ID
   const generateId = useCallback(() => {
-    return `${toolId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  }, [toolId]);
+    return `${toolId}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  }, [toolId])
 
   // 加载历史记录
   useEffect(() => {
     const loadHistory = async () => {
       try {
-        const stored = await getLocalPersistedData<HistoryEntry<unknown, unknown>[]>(fullStorageKey, []);
+        const stored = await getLocalPersistedData<
+          HistoryEntry<unknown, unknown>[]
+        >(fullStorageKey, [])
         const deserializedHistory = deserialize
           ? stored.map(deserialize)
-          : (stored as HistoryEntry<TInput, TOutput>[]);
+          : (stored as HistoryEntry<TInput, TOutput>[])
 
-        setHistory(deserializedHistory);
+        setHistory(deserializedHistory)
       } catch (error) {
-        console.error(`Failed to load history for ${toolId}:`, error);
-        setHistory([]);
+        console.error(`Failed to load history for ${toolId}:`, error)
+        setHistory([])
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadHistory();
-  }, [toolId, fullStorageKey, deserialize]);
+    loadHistory()
+  }, [toolId, fullStorageKey, deserialize])
 
   // 监听其他标签页的更改
   useEffect(() => {
     const unsubscribe = subscribeLocalPersistedDataKey<
       HistoryEntry<unknown, unknown>[]
     >(fullStorageKey, (value) => {
-      const newHistory = value || [];
+      const newHistory = value || []
       const deserializedHistory = deserialize
         ? newHistory.map(deserialize)
-        : (newHistory as HistoryEntry<TInput, TOutput>[]);
+        : (newHistory as HistoryEntry<TInput, TOutput>[])
 
-      setHistory(deserializedHistory);
-    });
+      setHistory(deserializedHistory)
+    })
 
     return () => {
-      unsubscribe();
-    };
-  }, [fullStorageKey, deserialize]);
+      unsubscribe()
+    }
+  }, [fullStorageKey, deserialize])
 
   // 保存历史记录到 chrome.storage
   const saveHistory = useCallback(
     async (newHistory: HistoryEntry<TInput, TOutput>[]) => {
-      const trimmedHistory = newHistory.slice(-maxHistory);
+      const trimmedHistory = newHistory.slice(-maxHistory)
       const serializedHistory = serialize
         ? trimmedHistory.map(serialize)
-        : (trimmedHistory as HistoryEntry<unknown, unknown>[]);
+        : (trimmedHistory as HistoryEntry<unknown, unknown>[])
 
-      await setLocalPersistedData(fullStorageKey, serializedHistory);
+      await setLocalPersistedData(fullStorageKey, serializedHistory)
     },
     [fullStorageKey, maxHistory, serialize],
-  );
+  )
 
   // 添加历史记录
   const addHistory = useCallback(
@@ -188,94 +195,56 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
         input,
         output,
         metadata,
-      };
+      }
 
       // 检查过滤器
       if (filter && !filter(entry)) {
-        return entry;
+        return entry
       }
 
       setHistory((prev) => {
-        const newHistory = [...prev, entry];
+        const newHistory = [...prev, entry]
         saveHistory(newHistory).catch((error) => {
-          console.error(`Failed to save history for ${toolId}:`, error);
-        });
-        return newHistory.slice(-maxHistory);
-      });
+          console.error(`Failed to save history for ${toolId}:`, error)
+        })
+        return newHistory.slice(-maxHistory)
+      })
 
-      return entry;
+      return entry
     },
     [toolId, generateId, filter, saveHistory, maxHistory],
-  );
+  )
 
   // 清除历史记录
   const clearHistory = useCallback(async () => {
-    setHistory([]);
-    await removeLocalPersistedData(fullStorageKey);
-  }, [fullStorageKey]);
+    setHistory([])
+    await removeLocalPersistedData(fullStorageKey)
+  }, [fullStorageKey])
 
   // 删除单条历史记录
   const removeHistory = useCallback(
     async (id: string) => {
       setHistory((prev) => {
-        const newHistory = prev.filter((entry) => entry.id !== id);
+        const newHistory = prev.filter((entry) => entry.id !== id)
         saveHistory(newHistory).catch((error) => {
-          console.error(`Failed to save history after removal for ${toolId}:`, error);
-        });
-        return newHistory;
-      });
+          console.error(
+            `Failed to save history after removal for ${toolId}:`,
+            error,
+          )
+        })
+        return newHistory
+      })
     },
     [toolId, saveHistory],
-  );
-
-  // 搜索历史记录
-  const searchHistory = useCallback(
-    (query: string, fields: ('input' | 'output' | 'metadata')[] = ['input', 'output']): HistoryEntry<TInput, TOutput>[] => {
-      const lowerQuery = query.toLowerCase();
-
-      return history.filter((entry) => {
-        return fields.some((field) => {
-          const value = entry[field];
-          if (value === null || value === undefined) return false;
-
-          if (typeof value === 'string') {
-            return value.toLowerCase().includes(lowerQuery);
-          }
-
-          if (typeof value === 'object') {
-            return JSON.stringify(value).toLowerCase().includes(lowerQuery);
-          }
-
-          return String(value).toLowerCase().includes(lowerQuery);
-        });
-      });
-    },
-    [history],
-  );
-
-  // 按时间范围过滤
-  const filterByTimeRange = useCallback(
-    (startTime: number, endTime: number): HistoryEntry<TInput, TOutput>[] => {
-      return history.filter((entry) => entry.timestamp >= startTime && entry.timestamp <= endTime);
-    },
-    [history],
-  );
-
-  // 获取最近的 N 条记录
-  const getRecent = useCallback(
-    (count: number): HistoryEntry<TInput, TOutput>[] => {
-      return history.slice(-count);
-    },
-    [history],
-  );
+  )
 
   const addToHistory = useCallback(
     (item: TInput | ToolHistoryItem, metadata?: Record<string, unknown>) => {
-      const snapshot = item as TInput;
-      return addHistory(snapshot, snapshot as unknown as TOutput, metadata);
+      const snapshot = item as TInput
+      return addHistory(snapshot, snapshot as unknown as TOutput, metadata)
     },
     [addHistory],
-  );
+  )
 
   const actions = {
     /** 历史记录列表 */
@@ -289,61 +258,17 @@ export function useToolHistory<TInput = unknown, TOutput = unknown>(
     clearHistory,
     /** 删除单条历史记录 */
     removeHistory,
-    /** 搜索历史记录 */
-    searchHistory,
-    /** 按时间范围过滤 */
-    filterByTimeRange,
-    /** 获取最近的 N 条记录 */
-    getRecent,
-  };
+  }
 
   if (compatibilityMode) {
     return {
       ...actions,
       history: history.map((entry) => entry.input as TInput),
-    } as unknown as CompatibilityHistoryReturn<TInput>;
+    } as unknown as CompatibilityHistoryReturn<TInput>
   }
 
   return {
     ...actions,
     history,
-  } as ModernHistoryReturn<TInput, TOutput>;
-}
-
-/**
- * 历史记录统计 Hook
- *
- * 提供历史记录的统计信息
- *
- * @template TInput - 输入类型
- * @template TOutput - 输出类型
- * @param toolId - 工具ID
- * @returns 统计信息对象
- */
-export function useToolHistoryStats<TInput = unknown, TOutput = unknown>(
-  toolId: string,
-) {
-  const { history, loading } = useToolHistory<TInput, TOutput>(toolId);
-
-  const stats = {
-    /** 总记录数 */
-    totalCount: history.length,
-    /** 今天使用次数 */
-    todayCount: history.filter((entry) => {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      return entry.timestamp >= today.getTime();
-    }).length,
-    /** 本周使用次数 */
-    weekCount: history.filter((entry) => {
-      const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-      return entry.timestamp >= weekAgo;
-    }).length,
-    /** 最早记录时间 */
-    earliestTime: history.length > 0 ? history[0].timestamp : null,
-    /** 最晚记录时间 */
-    latestTime: history.length > 0 ? history[history.length - 1].timestamp : null,
-  };
-
-  return { stats, loading };
+  } as ModernHistoryReturn<TInput, TOutput>
 }

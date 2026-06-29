@@ -460,7 +460,6 @@
 
 ```bash
 pnpm add marked highlight.js
-pnpm add -D @types/marked
 ```
 
 #### 功能需求

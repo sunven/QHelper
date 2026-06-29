@@ -1,10 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react'
 import {
   getLocalPersistedData,
   getToolStateStorageKey,
   setLocalPersistedData,
   subscribeLocalPersistedDataKey,
-} from '@/lib/chrome/local-persisted-data';
+} from '@/lib/chrome/local-persisted-data'
 
 /**
  * 工具状态管理 Hook
@@ -30,105 +30,64 @@ export function useToolState<T>(
   toolId: string,
   key: string,
   initialState: T,
-): [state: T, setState: (value: T | ((prev: T) => T)) => void, loading: boolean] {
-  const storageKey = getToolStateStorageKey(toolId, key);
-  const [state, setState] = useState<T>(initialState);
-  const [loading, setLoading] = useState(true);
+): [
+  state: T,
+  setState: (value: T | ((prev: T) => T)) => void,
+  loading: boolean,
+] {
+  const storageKey = getToolStateStorageKey(toolId, key)
+  const [state, setState] = useState<T>(initialState)
+  const [loading, setLoading] = useState(true)
 
   // 加载初始状态
   useEffect(() => {
     const loadState = async () => {
       try {
-        const storedValue = await getLocalPersistedData<T>(storageKey);
+        const storedValue = await getLocalPersistedData<T>(storageKey)
         if (storedValue !== undefined) {
-          setState(storedValue);
+          setState(storedValue)
         }
       } catch (error) {
-        console.error(`Failed to load state for ${storageKey}:`, error);
+        console.error(`Failed to load state for ${storageKey}:`, error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    loadState();
-  }, [storageKey]);
+    loadState()
+  }, [storageKey])
 
   // 监听其他标签页的更改
   useEffect(() => {
     const unsubscribe = subscribeLocalPersistedDataKey<T>(
       storageKey,
       (newValue) => {
-        setState((newValue ?? initialState) as T);
+        setState((newValue ?? initialState) as T)
       },
-    );
+    )
 
     return () => {
-      unsubscribe();
-    };
-  }, [storageKey, initialState]);
+      unsubscribe()
+    }
+  }, [storageKey, initialState])
 
   // 包装 setState 以自动持久化
   const setStateWithPersistence = useCallback(
     (value: T | ((prev: T) => T)) => {
       setState((prev) => {
-        const newValue = typeof value === 'function' ? (value as (prev: T) => T)(prev) : value;
+        const newValue =
+          typeof value === 'function' ? (value as (prev: T) => T)(prev) : value
 
         // 异步保存到 chrome.storage
         setLocalPersistedData(storageKey, newValue).catch((error) => {
-          console.error(`Failed to save state for ${storageKey}:`, error);
-        });
+          console.error(`Failed to save state for ${storageKey}:`, error)
+        })
 
-        return newValue;
-      });
+        return newValue
+      })
     },
     [storageKey],
-  );
+  )
 
-  return [state, setStateWithPersistence, loading];
-}
-
-/**
- * 工具状态管理 Hook 变体 - 支持自动保存配置
- *
- * @template T - 状态类型
- * @param toolId - 工具ID
- * @param key - 状态键名
- * @param initialState - 初始状态
- * @param options - 配置选项
- * @returns [state, setState, loading] - 状态值、状态设置函数、加载状态
- */
-export function useToolStateWithConfig<T>(
-  toolId: string,
-  key: string,
-  initialState: T,
-  options: {
-    /** 自动保存间隔（毫秒），默认为立即保存 */
-    debounceMs?: number;
-    /** 是否在页面卸载时保存，默认为 true */
-    saveOnUnmount?: boolean;
-  } = {},
-): [state: T, setState: (value: T | ((prev: T) => T)) => void, loading: boolean] {
-  const [state, setState, loading] = useToolState(toolId, key, initialState);
-  const { saveOnUnmount = true } = options;
-
-  // 页面卸载时保存
-  useEffect(() => {
-    if (!saveOnUnmount) return;
-
-    const handleBeforeUnload = () => {
-      setLocalPersistedData(getToolStateStorageKey(toolId, key), state).catch((error) => {
-        console.error(`Failed to save state on unmount for ${toolId}_${key}:`, error);
-      });
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      setLocalPersistedData(getToolStateStorageKey(toolId, key), state).catch(() => {
-        // 静默失败，避免过多错误日志
-      });
-    };
-  }, [toolId, key, state, saveOnUnmount]);
-
-  return [state, setState, loading];
+  return [state, setStateWithPersistence, loading]
 }
