@@ -41,6 +41,9 @@ const mockChrome = {
     get: vi.fn(() => Promise.resolve(undefined)),
     sendMessage: vi.fn(() => Promise.resolve(undefined)),
   },
+  scripting: {
+    executeScript: vi.fn(() => Promise.resolve([])),
+  },
   runtime: {
     sendMessage: vi.fn(() => Promise.resolve(undefined)),
     onMessage: {

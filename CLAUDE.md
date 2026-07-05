@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-QHelper is a Chrome/Chromium browser extension for frontend developers that provides a collection of developer utilities accessible through an extension popup. Each tool opens in a new browser tab.
+QHelper is a Chrome/Chromium browser extension for frontend developers. The popup, tool workspace, side panel, content scripts, and background worker all share one WXT extension build.
 
 ## Tech Stack
 
@@ -15,7 +15,7 @@ QHelper is a Chrome/Chromium browser extension for frontend developers that prov
 - **Extension API:** Chrome Extension Manifest v3
 - **Package Manager:** pnpm
 - **Linting/Formatting:** Biome
-- **Type Checking:** TypeScript 5.9
+- **Type Checking:** TypeScript 6
 
 ## Development Commands
 
@@ -48,63 +48,55 @@ pnpm format
 
 ## Architecture
 
-### WXT Convention-Based Structure
-
-The project follows WXT's entrypoint convention where files in `entrypoints/` automatically become extension pages/scripts:
+### WXT Entrypoints
 
 ```
 entrypoints/
-├── popup/           # Extension popup (main menu)
-├── json/            # JSON formatter/parser with diff support
-├── timestamp/       # Unix timestamp converter
-├── convert/         # String encoding/decoding tools
-├── codebeautify/    # Code beautification tool
-├── uglify/          # JavaScript minifier
-├── imagebase64/     # Image to Base64 converter
-├── colorTransform/  # Color format converter
-├── pictureSplicing/ # Image splicing tool
-├── trans-radix/     # Number base converter
-└── background.ts    # Service worker (replaces background page from v2)
+├── background.ts                 # MV3 service worker and message handlers
+├── popup/                        # extension popup launch surface
+├── tools/                        # shared tools SPA at /tools/<toolId>.html
+├── sidepanel/                    # web summary side panel
+├── json-string-panel/            # DevTools panel for Json String
+├── *.content.ts(x)               # page helpers scoped by match patterns
+├── devtools/                     # DevTools panel registration
+└── sandbox/                      # isolated worker-like execution
 ```
 
-Each tool directory contains:
+Ordinary tools do not live as separate WXT entrypoint directories. They render inside the shared tools SPA.
 
-- `index.html` - HTML shell with `<div id="app"></div>`
-- `index.tsx` - React component mounted to the #app div
-- Component files as needed
+### Tool Catalog And Tools SPA
 
-### Chrome API Abstraction Layer
+The Tool Catalog is the source of truth for tool identity and launch metadata:
 
-All Chrome API interactions are centralized in `lib/chrome/`:
+- `lib/registry/tools.ts` declares ordinary tool metadata.
+- `lib/tool-catalog.ts` derives navigation paths, popup launch entries, build aliases, categories, and ordinary tool ids.
+- `components/tool/tool-routes.tsx` maps catalog tool ids to React tool components.
+- `entrypoints/tools/index.tsx` hosts the SPA with basename `/tools`.
+- `entrypoints/tools/ToolActivityOutlet.tsx` preserves or unmounts visited tools based on each tool's `preserveActivity` flag.
+
+When adding an ordinary tool, update the registry metadata and the component route map together, then update focused catalog/route tests. Do not create a second popup-only tool list.
+
+### Chrome API Boundaries
+
+Prefer wrappers in `lib/chrome/` for reusable Chrome API access:
 
 ```typescript
-// Always use these wrappers instead of raw chrome.* APIs
-import { create } from '@/lib/chrome/tabs';
-import { removeAll } from '@/lib/chrome/cookies';
-import { get, set, remove, clear, onChanged } from '@/lib/chrome/storage';
+import { create } from '@/lib/chrome/tabs'
+import { removeAll } from '@/lib/chrome/cookies'
+import { get, set, remove, clear, onChanged } from '@/lib/chrome/storage'
 ```
 
-Available wrappers:
+Entrypoints may call extension APIs directly when the call is tightly coupled to that surface, such as `chrome.scripting.executeScript` in the side panel or DevTools APIs in `entrypoints/devtools/`.
 
-- `lib/chrome/cookies.ts` - Cookie management (getAll, remove, removeAll)
-- `lib/chrome/storage.ts` - chrome.storage.local wrapper with change listeners
-- `lib/chrome/tabs.ts` - Tab creation and querying
+### Settings And Persisted Data
 
-### Custom React Hooks
+Use `defineSetting(key, defaults)` from `lib/settings.ts` for low-sensitivity synced Tool Settings. It handles sync storage, local fallback, subscriptions, and reset behavior.
 
-Two custom hooks for extension-specific functionality:
+Use local persisted data for captured content, tool history, API credentials, and large local workspaces. Examples:
 
-```typescript
-// Cookie management hook
-import { useChromeCookies } from '@/hooks/useChromeCookies';
-
-const { cookieCount, clearCookies } = useChromeCookies();
-
-// Generic storage hook with change synchronization
-import { useExtensionStorage } from '@/hooks/useExtensionStorage';
-
-const { value, setValue, loading } = useExtensionStorage<T>(key, defaultValue);
-```
+- `lib/chrome/local-persisted-data.ts` for device-local extension storage.
+- `hooks/useToolState.ts` and `hooks/useToolHistory.ts` for tool state/history.
+- `lib/text-preview/workspaceStore.ts` for large pasted text in `window.localStorage`.
 
 ### Path Aliases
 
@@ -112,8 +104,8 @@ TypeScript path alias is configured: `@/*` maps to project root.
 
 ```typescript
 // Use this import style
-import { something } from '@/lib/chrome/storage';
-import { MyComponent } from '@/components/ui/button';
+import { something } from '@/lib/chrome/storage'
+import { MyComponent } from '@/components/ui/button'
 ```
 
 ### UI Component System
@@ -126,9 +118,13 @@ UI components follow shadcn/ui patterns and are located in `components/ui/`:
 
 Global styles are in `index.css` with Tailwind directives and CSS variables.
 
-### Content Scripts
+### Content Scripts And Page Access
 
-The GitHub integration now targets repository root pages on `github.com` and adds a `Zread` button that opens the matching `https://zread.ai/<owner>/<repo>` page. The shipping content-script source lives in `entrypoints/github.content.ts`, which delegates to the shared DOM logic in `lib/github/zread-button.ts`.
+Keep page helpers scoped and user-driven where practical.
+
+- `entrypoints/github.content.ts` delegates GitHub Zread behavior to `lib/github/zread-button.ts`.
+- `entrypoints/dictionary.content.tsx` installs the dictionary controller on matched pages, but the real selection lookup mounts only when the synced Tool Setting is enabled.
+- Web Summary does not use a persistent page content script. The side panel extracts page content with `chrome.scripting.executeScript` after a user-triggered popup/context-menu action.
 
 ## Extension Permissions
 
@@ -136,21 +132,15 @@ From `wxt.config.ts`:
 
 - `cookies` - For clear cookies functionality
 - `tabs` - For tab management
-- `host_permissions: ['<all_urls>']` - For tools that interact with web content
+- `activeTab` and `scripting` - For user-triggered page extraction and page helpers
+- `host_permissions: ['<all_urls>']` - For extension page helpers that still need broad match coverage
 
 ## Code Style (Biome)
 
 - Single quotes for JavaScript
-- Semicolons: "as needed"
+- Semicolons omitted where Biome removes them
 - Space indentation
 - Auto-organize imports enabled
-
-## Tool Categories (Popup Menu)
-
-- **Common:** JSON formatter, Radix conversion
-- **Encoding:** String encode/decode, Code beautify, Uglify
-- **Image:** Base64 converter, Image splicing
-- **Other:** Timestamp converter, Color converter, Clear cookies
 
 ## Agent skills
 

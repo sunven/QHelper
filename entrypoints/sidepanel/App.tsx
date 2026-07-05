@@ -12,6 +12,7 @@ import {
   normalizeWebSummaryConfig,
   validateWebSummaryConfig,
 } from '@/lib/web-summary/config'
+import { extractPageContent } from '@/lib/web-summary/content'
 import { renderSafeMarkdown } from '@/lib/web-summary/markdown'
 import type {
   OpenWebSummaryResponse,
@@ -39,8 +40,8 @@ function isUnsupportedUrl(url?: string | null): boolean {
 
 function getRefreshHint(error: unknown): string {
   const message = getErrorMessage(error)
-  if (/Receiving end does not exist|Could not establish connection/i.test(message)) {
-    return '当前网页还没有注入摘要脚本，请刷新页面后重试。'
+  if (/Cannot access|Extension manifest must request permission|activeTab|Cannot load contents/i.test(message)) {
+    return '无法访问当前网页内容，请确认这是普通网页，并从当前页面重新发起总结。'
   }
 
   return message
@@ -57,6 +58,24 @@ async function getTabById(tabId?: number) {
 
   const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
   return activeTab
+}
+
+async function extractPageContentFromTab(tabId: number): Promise<WebSummaryPageContent> {
+  if (!chrome.scripting?.executeScript) {
+    throw new Error('当前浏览器不支持按需提取网页内容。')
+  }
+
+  const [injectionResult] = await chrome.scripting.executeScript({
+    target: { tabId },
+    func: extractPageContent,
+  })
+  const pageContent = injectionResult?.result
+
+  if (!pageContent) {
+    throw new Error('未能从当前网页提取正文内容。')
+  }
+
+  return pageContent as WebSummaryPageContent
 }
 
 export function App() {
@@ -125,10 +144,7 @@ export function App() {
     setAbortController(controller)
 
     try {
-      const pageContent = await chrome.tabs.sendMessage(
-        targetTab.id,
-        { type: 'WEB_SUMMARY_EXTRACT_PAGE' },
-      ) as WebSummaryPageContent
+      const pageContent = await extractPageContentFromTab(targetTab.id)
 
       setStatusText('正在生成摘要…')
 

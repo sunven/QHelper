@@ -2,9 +2,64 @@
 
 **文档版本：** 1.0
 **日期：** 2026-01-28
-**状态：** 设计阶段
+**状态：** 历史设计文档，顶部快照反映当前实现
 
 ---
+
+## 0. 当前实现快照
+
+本仓库当前实现以 WXT + React tools SPA 为核心。下面的历史章节仍保留为设计背景，但如果与本节冲突，以本节和源码为准。
+
+```
+entrypoints/
+├── background.ts                 # MV3 service worker、context menu、消息处理
+├── popup/                        # popup launch surface，消费 Tool Catalog
+├── tools/                        # 统一工具 SPA：/tools/<toolId>.html
+├── sidepanel/                    # Web Summary side panel
+├── devtools/                     # Json String DevTools panel 注册
+├── json-string-panel/            # Json String 面板 UI
+└── *.content.ts(x)               # 按 match patterns 注入的页面 helper
+
+lib/
+├── registry/tools.ts             # ordinary tool metadata
+├── tool-catalog.ts               # categories、launch entries、aliases、ordinary ids
+├── settings.ts                   # Tool Setting source of truth
+├── chrome/                       # reusable Chrome API wrappers
+├── web-summary/                  # side panel config、AI stream、page extraction
+├── fe-tools/                     # DevTools Json String logic
+└── text-preview/                 # local text workspace and parser
+
+components/tool/
+├── tool-routes.tsx               # tool id -> React component map
+├── ToolWorkspaceShell.tsx        # shared tools SPA shell
+└── */                            # individual tool UIs
+```
+
+### Current Tool Routing
+
+```
+lib/registry/tools.ts
+  -> lib/tool-catalog.ts
+     -> popup launch directory
+     -> tool sidebar categories
+     -> build aliases
+     -> ordinary tool id checks
+  -> components/tool/tool-routes.tsx
+     -> entrypoints/tools/ToolActivityOutlet.tsx
+        -> React Activity preserve/unmount behavior
+```
+
+新增普通工具时，保持 `lib/registry/tools.ts` 和 `components/tool/tool-routes.tsx` 一致，并用 `lib/tool-catalog.test.ts`、`components/tool/tool-routes.test.tsx`、`entrypoints/tools/index.test.tsx` 覆盖路由和目录派生。
+
+### Current Storage Boundaries
+
+- **Tool Setting:** 使用 `defineSetting(key, defaults)` in `lib/settings.ts`。适合低敏、小体积、可同步的用户偏好。
+- **Persisted Tool Data:** 使用 `lib/chrome/local-persisted-data.ts` 或功能自己的本地存储模块。适合捕获内容、历史、凭据、大文本 workspace。
+- **Text Preview Workspace:** 使用 `window.localStorage`，避免把大块粘贴文本放进 `chrome.storage.local` 或 sync。
+
+### Current Page Access
+
+Web Summary 不再使用常驻 `<all_urls>` content script。用户从 popup 或 context menu 发起总结后，side panel 通过 `chrome.scripting.executeScript` 按需提取当前普通网页正文。其他 content scripts 仍应保持 match pattern 尽量窄，或在设置关闭时避免安装实际页面监听器。
 
 ## 1. 架构概览
 

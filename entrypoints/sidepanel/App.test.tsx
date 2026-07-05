@@ -40,14 +40,18 @@ describe('sidepanel/App', () => {
       title: 'Article page',
       url: 'https://example.com/article',
     } as chrome.tabs.Tab)
-    ;(chrome.tabs.sendMessage as any).mockResolvedValue({
-      title: 'Article page',
-      url: 'https://example.com/article',
-      content: 'content',
-      source: 'article',
-      truncated: false,
-      charCount: 7,
-    })
+    ;(chrome.scripting.executeScript as any).mockResolvedValue([
+      {
+        result: {
+          title: 'Article page',
+          url: 'https://example.com/article',
+          content: 'content',
+          source: 'article',
+          truncated: false,
+          charCount: 7,
+        },
+      },
+    ])
     ;(chrome.runtime.sendMessage as any).mockResolvedValue(null)
   })
 
@@ -118,5 +122,61 @@ describe('sidepanel/App', () => {
     expect(await screen.findByRole('heading', { name: '总结' })).toBeVisible()
     expect(screen.getByText('第一条')).toBeVisible()
     expect(screen.queryByText('```markdown')).not.toBeInTheDocument()
+  })
+
+  it('extracts page content with on-demand scripting', async () => {
+    streamWebPageSummary.mockResolvedValue('done')
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByTestId('web-summary-summarize'))
+
+    await waitFor(() => {
+      expect(chrome.scripting.executeScript).toHaveBeenCalledWith({
+        target: { tabId: 1 },
+        func: expect.any(Function),
+      })
+    })
+    expect(chrome.tabs.sendMessage).not.toHaveBeenCalled()
+    expect(streamWebPageSummary).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pageContent: expect.objectContaining({
+          title: 'Article page',
+          content: 'content',
+        }),
+      }),
+    )
+  })
+
+  it('shows a recoverable error when on-demand extraction fails', async () => {
+    ;(chrome.scripting.executeScript as any).mockRejectedValueOnce(
+      new Error('Cannot access contents of url'),
+    )
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByTestId('web-summary-summarize'))
+
+    expect(
+      await screen.findByText('无法访问当前网页内容，请确认这是普通网页，并从当前页面重新发起总结。'),
+    ).toBeVisible()
+    expect(streamWebPageSummary).not.toHaveBeenCalled()
+  })
+
+  it('does not inject into unsupported browser pages', async () => {
+    ;(chrome.tabs.query as any).mockResolvedValue([
+      {
+        id: 1,
+        title: 'Extension page',
+        url: 'chrome://extensions',
+      },
+    ] as chrome.tabs.Tab[])
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByTestId('web-summary-summarize'))
+
+    expect(await screen.findByText('当前页面不是普通网页，无法提取正文内容。')).toBeVisible()
+    expect(chrome.scripting.executeScript).not.toHaveBeenCalled()
   })
 })

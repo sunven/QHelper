@@ -28,14 +28,9 @@ export type WebSummarySidePanelReadyMessage = {
   tabId?: number
 }
 
-export type WebSummaryExtractPageMessage = {
-  type: 'WEB_SUMMARY_EXTRACT_PAGE'
-}
-
 export type WebSummaryMessage =
   | OpenWebSummaryMessage
   | WebSummarySidePanelReadyMessage
-  | WebSummaryExtractPageMessage
 
 export interface OpenWebSummaryResponse {
   ok: boolean
