@@ -20,6 +20,97 @@ test.describe('Bookmarks tool', () => {
     await page.close()
   })
 
+  test('creates bookmark folders from the selected row', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    const parentTitle = `QHelper selected parent ${Date.now()}`
+    const bookmarkTitle = `QHelper selected bookmark ${Date.now()}`
+    const childFolderTitle = `QHelper selected child ${Date.now()}`
+    const manualFolderTitle = `QHelper manual parent ${Date.now()}`
+    let topParentId = ''
+    let testFolderId = ''
+    let manualFolderId = ''
+
+    await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
+
+    try {
+      const created = await page.evaluate(async ({ parentTitle, bookmarkTitle }) => {
+        const root = await chrome.bookmarks.getTree()
+        const parentId = root[0]?.children?.[0]?.id
+
+        if (!parentId) {
+          throw new Error('No writable bookmarks parent found')
+        }
+
+        const folder = await chrome.bookmarks.create({
+          parentId,
+          title: parentTitle,
+        })
+
+        await chrome.bookmarks.create({
+          parentId: folder.id,
+          title: bookmarkTitle,
+          url: 'https://example.com/selected-bookmark',
+        })
+
+        return {
+          folderId: folder.id,
+          parentId,
+        }
+      }, { parentTitle, bookmarkTitle })
+      topParentId = created.parentId
+      testFolderId = created.folderId
+
+      await page.reload()
+      await expect(page.getByRole('columnheader', { name: 'Title' })).toBeVisible()
+
+      await page.getByText(parentTitle).click()
+      await page.getByRole('button', { name: 'Create bookmark folder' }).click()
+      await expect(page.getByLabel('Parent folder')).toHaveValue(testFolderId)
+      await page.getByLabel('Folder name').fill(childFolderTitle)
+      await page.getByRole('button', { name: 'Save folder' }).click()
+      await expect(page.getByText(childFolderTitle)).toBeVisible()
+
+      await expect
+        .poll(() =>
+          page.evaluate(async ({ folderId, title }) => {
+            const children = await chrome.bookmarks.getChildren(folderId)
+            return children.some((child) => !child.url && child.title === title)
+          }, { folderId: testFolderId, title: childFolderTitle }),
+        )
+        .toBe(true)
+
+      await page.getByText(bookmarkTitle).click()
+      await page.getByRole('button', { name: 'Create bookmark folder' }).click()
+      await expect(page.getByLabel('Parent folder')).toHaveValue(testFolderId)
+      await page.getByLabel('Parent folder').selectOption(topParentId)
+      await page.getByLabel('Folder name').fill(manualFolderTitle)
+      await page.getByRole('button', { name: 'Save folder' }).click()
+      await expect(page.getByText(manualFolderTitle)).toBeVisible()
+      await expect
+        .poll(() =>
+          page.evaluate(async ({ folderId, title }) => {
+            const children = await chrome.bookmarks.getChildren(folderId)
+            return children.some((child) => !child.url && child.title === title)
+          }, { folderId: topParentId, title: manualFolderTitle }),
+        )
+        .toBe(true)
+      manualFolderId = await page.evaluate(async ({ folderId, title }) => {
+        const children = await chrome.bookmarks.getChildren(folderId)
+        return children.find((child) => !child.url && child.title === title)?.id ?? ''
+      }, { folderId: topParentId, title: manualFolderTitle })
+    } finally {
+      if (manualFolderId) {
+        await page.evaluate((folderId) => chrome.bookmarks.removeTree(folderId), manualFolderId)
+      }
+
+      if (testFolderId) {
+        await page.evaluate((folderId) => chrome.bookmarks.removeTree(folderId), testFolderId)
+      }
+
+      await page.close()
+    }
+  })
+
   test('keeps long bookmark tables fixed with internal scrolling', async ({ context, extensionId }) => {
     const page = await context.newPage()
     let testFolderId = ''
