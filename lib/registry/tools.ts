@@ -52,14 +52,6 @@ export const tools: ToolMetadata[] = [
   },
 
   {
-    id: 'codebeautify',
-    name: '代码美化',
-    category: ToolCategory.ENCODING,
-    icon: 'MagicWand',
-    description: 'JavaScript/HTML/CSS 代码美化',
-  },
-
-  {
     id: 'uglify',
     name: '代码压缩',
     category: ToolCategory.ENCODING,

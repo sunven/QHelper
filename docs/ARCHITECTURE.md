@@ -484,20 +484,6 @@ export const tools: ToolMetadata[] = [
   },
 
   {
-    id: 'codebeautify',
-    name: '代码美化',
-    nameEn: 'Code Beautify',
-    category: ToolCategory.ENCODING,
-    icon: 'Wand2',
-    description: 'JavaScript/HTML/CSS 代码美化',
-    keywords: ['美化', '格式化', '代码', 'beautify', 'format'],
-    tags: ['code', 'beautify', 'format'],
-    version: '1.0.0',
-    features: ['single_input', 'copy_result', 'export'],
-    status: ToolStatus.STABLE,
-  },
-
-  {
     id: 'uglify',
     name: '代码压缩',
     nameEn: 'Uglify',

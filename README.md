@@ -24,7 +24,6 @@ QHelper 前端助手是一款实用的浏览器扩展，集成了前端开发中
 | 工具 | 功能描述 |
 |------|----------|
 | 字符串编码 | Base64、URL 编码、HTML 实体编码转换 |
-| 代码美化 | 格式化压缩的 JavaScript/HTML/CSS 代码 |
 | 代码压缩 | UglifyJS 压缩 JavaScript 代码 |
 
 ### 图片工具

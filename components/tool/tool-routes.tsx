@@ -1,7 +1,6 @@
 import type { ComponentType } from 'react';
 import { App as AesGcmTool } from '@/components/tool/aes-gcm';
 import { App as BcryptHashTool } from '@/components/tool/bcrypt-hash';
-import { App as CodeBeautifyTool } from '@/components/tool/codebeautify';
 import { App as ColorTransformTool } from '@/components/tool/colorTransform';
 import { App as ContextHubTool } from '@/components/tool/context-hub';
 import { App as ConvertTool } from '@/components/tool/convert';
@@ -39,7 +38,6 @@ const componentByToolId: Record<string, ComponentType> = {
   'context-hub': ContextHubTool,
   'trans-radix': TransRadixTool,
   convert: ConvertTool,
-  codebeautify: CodeBeautifyTool,
   uglify: UglifyTool,
   imagebase64: ImageBase64Tool,
   pictureSplicing: PictureSplicingTool,

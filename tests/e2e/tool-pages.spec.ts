@@ -5,7 +5,6 @@ const toolPages = [
   'json',
   'timestamp',
   'convert',
-  'codebeautify',
   'imagebase64',
   'colorTransform',
   'trans-radix',
