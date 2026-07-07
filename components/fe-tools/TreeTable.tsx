@@ -20,6 +20,8 @@ export type TreeTableProps = {
   className?: string
   expandSignal?: number
   collapseSignal?: number
+  selectedRowId?: string | null
+  onRowSelect?: (item: TreeData) => void
 }
 
 function renderCell(
@@ -38,19 +40,28 @@ function TreeNode({
   level,
   expandedRows,
   setExpandedRows,
+  selectedRowId,
+  onRowSelect,
 }: {
   item: TreeData
   columns: TreeColumn[]
   level: number
   expandedRows: Record<string, boolean>
   setExpandedRows: Dispatch<SetStateAction<Record<string, boolean>>>
+  selectedRowId?: string | null
+  onRowSelect?: (item: TreeData) => void
 }) {
   const hasChildren = Boolean(item.children?.length)
   const isExpanded = expandedRows[item.id] ?? true
+  const isSelected = selectedRowId === item.id
 
   return (
     <>
-      <tr className="border-b border-slate-200 hover:bg-slate-50">
+      <tr
+        className={`border-b border-slate-200 hover:bg-slate-50 ${isSelected ? 'bg-blue-50 hover:bg-blue-50' : ''}`}
+        data-selected={isSelected || undefined}
+        onClick={() => onRowSelect?.(item)}
+      >
         {columns.map((column, index) => (
           <td key={column.key} className="px-2.5 py-1.5 text-xs text-slate-600">
             <div className="flex min-w-0 items-center">
@@ -88,6 +99,8 @@ function TreeNode({
             level={level + 1}
             expandedRows={expandedRows}
             setExpandedRows={setExpandedRows}
+            selectedRowId={selectedRowId}
+            onRowSelect={onRowSelect}
           />
         ))}
     </>
@@ -110,7 +123,15 @@ function collectExpansionState(items: TreeData[] | undefined, expanded: boolean)
   return state
 }
 
-export function TreeTable({ data, columns, className, expandSignal, collapseSignal }: TreeTableProps) {
+export function TreeTable({
+  data,
+  columns,
+  className,
+  expandSignal,
+  collapseSignal,
+  selectedRowId,
+  onRowSelect,
+}: TreeTableProps) {
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
@@ -151,6 +172,8 @@ export function TreeTable({ data, columns, className, expandSignal, collapseSign
               level={0}
               expandedRows={expandedRows}
               setExpandedRows={setExpandedRows}
+              selectedRowId={selectedRowId}
+              onRowSelect={onRowSelect}
             />
           ))}
         </tbody>

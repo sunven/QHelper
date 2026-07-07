@@ -3,13 +3,21 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   Copy,
+  FolderPlus,
   Link,
   Loader2,
   Search,
   Trash2,
   X,
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  type FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import ReactDOM from 'react-dom/client'
 import {
   type TreeData,
@@ -62,6 +70,35 @@ function countTreeNodes(items: TreeData[]): number {
     (total, item) => total + 1 + countTreeNodes(item.children ?? []),
     0,
   )
+}
+
+type BookmarkFolderOption = {
+  id: string
+  label: string
+}
+
+function collectBookmarkFolderOptions(
+  items: TreeData[],
+  parentLabel = '',
+): BookmarkFolderOption[] {
+  return items.flatMap((item) => {
+    if (item.url) {
+      return []
+    }
+
+    const title = String(item.title || 'Untitled folder')
+    const label = parentLabel ? `${parentLabel} / ${title}` : title
+
+    return [
+      { id: item.id, label },
+      ...collectBookmarkFolderOptions(item.children ?? [], label),
+    ]
+  })
+}
+
+async function loadBookmarkTree(): Promise<TreeData[]> {
+  const tree = await chrome.bookmarks.getTree()
+  return (tree[0]?.children ?? []) as unknown as TreeData[]
 }
 
 function removeBookmarkFromTree(items: TreeData[], id: string): TreeData[] {
@@ -463,6 +500,13 @@ function buildColumns(
 function BookmarksTool() {
   const [bookmarks, setBookmarks] = useState<TreeData[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [folderTitle, setFolderTitle] = useState('')
+  const [folderParentId, setFolderParentId] = useState('')
+  const [showCreateFolder, setShowCreateFolder] = useState(false)
+  const [creatingFolder, setCreatingFolder] = useState(false)
+  const [selectedBookmarkId, setSelectedBookmarkId] = useState<string | null>(
+    null,
+  )
   const [expandSignal, setExpandSignal] = useState(0)
   const [collapseSignal, setCollapseSignal] = useState(0)
   const [error, setError] = useState('')
@@ -483,6 +527,10 @@ function BookmarksTool() {
     [filteredBookmarks],
   )
   const totalNodeCount = useMemo(() => countTreeNodes(bookmarks), [bookmarks])
+  const folderOptions = useMemo(
+    () => collectBookmarkFolderOptions(bookmarks),
+    [bookmarks],
+  )
   const linkTargets = useMemo(
     () => collectBookmarkUrlTargets(filteredBookmarks),
     [filteredBookmarks],
@@ -496,6 +544,55 @@ function BookmarksTool() {
     linkStatusSummary.broken +
     linkStatusSummary.error
   const hasSearch = normalizedSearchQuery.length > 0
+  const selectedBookmark = selectedBookmarkId
+    ? findBookmarkInTree(bookmarks, selectedBookmarkId)
+    : undefined
+  const defaultFolderParentId = folderOptions[0]?.id || ''
+  const selectedDefaultFolderParentId = selectedBookmark
+    ? String(selectedBookmark.url ? selectedBookmark.parentId || defaultFolderParentId : selectedBookmark.id)
+    : defaultFolderParentId
+  const selectedFolderParentId = folderParentId || selectedDefaultFolderParentId
+
+  const handleCreateFolder = useCallback(
+    async (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+
+      const title = folderTitle.trim()
+      const parentId = selectedFolderParentId
+
+      if (!title) {
+        setError('Folder name is required')
+        return
+      }
+
+      if (!parentId) {
+        setError('No bookmark folder is available for creating folders')
+        return
+      }
+
+      setCreatingFolder(true)
+      setError('')
+
+      try {
+        await chrome.bookmarks.create({ parentId, title })
+        setBookmarks(await loadBookmarkTree())
+        setFolderTitle('')
+        setFolderParentId('')
+        setSearchQuery('')
+        setShowCreateFolder(false)
+        setExpandSignal((value) => value + 1)
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : 'Failed to create bookmark folder',
+        )
+      } finally {
+        setCreatingFolder(false)
+      }
+    },
+    [folderTitle, selectedFolderParentId],
+  )
 
   const handleDeleteBookmark = useCallback(
     async (item: TreeData) => {
@@ -524,6 +621,9 @@ function BookmarksTool() {
 
         linkCheckRunId.current += 1
         setBookmarks((current) => removeBookmarkFromTree(current, fullItem.id))
+        setSelectedBookmarkId((current) =>
+          current === fullItem.id ? null : current,
+        )
         setLinkCheck((current) => ({
           ...current,
           isChecking: false,
@@ -608,11 +708,10 @@ function BookmarksTool() {
   useEffect(() => {
     let mounted = true
 
-    chrome.bookmarks
-      .getTree()
+    loadBookmarkTree()
       .then((tree) => {
         if (mounted) {
-          setBookmarks((tree[0]?.children ?? []) as unknown as TreeData[])
+          setBookmarks(tree)
         }
       })
       .catch((err) => {
@@ -661,6 +760,16 @@ function BookmarksTool() {
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
+              aria-label="Create bookmark folder"
+              title="Create folder"
+              onClick={() => setShowCreateFolder((value) => !value)}
+              disabled={folderOptions.length === 0}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 disabled:pointer-events-none disabled:opacity-60"
+            >
+              <FolderPlus className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
               aria-label="Check dead links"
               title="Check dead links"
               onClick={() => void handleCheckDeadLinks()}
@@ -707,6 +816,57 @@ function BookmarksTool() {
             </div>
           </div>
         </div>
+        {showCreateFolder && (
+          <form
+            className="flex flex-col gap-2 border-b border-slate-200 bg-slate-50 p-2 md:flex-row md:items-end"
+            onSubmit={(event) => void handleCreateFolder(event)}
+          >
+            <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-medium text-slate-600">
+              Folder name
+              <input
+                type="text"
+                value={folderTitle}
+                onChange={(event) => setFolderTitle(event.target.value)}
+                className="h-8 rounded-md border border-slate-300 bg-white px-2 text-sm font-normal text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+                autoFocus
+              />
+            </label>
+            <label className="flex min-w-0 flex-1 flex-col gap-1 text-xs font-medium text-slate-600">
+              Parent folder
+              <select
+                value={selectedFolderParentId}
+                onChange={(event) => setFolderParentId(event.target.value)}
+                className="h-8 rounded-md border border-slate-300 bg-white px-2 text-sm font-normal text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
+              >
+                {folderOptions.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={creatingFolder}
+                className="inline-flex h-8 items-center justify-center rounded-md bg-slate-900 px-3 text-sm font-medium text-white hover:bg-slate-700 disabled:pointer-events-none disabled:opacity-60"
+              >
+                {creatingFolder ? 'Saving...' : 'Save folder'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCreateFolder(false)
+                  setFolderTitle('')
+                  setFolderParentId('')
+                }}
+                className="inline-flex h-8 items-center justify-center rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
         {hasSearch && filteredBookmarks.length === 0 ? (
           <div className="flex min-h-0 flex-1 items-center justify-center px-4 text-sm text-slate-500">
             No bookmarks match "{normalizedSearchQuery}".
@@ -718,6 +878,11 @@ function BookmarksTool() {
             className="min-h-0 flex-1"
             expandSignal={expandSignal}
             collapseSignal={collapseSignal}
+            selectedRowId={selectedBookmarkId}
+            onRowSelect={(item) => {
+              setSelectedBookmarkId(item.id)
+              setFolderParentId('')
+            }}
           />
         )}
       </section>

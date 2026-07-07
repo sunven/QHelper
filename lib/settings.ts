@@ -24,6 +24,10 @@ function getStorage(area: StorageArea) {
   return undefined
 }
 
+function hasStoredValue(result: Record<string, unknown>, key: string): boolean {
+  return Object.prototype.hasOwnProperty.call(result, key) && result[key] !== undefined
+}
+
 async function getLocal<T>(key: string): Promise<T | undefined> {
   try {
     if (globalThis.chrome?.storage?.local) {
@@ -59,7 +63,7 @@ export function defineSetting<T extends object>(
     if (sync) {
       try {
         const result = await sync.get(key)
-        if (key in result) {
+        if (hasStoredValue(result, key)) {
           const normalized = norm(result[key] as Partial<T>)
           await setLocal(key, normalized)
           return normalized
@@ -69,6 +73,7 @@ export function defineSetting<T extends object>(
         if (local !== undefined) {
           try {
             await sync.set({ [key]: normalized })
+            await setLocal(key, normalized)
           } catch {}
         }
         return normalized
@@ -107,7 +112,30 @@ export function defineSetting<T extends object>(
       }
     } catch {}
 
-    return () => {}
+    if (typeof window === 'undefined') {
+      return () => {}
+    }
+
+    const localStorageHandler = (event: StorageEvent) => {
+      if (event.key !== key || event.newValue === event.oldValue) {
+        return
+      }
+
+      try {
+        listener(
+          norm(
+            event.newValue
+              ? (JSON.parse(event.newValue) as Partial<T>)
+              : undefined,
+          ),
+        )
+      } catch {
+        listener(norm(undefined))
+      }
+    }
+
+    window.addEventListener('storage', localStorageHandler)
+    return () => window.removeEventListener('storage', localStorageHandler)
   }
 
   const reset = () => set(defaults)

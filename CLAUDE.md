@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-QHelper is a Chrome/Chromium browser extension for frontend developers that provides a collection of developer utilities accessible through an extension popup. Each tool opens in a new browser tab.
+QHelper is a Chrome/Chromium browser extension for frontend developers. The popup, tool workspace, side panel, content scripts, and background worker all share one WXT extension build.
 
 ## Tech Stack
 
@@ -15,7 +15,7 @@ QHelper is a Chrome/Chromium browser extension for frontend developers that prov
 - **Extension API:** Chrome Extension Manifest v3
 - **Package Manager:** pnpm
 - **Linting/Formatting:** Biome
-- **Type Checking:** TypeScript 5.9
+- **Type Checking:** TypeScript 6
 
 ## Development Commands
 
@@ -48,9 +48,7 @@ pnpm format
 
 ## Architecture
 
-### WXT Convention-Based Structure
-
-The project follows WXT's entrypoint convention where files in `entrypoints/` automatically become extension pages/scripts:
+### WXT Entrypoints
 
 ```
 entrypoints/
@@ -77,33 +75,22 @@ Each tool directory contains:
 All Chrome API interactions are centralized in `lib/chrome/`:
 
 ```typescript
-// Always use these wrappers instead of raw chrome.* APIs
-import { create } from '@/lib/chrome/tabs';
-import { removeAll } from '@/lib/chrome/cookies';
-import { get, set, remove, clear, onChanged } from '@/lib/chrome/storage';
+import { create } from '@/lib/chrome/tabs'
+import { removeAll } from '@/lib/chrome/cookies'
+import { get, set, remove, clear, onChanged } from '@/lib/chrome/storage'
 ```
 
-Available wrappers:
+Entrypoints may call extension APIs directly when the call is tightly coupled to that surface, such as `chrome.scripting.executeScript` in the side panel or DevTools APIs in `entrypoints/devtools/`.
 
-- `lib/chrome/cookies.ts` - Cookie management (getAll, remove, removeAll)
-- `lib/chrome/storage.ts` - chrome.storage.local wrapper with change listeners
-- `lib/chrome/tabs.ts` - Tab creation and querying
+### Settings And Persisted Data
 
-### Custom React Hooks
+Use `defineSetting(key, defaults)` from `lib/settings.ts` for low-sensitivity synced Tool Settings. It handles sync storage, local fallback, subscriptions, and reset behavior.
 
-Two custom hooks for extension-specific functionality:
+Use local persisted data for captured content, tool history, API credentials, and large local workspaces. Examples:
 
-```typescript
-// Cookie management hook
-import { useChromeCookies } from '@/hooks/useChromeCookies';
-
-const { cookieCount, clearCookies } = useChromeCookies();
-
-// Generic storage hook with change synchronization
-import { useExtensionStorage } from '@/hooks/useExtensionStorage';
-
-const { value, setValue, loading } = useExtensionStorage<T>(key, defaultValue);
-```
+- `lib/chrome/local-persisted-data.ts` for device-local extension storage.
+- `hooks/useToolState.ts` and `hooks/useToolHistory.ts` for tool state/history.
+- `lib/text-preview/workspaceStore.ts` for large pasted text in `window.localStorage`.
 
 ### Path Aliases
 
@@ -111,8 +98,8 @@ TypeScript path alias is configured: `@/*` maps to project root.
 
 ```typescript
 // Use this import style
-import { something } from '@/lib/chrome/storage';
-import { MyComponent } from '@/components/ui/button';
+import { something } from '@/lib/chrome/storage'
+import { MyComponent } from '@/components/ui/button'
 ```
 
 ### UI Component System
@@ -125,9 +112,13 @@ UI components follow shadcn/ui patterns and are located in `components/ui/`:
 
 Global styles are in `index.css` with Tailwind directives and CSS variables.
 
-### Content Scripts
+### Content Scripts And Page Access
 
-The GitHub integration now targets repository root pages on `github.com` and adds a `Zread` button that opens the matching `https://zread.ai/<owner>/<repo>` page. The shipping content-script source lives in `entrypoints/github.content.ts`, which delegates to the shared DOM logic in `lib/github/zread-button.ts`.
+Keep page helpers scoped and user-driven where practical.
+
+- `entrypoints/github.content.ts` delegates GitHub Zread behavior to `lib/github/zread-button.ts`.
+- `entrypoints/dictionary.content.tsx` installs the dictionary controller on matched pages, but the real selection lookup mounts only when the synced Tool Setting is enabled.
+- Web Summary does not use a persistent page content script. The side panel extracts page content with `chrome.scripting.executeScript` after a user-triggered popup/context-menu action.
 
 ## Extension Permissions
 
@@ -135,12 +126,13 @@ From `wxt.config.ts`:
 
 - `cookies` - For clear cookies functionality
 - `tabs` - For tab management
-- `host_permissions: ['<all_urls>']` - For tools that interact with web content
+- `activeTab` and `scripting` - For user-triggered page extraction and page helpers
+- `host_permissions: ['<all_urls>']` - For extension page helpers that still need broad match coverage
 
 ## Code Style (Biome)
 
 - Single quotes for JavaScript
-- Semicolons: "as needed"
+- Semicolons omitted where Biome removes them
 - Space indentation
 - Auto-organize imports enabled
 

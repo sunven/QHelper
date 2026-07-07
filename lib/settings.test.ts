@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  defineSyncedToolSetting,
-  getSyncedSetting,
-  setSyncedSetting,
-  subscribeSyncedSetting,
-} from './synced-settings'
+import { defineSetting } from './settings'
 
 type TestSetting = {
   enabled: boolean
@@ -18,7 +13,7 @@ function normalizeTestSetting(
   }
 }
 
-describe('chrome/synced-settings', () => {
+describe('settings/defineSetting', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(chrome.storage.sync.get).mockImplementation(
@@ -35,17 +30,20 @@ describe('chrome/synced-settings', () => {
     )
   })
 
-  it('reads the sync value when present', async () => {
+  it('reads the sync value when present and mirrors it to local fallback', async () => {
     vi.mocked(chrome.storage.sync.get).mockImplementationOnce(
       () =>
         Promise.resolve({
           testSetting: { enabled: false },
         }) as never,
     )
+    const setting = defineSetting(
+      'testSetting',
+      { enabled: true },
+      normalizeTestSetting,
+    )
 
-    await expect(
-      getSyncedSetting('testSetting', normalizeTestSetting),
-    ).resolves.toEqual({ enabled: false })
+    await expect(setting.get()).resolves.toEqual({ enabled: false })
 
     expect(chrome.storage.local.get).not.toHaveBeenCalled()
     expect(chrome.storage.local.set).toHaveBeenCalledWith({
@@ -61,10 +59,13 @@ describe('chrome/synced-settings', () => {
           testSetting: { enabled: false },
         }) as never,
     )
+    const setting = defineSetting(
+      'testSetting',
+      { enabled: true },
+      normalizeTestSetting,
+    )
 
-    await expect(
-      getSyncedSetting('testSetting', normalizeTestSetting),
-    ).resolves.toEqual({ enabled: false })
+    await expect(setting.get()).resolves.toEqual({ enabled: false })
 
     expect(chrome.storage.sync.set).toHaveBeenCalledWith({
       testSetting: { enabled: false },
@@ -75,7 +76,6 @@ describe('chrome/synced-settings', () => {
   })
 
   it('falls back to the local value when sync read fails', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     vi.mocked(chrome.storage.sync.get).mockRejectedValueOnce(
       new Error('sync unavailable'),
     )
@@ -85,22 +85,24 @@ describe('chrome/synced-settings', () => {
           testSetting: { enabled: false },
         }) as never,
     )
-
-    await expect(
-      getSyncedSetting('testSetting', normalizeTestSetting),
-    ).resolves.toEqual({ enabled: false })
-
-    expect(warn).toHaveBeenCalledWith(
-      'chrome.storage.sync get failed, falling back to local setting:',
-      expect.any(Error),
+    const setting = defineSetting(
+      'testSetting',
+      { enabled: true },
+      normalizeTestSetting,
     )
+
+    await expect(setting.get()).resolves.toEqual({ enabled: false })
   })
 
   it('writes to sync and mirrors to local', async () => {
-    await expect(
-      setSyncedSetting('testSetting', { enabled: false }),
-    ).resolves.toEqual({
-      value: { enabled: false },
+    const setting = defineSetting(
+      'testSetting',
+      { enabled: true },
+      normalizeTestSetting,
+    )
+
+    await expect(setting.set({ enabled: false })).resolves.toEqual({
+      settings: { enabled: false },
       storageArea: 'sync',
     })
 
@@ -113,34 +115,33 @@ describe('chrome/synced-settings', () => {
   })
 
   it('writes to local when sync write fails', async () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
     vi.mocked(chrome.storage.sync.set).mockRejectedValueOnce(
       new Error('sync unavailable'),
     )
+    const setting = defineSetting(
+      'testSetting',
+      { enabled: true },
+      normalizeTestSetting,
+    )
 
-    await expect(
-      setSyncedSetting('testSetting', { enabled: false }),
-    ).resolves.toEqual({
-      value: { enabled: false },
+    await expect(setting.set({ enabled: false })).resolves.toEqual({
+      settings: { enabled: false },
       storageArea: 'local',
     })
 
-    expect(warn).toHaveBeenCalledWith(
-      'chrome.storage.sync set failed, falling back to local setting:',
-      expect.any(Error),
-    )
     expect(chrome.storage.local.set).toHaveBeenCalledWith({
       testSetting: { enabled: false },
     })
   })
 
-  it('subscribes to sync and local changes', () => {
-    const listener = vi.fn()
-    const unsubscribe = subscribeSyncedSetting(
+  it('subscribes to sync and local chrome storage changes', () => {
+    const setting = defineSetting(
       'testSetting',
+      { enabled: true },
       normalizeTestSetting,
-      listener,
     )
+    const listener = vi.fn()
+    const unsubscribe = setting.subscribe(listener)
     const calls = vi.mocked(chrome.storage.onChanged.addListener).mock.calls
     const handleChange = calls[calls.length - 1]?.[0]
 
@@ -161,8 +162,8 @@ describe('chrome/synced-settings', () => {
       'local',
     )
 
-    expect(listener).toHaveBeenNthCalledWith(1, { enabled: false }, 'sync')
-    expect(listener).toHaveBeenNthCalledWith(2, { enabled: true }, 'local')
+    expect(listener).toHaveBeenNthCalledWith(1, { enabled: false })
+    expect(listener).toHaveBeenNthCalledWith(2, { enabled: true })
     expect(chrome.storage.local.set).toHaveBeenCalledWith({
       testSetting: { enabled: false },
     })
@@ -173,45 +174,16 @@ describe('chrome/synced-settings', () => {
     )
   })
 
-  it('defines a synced Tool Setting with get, set, and subscribe', async () => {
-    const setting = defineSyncedToolSetting({
-      key: 'testSetting',
-      defaults: { enabled: true },
-      normalize: normalizeTestSetting,
-    })
-
-    expect(setting).toMatchObject({
-      key: 'testSetting',
-      defaults: { enabled: true },
-    })
-
-    vi.mocked(chrome.storage.sync.get).mockImplementationOnce(
-      () =>
-        Promise.resolve({
-          testSetting: { enabled: false },
-        }) as never,
+  it('resets to defaults through the same save path', async () => {
+    const setting = defineSetting(
+      'testSetting',
+      { enabled: true },
+      normalizeTestSetting,
     )
 
-    await expect(setting.get()).resolves.toEqual({ enabled: false })
-    await expect(setting.set({ enabled: false })).resolves.toEqual({
-      settings: { enabled: false },
+    await expect(setting.reset()).resolves.toEqual({
+      settings: { enabled: true },
       storageArea: 'sync',
     })
-
-    const listener = vi.fn()
-    setting.subscribe(listener)
-    const calls = vi.mocked(chrome.storage.onChanged.addListener).mock.calls
-    const handleChange = calls[calls.length - 1]?.[0]
-
-    handleChange?.(
-      {
-        testSetting: {
-          newValue: { enabled: false },
-        },
-      },
-      'sync',
-    )
-
-    expect(listener).toHaveBeenCalledWith({ enabled: false })
   })
 })
