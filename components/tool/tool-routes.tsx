@@ -20,6 +20,7 @@ import { App as PictureSplicingTool } from '@/components/tool/pictureSplicing';
 import { App as QrCodeTool } from '@/components/tool/qrcode';
 import { App as SvgOptimizerTool } from '@/components/tool/svgoptimizer';
 import { App as TimestampTool } from '@/components/tool/timestamp';
+import { App as TextDiffTool } from '@/components/tool/text-diff';
 import { App as TextPreviewTool } from '@/components/tool/text-preview';
 import { App as TomlTool } from '@/components/tool/toml';
 import { App as TransRadixTool } from '@/components/tool/trans-radix';
@@ -63,6 +64,7 @@ const componentByToolId: Record<string, ComponentType> = {
   colorTransform: ColorTransformTool,
   downloads: DownloadsTool,
   'text-preview': TextPreviewTool,
+  'text-diff': TextDiffTool,
 };
 
 export const toolRoutes: ToolRoute<ComponentType>[] =

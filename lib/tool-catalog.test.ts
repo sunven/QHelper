@@ -40,6 +40,13 @@ describe('tool-catalog', () => {
       key: ToolCategory.COMMON,
       name: TOOL_CATEGORY_LABELS[ToolCategory.COMMON],
     })
+    expect(getToolCatalogTool('text-diff')).toMatchObject({
+      key: 'text-diff',
+      name: '文本 Diff',
+      path: '/tools/text-diff.html',
+      category: ToolCategory.COMMON,
+      icon: 'ArrowsLeftRight',
+    })
     expect(ORDINARY_TOOL_CATALOG_TOOLS.map((tool) => tool.key)).toEqual(
       ORDINARY_TOOL_IDS,
     )

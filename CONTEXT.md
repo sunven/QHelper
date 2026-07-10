@@ -32,6 +32,10 @@ _Avoid_: Synced data, cloud state, backup
 The **Persisted Tool Data** for the Text Preview tool. It contains open text tabs, the active tab, each tab's source, and local-file save status; it may reference recoverable local file handles, but it is not a **Tool Setting** or a **Synced Setting**.
 _Avoid_: Text preview cache, editor state, file backup
 
+**Text Diff Tool**:
+An ordinary QHelper tool that compares two revisions of plain text without interpreting them as structured data. It treats line-ending conventions as equivalent, is not a byte-level file comparison, and is distinct from the structural Diff provided by the JSON tool.
+_Avoid_: JSON Diff, Text Preview
+
 **Tool Catalog**:
 The source-of-truth collection of QHelper tools and their user-facing identity. It defines tool names, categories, category order, category labels, descriptions, stable icon tokens, and paths for navigation, popup entry points, and tool routes. Ordinary tool paths are derived by the **Tool Catalog** from the tool id unless an entry is explicitly not an ordinary tool page. The **Tool Catalog** does not own React icon modules or visual accent styles; those belong to the surface adapter.
 _Avoid_: Tool registry, navigation config, route map

@@ -17,6 +17,14 @@ export const tools: ToolMetadata[] = [
   },
 
   {
+    id: 'text-diff',
+    name: '文本 Diff',
+    category: ToolCategory.COMMON,
+    icon: 'ArrowsLeftRight',
+    description: '实时对比两段纯文本的差异',
+  },
+
+  {
     id: 'context-hub',
     name: 'Context Hub',
     category: ToolCategory.COMMON,
