@@ -22,25 +22,20 @@ test('fills the available workspace height by default', async ({
   extensionId,
 }) => {
   const page = await openToolPage(context, extensionId, 'text-diff')
-  const bottomGap = await page.evaluate(() => {
-    const main = document.querySelector<HTMLElement>(
-      '[data-testid="tool-page-main"]',
-    )
-    const editor = document.querySelector<HTMLElement>(
-      '[aria-label="原始文本"]',
-    )
-    if (!main || !editor) {
-      throw new Error('Text Diff layout was not rendered')
-    }
-    const mainBox = main.getBoundingClientRect()
-    const editorBox = editor.getBoundingClientRect()
-
-    return (
-      mainBox.bottom -
-      Number.parseFloat(getComputedStyle(main).paddingBottom) -
-      editorBox.bottom
-    )
-  })
+  const main = page.getByTestId('tool-page-main')
+  const editor = page.getByRole('textbox', { name: '原始文本' })
+  const [mainBox, editorBox, paddingBottom] = await Promise.all([
+    main.boundingBox(),
+    editor.boundingBox(),
+    main.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).paddingBottom),
+    ),
+  ])
+  if (!mainBox || !editorBox) {
+    throw new Error('Text Diff layout was not rendered')
+  }
+  const bottomGap =
+    mainBox.y + mainBox.height - paddingBottom - editorBox.y - editorBox.height
 
   expect(Math.abs(bottomGap)).toBeLessThanOrEqual(2)
   await page.close()
