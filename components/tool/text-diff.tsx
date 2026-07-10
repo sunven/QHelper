@@ -1,6 +1,6 @@
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { MergeView } from '@codemirror/merge'
-import type { Extension } from '@codemirror/state'
+import { Compartment, type Extension } from '@codemirror/state'
 import {
   drawSelection,
   EditorView,
@@ -79,7 +79,12 @@ export function TextDiffTool() {
     }
 
     let mergeView: MergeView
-    const trackChanges = EditorView.updateListener.of((update) => {
+    const themeMode = new Compartment()
+    const currentThemeMode = () =>
+      EditorView.darkTheme.of(
+        document.documentElement.classList.contains('dark'),
+      )
+    const statusListener = EditorView.updateListener.of((update) => {
       if (!update.docChanged) {
         return
       }
@@ -107,7 +112,8 @@ export function TextDiffTool() {
         doc: '',
         extensions: [
           editorExtensions,
-          trackChanges,
+          statusListener,
+          themeMode.of(currentThemeMode()),
           EditorView.contentAttributes.of({ 'aria-label': '原始文本' }),
         ],
       },
@@ -115,16 +121,27 @@ export function TextDiffTool() {
         doc: '',
         extensions: [
           editorExtensions,
-          trackChanges,
+          statusListener,
+          themeMode.of(currentThemeMode()),
           EditorView.contentAttributes.of({ 'aria-label': '修改后文本' }),
         ],
       },
       parent: host,
     })
     mergeViewRef.current = mergeView
+    const themeObserver = new MutationObserver(() => {
+      const theme = currentThemeMode()
+      mergeView.a.dispatch({ effects: themeMode.reconfigure(theme) })
+      mergeView.b.dispatch({ effects: themeMode.reconfigure(theme) })
+    })
+    themeObserver.observe(document.documentElement, {
+      attributeFilter: ['class'],
+      attributes: true,
+    })
 
     return () => {
       mergeViewRef.current = null
+      themeObserver.disconnect()
       mergeView.destroy()
     }
   }, [])

@@ -1,7 +1,12 @@
+import { EditorView } from '@codemirror/view'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { TextDiffTool } from '@/components/tool/text-diff'
+
+afterEach(() => {
+  document.documentElement.classList.remove('dark')
+})
 
 describe('TextDiffTool', () => {
   it('updates the visible status as the user edits both texts', async () => {
@@ -50,6 +55,26 @@ describe('TextDiffTool', () => {
 
     await waitFor(() => {
       expect(screen.getByText('等待输入')).toBeVisible()
+    })
+  })
+
+  it('adapts both editors when the color theme changes', async () => {
+    render(<TextDiffTool />)
+
+    const original = await screen.findByRole('textbox', {
+      name: '原始文本',
+    })
+    const modified = screen.getByRole('textbox', { name: '修改后文本' })
+
+    document.documentElement.classList.add('dark')
+
+    await waitFor(() => {
+      expect(
+        EditorView.findFromDOM(original)?.state.facet(EditorView.darkTheme),
+      ).toBe(true)
+      expect(
+        EditorView.findFromDOM(modified)?.state.facet(EditorView.darkTheme),
+      ).toBe(true)
     })
   })
 })
