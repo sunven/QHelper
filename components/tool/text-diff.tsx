@@ -249,7 +249,7 @@ export function TextDiffTool() {
         <div className="relative min-h-0 flex-1">
           <div
             ref={editorHostRef}
-            className="h-full overflow-hidden [&_.cm-mergeView]:h-full [&_.cm-mergeViewEditors]:min-h-full"
+            className="h-full overflow-hidden [&_.cm-mergeView]:h-full [&_.cm-mergeView]:w-full [&_.cm-mergeViewEditors]:min-h-full [&_.cm-mergeViewEditor]:min-w-0"
             data-testid="text-diff-editor"
           />
         </div>
