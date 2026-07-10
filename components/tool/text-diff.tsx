@@ -25,7 +25,6 @@ const STATUS_TEXT: Record<DiffStatus, string> = {
 
 const editorTheme = EditorView.theme({
   '&': {
-    height: '100%',
     minWidth: '0',
     color: 'var(--text)',
     backgroundColor: 'transparent',
@@ -34,7 +33,11 @@ const editorTheme = EditorView.theme({
   '&.cm-merge-b': {
     borderLeft: '1px solid var(--border)',
   },
+  '.cm-mergeView .cm-mergeViewEditor &': {
+    height: '100% !important',
+  },
   '.cm-scroller': {
+    minHeight: '100%',
     fontFamily:
       "'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
   },

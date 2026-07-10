@@ -17,6 +17,35 @@ async function fillEditor(
   await page.keyboard.insertText(value)
 }
 
+test('fills the available workspace height by default', async ({
+  context,
+  extensionId,
+}) => {
+  const page = await openToolPage(context, extensionId, 'text-diff')
+  const bottomGap = await page.evaluate(() => {
+    const main = document.querySelector<HTMLElement>(
+      '[data-testid="tool-page-main"]',
+    )
+    const editor = document.querySelector<HTMLElement>(
+      '[aria-label="原始文本"]',
+    )
+    if (!main || !editor) {
+      throw new Error('Text Diff layout was not rendered')
+    }
+    const mainBox = main.getBoundingClientRect()
+    const editorBox = editor.getBoundingClientRect()
+
+    return (
+      mainBox.bottom -
+      Number.parseFloat(getComputedStyle(main).paddingBottom) -
+      editorBox.bottom
+    )
+  })
+
+  expect(Math.abs(bottomGap)).toBeLessThanOrEqual(2)
+  await page.close()
+})
+
 test('compares, swaps, and clears text', async ({ context, extensionId }) => {
   const page = await openToolPage(context, extensionId, 'text-diff')
   const pageErrors: string[] = []
