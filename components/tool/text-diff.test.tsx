@@ -58,6 +58,51 @@ describe('TextDiffTool', () => {
     })
   })
 
+  it('moves to the previous and next changed chunks', async () => {
+    const user = userEvent.setup()
+    render(<TextDiffTool />)
+
+    const original = await screen.findByRole('textbox', {
+      name: '原始文本',
+    })
+    const modified = screen.getByRole('textbox', { name: '修改后文本' })
+    const previous = screen.getByRole('button', { name: '上一个差异' })
+    const next = screen.getByRole('button', { name: '下一个差异' })
+    const unchanged = Array.from({ length: 10 }, (_, index) => `keep${index}`)
+    const originalText = ['same', 'first', ...unchanged, 'second'].join('\n')
+    const modifiedText = ['same', 'FIRST', ...unchanged, 'SECOND'].join('\n')
+
+    expect(previous).toBeDisabled()
+    expect(next).toBeDisabled()
+
+    await user.type(original, originalText.split('\n').join('{Enter}'))
+    await user.type(modified, modifiedText.split('\n').join('{Enter}'))
+    await waitFor(() => {
+      expect(previous).toBeEnabled()
+      expect(next).toBeEnabled()
+    })
+
+    const originalView = EditorView.findFromDOM(original)
+    if (!originalView) {
+      throw new Error('Original editor was not rendered')
+    }
+
+    await user.click(previous)
+    expect(originalView.state.selection.main.head).toBe(
+      originalText.indexOf('first'),
+    )
+
+    await user.click(previous)
+    expect(originalView.state.selection.main.head).toBe(
+      originalText.indexOf('second'),
+    )
+
+    await user.click(next)
+    expect(originalView.state.selection.main.head).toBe(
+      originalText.indexOf('first'),
+    )
+  })
+
   it('adapts both editors when the color theme changes', async () => {
     render(<TextDiffTool />)
 

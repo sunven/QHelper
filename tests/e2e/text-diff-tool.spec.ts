@@ -45,12 +45,20 @@ test('compares, swaps, and clears text', async ({ context, extensionId }) => {
   const page = await openToolPage(context, extensionId, 'text-diff')
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
+  const previous = page.getByRole('button', { name: '上一个差异' })
+  const next = page.getByRole('button', { name: '下一个差异' })
 
   await expect(page.getByText('等待输入', { exact: true })).toBeVisible()
+  await expect(previous).toBeDisabled()
+  await expect(next).toBeDisabled()
 
   await fillEditor(page, 'original', 'alpha\nbeta')
   await fillEditor(page, 'modified', 'alpha\ngamma')
   await expect(page.getByText('存在差异', { exact: true })).toBeVisible()
+  await expect(previous).toBeEnabled()
+  await expect(next).toBeEnabled()
+  await previous.click()
+  await next.click()
   expect(pageErrors, 'after editing').toEqual([])
 
   await page.getByRole('button', { name: '交换文本' }).click()

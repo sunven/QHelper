@@ -1,5 +1,5 @@
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
-import { MergeView } from '@codemirror/merge'
+import { goToNextChunk, goToPreviousChunk, MergeView } from '@codemirror/merge'
 import { Compartment, type Extension } from '@codemirror/state'
 import {
   drawSelection,
@@ -7,7 +7,13 @@ import {
   keymap,
   lineNumbers,
 } from '@codemirror/view'
-import { ArrowLeftRight, ArrowRight, Trash2 } from 'lucide-react'
+import {
+  ArrowLeftRight,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+  Trash2,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
@@ -173,6 +179,13 @@ export function TextDiffTool() {
     replaceBoth('', '')
   }
 
+  function moveToDifference(command: typeof goToNextChunk) {
+    const mergeView = mergeViewRef.current
+    if (mergeView) {
+      command(mergeView.a)
+    }
+  }
+
   return (
     <ToolPageShell toolId="text-diff" className="h-full">
       <section className="flex h-full min-h-[32rem] flex-col overflow-hidden border border-border bg-background">
@@ -186,6 +199,28 @@ export function TextDiffTool() {
             <Badge aria-live="polite" variant="outline">
               {STATUS_TEXT[status]}
             </Badge>
+            <Button
+              aria-label="上一个差异"
+              disabled={status !== 'different'}
+              onClick={() => moveToDifference(goToPreviousChunk)}
+              size="icon-sm"
+              title="上一个差异"
+              type="button"
+              variant="outline"
+            >
+              <ChevronUp aria-hidden />
+            </Button>
+            <Button
+              aria-label="下一个差异"
+              disabled={status !== 'different'}
+              onClick={() => moveToDifference(goToNextChunk)}
+              size="icon-sm"
+              title="下一个差异"
+              type="button"
+              variant="outline"
+            >
+              <ChevronDown aria-hidden />
+            </Button>
             <Button
               aria-label="交换文本"
               disabled={status === 'empty'}
