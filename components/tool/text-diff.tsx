@@ -50,11 +50,15 @@ export function TextDiffTool() {
 
     void (async () => {
       try {
-        const { default: EditorWorker } = await import(
-          'monaco-editor/esm/vs/editor/editor.worker?worker'
-        )
-        self.MonacoEnvironment = {
-          getWorker: () => new EditorWorker(),
+        // ponytail: Vite serves dev workers from localhost, which Chrome 150
+        // kills inside extension renderers; Monaco falls back to the main thread.
+        if (import.meta.env.PROD) {
+          const { default: EditorWorker } = await import(
+            'monaco-editor/esm/vs/editor/editor.worker?worker'
+          )
+          self.MonacoEnvironment = {
+            getWorker: () => new EditorWorker(),
+          }
         }
 
         const monaco = await import(
