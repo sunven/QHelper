@@ -61,6 +61,7 @@ test('compares, navigates, swaps, and clears text', async ({
   await expect(previous).toBeEnabled()
   await expect(next).toBeEnabled()
   await previous.click()
+  await expect(page.getByRole('textbox', { name: '原始文本' })).toBeFocused()
   await next.click()
   expect(pageErrors, 'after editing').toEqual([])
 

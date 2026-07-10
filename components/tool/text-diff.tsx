@@ -183,6 +183,7 @@ export function TextDiffTool() {
     const mergeView = mergeViewRef.current
     if (mergeView) {
       command(mergeView.a)
+      mergeView.a.focus()
     }
   }
 

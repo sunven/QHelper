@@ -88,6 +88,7 @@ describe('TextDiffTool', () => {
     }
 
     await user.click(previous)
+    expect(original).toHaveFocus()
     expect(originalView.state.selection.main.head).toBe(
       originalText.indexOf('first'),
     )
