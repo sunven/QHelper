@@ -33,7 +33,7 @@ The **Persisted Tool Data** for the Text Preview tool. It contains open text tab
 _Avoid_: Text preview cache, editor state, file backup
 
 **Text Diff Tool**:
-An ordinary QHelper tool that compares two revisions of plain text without interpreting them as structured data. It treats line-ending conventions as equivalent, is not a byte-level file comparison, and is distinct from the structural Diff provided by the JSON tool.
+An ordinary QHelper tool for interactively comparing two revisions of plain text without interpreting them as structured data. It is intended for ordinary pasted text rather than very large files, treats line-ending conventions as equivalent, is not a byte-level file comparison, and is distinct from the structural Diff provided by the JSON tool.
 _Avoid_: JSON Diff, Text Preview
 
 **Tool Catalog**:

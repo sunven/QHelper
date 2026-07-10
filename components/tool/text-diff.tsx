@@ -1,43 +1,76 @@
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
+import { MergeView } from '@codemirror/merge'
+import type { Extension } from '@codemirror/state'
+import {
+  drawSelection,
+  EditorView,
+  keymap,
+  lineNumbers,
+} from '@codemirror/view'
+import { ArrowLeftRight, ArrowRight, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowLeftRight, ArrowRight, Trash2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
 
-type DiffStatus = 'loading' | 'empty' | 'comparing' | 'same' | 'different'
+type DiffStatus = 'empty' | 'comparing' | 'same' | 'different'
 
 const STATUS_TEXT: Record<DiffStatus, string> = {
-  loading: '加载中',
   empty: '等待输入',
   comparing: '比较中',
   same: '无差异',
   different: '存在差异',
 }
 
-function replaceText(
-  model: import('monaco-editor').editor.ITextModel,
-  value: string,
-) {
-  model.pushEditOperations(
-    null,
-    [{ range: model.getFullModelRange(), text: value }],
-    () => null,
-  )
+const editorTheme = EditorView.theme({
+  '&': {
+    height: '100%',
+    minWidth: '0',
+    color: 'var(--text)',
+    backgroundColor: 'transparent',
+    fontSize: '13px',
+  },
+  '&.cm-merge-b': {
+    borderLeft: '1px solid var(--border)',
+  },
+  '.cm-scroller': {
+    fontFamily:
+      "'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  },
+  '.cm-content': {
+    minHeight: '100%',
+    padding: '8px 0',
+  },
+  '.cm-gutters': {
+    borderRight: '1px solid var(--border)',
+    backgroundColor: 'var(--surface-soft)',
+    color: 'var(--text-muted)',
+  },
+  '&.cm-focused': {
+    outline: '1px solid var(--ring)',
+    outlineOffset: '-1px',
+  },
+})
+
+const editorExtensions: Extension = [
+  lineNumbers(),
+  history(),
+  drawSelection(),
+  keymap.of([...defaultKeymap, ...historyKeymap]),
+  editorTheme,
+]
+
+function replaceText(view: EditorView, value: string) {
+  view.dispatch({
+    changes: { from: 0, to: view.state.doc.length, insert: value },
+  })
 }
 
 export function TextDiffTool() {
   const editorHostRef = useRef<HTMLDivElement>(null)
-  const diffEditorRef = useRef<
-    import('monaco-editor').editor.IStandaloneDiffEditor | null
-  >(null)
-  const modelsRef = useRef<{
-    original: import('monaco-editor').editor.ITextModel
-    modified: import('monaco-editor').editor.ITextModel
-  } | null>(null)
-  const [status, setStatus] = useState<DiffStatus>('loading')
-  const [loadError, setLoadError] = useState(false)
+  const mergeViewRef = useRef<MergeView | null>(null)
+  const [status, setStatus] = useState<DiffStatus>('empty')
 
   useEffect(() => {
     const host = editorHostRef.current
@@ -45,138 +78,78 @@ export function TextDiffTool() {
       return
     }
 
-    let disposed = false
-    let disposeEditor: (() => void) | undefined
+    let mergeView: MergeView
+    const trackChanges = EditorView.updateListener.of((update) => {
+      if (!update.docChanged) {
+        return
+      }
 
-    void (async () => {
-      try {
-        // ponytail: Vite serves dev workers from localhost, which Chrome 150
-        // kills inside extension renderers; Monaco falls back to the main thread.
-        if (import.meta.env.PROD) {
-          const { default: EditorWorker } = await import(
-            'monaco-editor/esm/vs/editor/editor.worker?worker'
-          )
-          self.MonacoEnvironment = {
-            getWorker: () => new EditorWorker(),
-          }
-        }
-
-        const monaco = await import(
-          'monaco-editor/esm/vs/editor/edcore.main.js'
-        )
-        if (disposed) {
+      setStatus('comparing')
+      queueMicrotask(() => {
+        if (mergeViewRef.current !== mergeView) {
           return
         }
 
-        const originalModel = monaco.editor.createModel('', 'plaintext')
-        const modifiedModel = monaco.editor.createModel('', 'plaintext')
-        modelsRef.current = {
-          original: originalModel,
-          modified: modifiedModel,
-        }
-        const diffEditor = monaco.editor.createDiffEditor(host, {
-          automaticLayout: true,
-          diffWordWrap: 'off',
-          ignoreTrimWhitespace: false,
-          minimap: { enabled: false },
-          modifiedAriaLabel: '修改后文本',
-          originalAriaLabel: '原始文本',
-          originalEditable: true,
-          renderSideBySide: true,
-          scrollBeyondLastLine: false,
-          useInlineViewWhenSpaceIsLimited: true,
-          wordWrap: 'off',
-        })
-        diffEditorRef.current = diffEditor
-
-        diffEditor.setModel({
-          original: originalModel,
-          modified: modifiedModel,
-        })
-
-        const updateStatus = () => {
-          if (!originalModel.getValue() && !modifiedModel.getValue()) {
-            setStatus('empty')
-            return
-          }
-
-          const changes = diffEditor.getLineChanges()
-          setStatus(changes?.length ? 'different' : 'same')
-        }
-        const contentSubscriptions = [originalModel, modifiedModel].map(
-          (model) => model.onDidChangeContent(() => setStatus('comparing')),
+        const original = mergeView.a.state.doc
+        const modified = mergeView.b.state.doc
+        setStatus(
+          original.length === 0 && modified.length === 0
+            ? 'empty'
+            : original.eq(modified)
+              ? 'same'
+              : 'different',
         )
-        const diffSubscription = diffEditor.onDidUpdateDiff(updateStatus)
-        const applyTheme = () => {
-          monaco.editor.setTheme(
-            document.documentElement.classList.contains('dark')
-              ? 'vs-dark'
-              : 'vs',
-          )
-        }
-        const themeObserver = new MutationObserver(applyTheme)
-        themeObserver.observe(document.documentElement, {
-          attributeFilter: ['class'],
-          attributes: true,
-        })
+      })
+    })
 
-        applyTheme()
-        updateStatus()
-
-        disposeEditor = () => {
-          diffEditorRef.current = null
-          modelsRef.current = null
-          themeObserver.disconnect()
-          diffSubscription.dispose()
-          contentSubscriptions.forEach((subscription) => {
-            subscription.dispose()
-          })
-          diffEditor.dispose()
-          originalModel.dispose()
-          modifiedModel.dispose()
-        }
-      } catch {
-        if (!disposed) {
-          setLoadError(true)
-        }
-      }
-    })()
+    mergeView = new MergeView({
+      a: {
+        doc: '',
+        extensions: [
+          editorExtensions,
+          trackChanges,
+          EditorView.contentAttributes.of({ 'aria-label': '原始文本' }),
+        ],
+      },
+      b: {
+        doc: '',
+        extensions: [
+          editorExtensions,
+          trackChanges,
+          EditorView.contentAttributes.of({ 'aria-label': '修改后文本' }),
+        ],
+      },
+      parent: host,
+    })
+    mergeViewRef.current = mergeView
 
     return () => {
-      disposed = true
-      disposeEditor?.()
+      mergeViewRef.current = null
+      mergeView.destroy()
     }
   }, [])
 
   function replaceBoth(original: string, modified: string) {
-    const diffEditor = diffEditorRef.current
-    const models = modelsRef.current
-    if (!diffEditor || !models) {
+    const mergeView = mergeViewRef.current
+    if (!mergeView) {
       return
     }
 
-    diffEditor.setModel(null)
-    replaceText(models.original, original)
-    replaceText(models.modified, modified)
-    diffEditor.setModel(models)
+    replaceText(mergeView.a, original)
+    replaceText(mergeView.b, modified)
   }
 
   function swapTexts() {
-    const models = modelsRef.current
-    if (!models) {
+    const mergeView = mergeViewRef.current
+    if (!mergeView) {
       return
     }
 
-    const original = models.original.getValue()
-    replaceBoth(models.modified.getValue(), original)
+    const original = mergeView.a.state.doc.toString()
+    replaceBoth(mergeView.b.state.doc.toString(), original)
   }
 
   function clearTexts() {
-    const models = modelsRef.current
-    if (!models) {
-      return
-    }
-
     replaceBoth('', '')
   }
 
@@ -195,7 +168,7 @@ export function TextDiffTool() {
             </Badge>
             <Button
               aria-label="交换文本"
-              disabled={status === 'loading' || status === 'empty' || loadError}
+              disabled={status === 'empty'}
               onClick={swapTexts}
               size="icon-sm"
               title="交换文本"
@@ -206,7 +179,7 @@ export function TextDiffTool() {
             </Button>
             <Button
               aria-label="清空文本"
-              disabled={status === 'loading' || status === 'empty' || loadError}
+              disabled={status === 'empty'}
               onClick={clearTexts}
               size="icon-sm"
               title="清空文本"
@@ -220,20 +193,9 @@ export function TextDiffTool() {
         <div className="relative min-h-0 flex-1">
           <div
             ref={editorHostRef}
-            className="h-full"
+            className="h-full overflow-hidden [&_.cm-mergeView]:h-full [&_.cm-mergeViewEditors]:min-h-full"
             data-testid="text-diff-editor"
           />
-          {status === 'loading' && !loadError ? (
-            <Skeleton className="absolute inset-0" />
-          ) : null}
-          {loadError ? (
-            <div
-              className="absolute inset-0 grid place-items-center p-4 text-sm text-destructive"
-              role="alert"
-            >
-              Monaco 编辑器加载失败
-            </div>
-          ) : null}
         </div>
       </section>
     </ToolPageShell>

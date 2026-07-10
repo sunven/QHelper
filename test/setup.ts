@@ -6,6 +6,8 @@ import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
+Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
+
 // 每个测试后清理
 afterEach(() => {
   cleanup();

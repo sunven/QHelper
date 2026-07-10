@@ -7,18 +7,17 @@ async function fillEditor(
   side: 'original' | 'modified',
   value: string,
 ) {
-  const index = side === 'original' ? 0 : 1
-  await page.locator('.view-lines').nth(index).click()
+  const editor = page.getByRole('textbox', {
+    name: side === 'original' ? '原始文本' : '修改后文本',
+  })
+  await editor.click()
   await page.keyboard.press(
     process.platform === 'darwin' ? 'Meta+A' : 'Control+A',
   )
   await page.keyboard.insertText(value)
 }
 
-test('compares, swaps, and clears text with Monaco', async ({
-  context,
-  extensionId,
-}) => {
+test('compares, swaps, and clears text', async ({ context, extensionId }) => {
   const page = await openToolPage(context, extensionId, 'text-diff')
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
@@ -31,8 +30,12 @@ test('compares, swaps, and clears text with Monaco', async ({
   expect(pageErrors, 'after editing').toEqual([])
 
   await page.getByRole('button', { name: '交换文本' }).click()
-  await expect(page.locator('.view-lines').nth(0)).toContainText('gamma')
-  await expect(page.locator('.view-lines').nth(1)).toContainText('beta')
+  await expect(page.getByRole('textbox', { name: '原始文本' })).toContainText(
+    'gamma',
+  )
+  await expect(page.getByRole('textbox', { name: '修改后文本' })).toContainText(
+    'beta',
+  )
   expect(pageErrors, 'after swapping').toEqual([])
 
   await page.getByRole('button', { name: '清空文本' }).click()
