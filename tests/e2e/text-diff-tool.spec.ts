@@ -41,7 +41,10 @@ test('fills the available workspace height by default', async ({
   await page.close()
 })
 
-test('compares, swaps, and clears text', async ({ context, extensionId }) => {
+test('compares, navigates, swaps, and clears text', async ({
+  context,
+  extensionId,
+}) => {
   const page = await openToolPage(context, extensionId, 'text-diff')
   const pageErrors: string[] = []
   page.on('pageerror', (error) => pageErrors.push(error.message))
