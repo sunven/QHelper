@@ -5,10 +5,3 @@
 import type { ToolCategory } from '@/lib/registry/ToolMetadata'
 
 export type { ToolCategory }
-
-/**
- * 旧版工具页历史记录快照类型（兼容 useToolHistory 的旧 API）
- */
-export interface ToolHistoryItem {
-  [key: string]: unknown
-}

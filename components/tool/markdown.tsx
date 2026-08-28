@@ -4,7 +4,6 @@ import hljs from 'highlight.js'
 import { Copy, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToolHistory } from '@/hooks/useToolHistory'
-import type { ToolHistoryItem } from '@/types'
 import { sanitizeRenderedMarkdown } from '@/lib/web-summary/markdown'
 
 const renderer = new marked.Renderer()
@@ -65,8 +64,8 @@ greet('QHelper');
     html: '',
   })
 
-  const { addToHistory, history } = useToolHistory<MarkdownState>('markdown', {
-    maxSize: 10,
+  const { add, history } = useToolHistory<MarkdownState>('markdown', {
+    max: 10,
     key: 'markdown-state',
   })
 
@@ -140,8 +139,8 @@ ${state.html}
     a.download = `markdown-${Date.now()}.html`
     a.click()
     URL.revokeObjectURL(url)
-    addToHistory({ input: state.input, html: fullHtml } as ToolHistoryItem)
-  }, [state.html, state.input, addToHistory])
+    add({ input: state.input, html: fullHtml })
+  }, [state.html, state.input, add])
 
   const handleCopyHtml = useCallback(async () => {
     try {
@@ -216,17 +215,22 @@ ${state.html}
             历史记录
           </h3>
           <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
-            {history.map((item, index) => (
-              <div
-                key={index}
-                className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
-                onClick={() => handleInputChange((item as MarkdownState).input)}
-              >
-                <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
-                  {(item as MarkdownState).input.slice(0, 100)}...
+            {history.map((entry, index) => {
+              const item = entry.input
+              return (
+                <div
+                  key={index}
+                  className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
+                  onClick={() =>
+                    handleInputChange((item as MarkdownState).input)
+                  }
+                >
+                  <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
+                    {(item as MarkdownState).input.slice(0, 100)}...
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

@@ -10,7 +10,6 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToolHistory } from '@/hooks/useToolHistory'
-import type { ToolHistoryItem } from '@/types'
 
 interface XmlState {
   input: string
@@ -27,8 +26,8 @@ export function XmlFormatter() {
     error: null,
   })
 
-  const { addToHistory, history } = useToolHistory<XmlState>('xmlformatter', {
-    maxSize: 10,
+  const { add, history } = useToolHistory<XmlState>('xmlformatter', {
+    max: 10,
     key: 'xmlformatter-state',
   })
 
@@ -92,9 +91,9 @@ export function XmlFormatter() {
     a.click()
     URL.revokeObjectURL(url)
     if (!state.error) {
-      addToHistory({ ...state } as ToolHistoryItem)
+      add({ ...state })
     }
-  }, [state.output, addToHistory, state])
+  }, [state.output, add, state])
 
   const handleClear = useCallback(() => {
     setState((prev) => ({ ...prev, input: '', output: '', error: null }))
@@ -246,17 +245,20 @@ export function XmlFormatter() {
             历史记录
           </h3>
           <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
-            {history.map((item, index) => (
-              <div
-                key={index}
-                className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
-                onClick={() => handleInputChange((item as XmlState).input)}
-              >
-                <div className="line-clamp-1 font-mono text-xs text-slate-600 dark:text-slate-400">
-                  {(item as XmlState).input.slice(0, 100)}...
+            {history.map((entry, index) => {
+              const item = entry.input
+              return (
+                <div
+                  key={index}
+                  className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
+                  onClick={() => handleInputChange((item as XmlState).input)}
+                >
+                  <div className="line-clamp-1 font-mono text-xs text-slate-600 dark:text-slate-400">
+                    {(item as XmlState).input.slice(0, 100)}...
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

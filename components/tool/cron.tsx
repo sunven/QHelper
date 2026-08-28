@@ -4,7 +4,6 @@ import { Calendar, Copy, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToolHistory } from '@/hooks/useToolHistory'
-import type { ToolHistoryItem } from '@/types'
 
 interface CronState {
   expression: string
@@ -25,8 +24,8 @@ export function CronParser() {
     interval: '0 */1 * * * *',
   })
 
-  const { addToHistory, history } = useToolHistory<CronState>('cron', {
-    maxSize: 10,
+  const { add, history } = useToolHistory<CronState>('cron', {
+    max: 10,
     key: 'cron-state',
   })
 
@@ -99,14 +98,8 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map((d) => `  ${d.toLoc
     a.download = `cron-${Date.now()}.txt`
     a.click()
     URL.revokeObjectURL(url)
-    addToHistory({ ...state } as ToolHistoryItem)
-  }, [
-    state.expression,
-    state.error,
-    state.isValid,
-    state.nextRuns,
-    addToHistory,
-  ])
+    add({ ...state })
+  }, [state.expression, state.error, state.isValid, state.nextRuns, add])
 
   const formatDate = (date: Date) => {
     const now = new Date()
@@ -244,19 +237,22 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map((d) => `  ${d.toLoc
               历史记录
             </h3>
             <div className="max-h-36 space-y-1 overflow-y-auto">
-              {history.map((item, index) => (
-                <div
-                  key={index}
-                  className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
-                  onClick={() =>
-                    handleExpressionChange((item as CronState).expression)
-                  }
-                >
-                  <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
-                    {(item as CronState).expression}
+              {history.map((entry, index) => {
+                const item = entry.input
+                return (
+                  <div
+                    key={index}
+                    className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
+                    onClick={() =>
+                      handleExpressionChange((item as CronState).expression)
+                    }
+                  >
+                    <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
+                      {(item as CronState).expression}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}

@@ -3,23 +3,23 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ConvertTool } from './convert'
 
-const { addHistory, clearHistory } = vi.hoisted(() => ({
-  addHistory: vi.fn(),
-  clearHistory: vi.fn(),
+const { add, clear } = vi.hoisted(() => ({
+  add: vi.fn(),
+  clear: vi.fn(),
 }))
 
 vi.mock('@/hooks/useToolHistory', () => ({
   useToolHistory: () => ({
     history: [],
-    addHistory,
-    clearHistory,
+    add,
+    clear,
   }),
 }))
 
 describe('convert/ConvertTool', () => {
   beforeEach(() => {
-    addHistory.mockClear()
-    clearHistory.mockClear()
+    add.mockClear()
+    clear.mockClear()
   })
 
   it('records the current conversion output in history', async () => {
@@ -39,8 +39,9 @@ describe('convert/ConvertTool', () => {
       )
     })
 
-    expect(addHistory).toHaveBeenCalledWith('hello', 'aGVsbG8=', {
-      type: 'base64Encode',
-    })
+    expect(add).toHaveBeenCalledWith(
+      { source: 'hello', result: 'aGVsbG8=' },
+      { type: 'base64Encode' },
+    )
   })
 })

@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToolHistory } from '@/hooks/useToolHistory'
-import type { ToolHistoryItem } from '@/types'
 
 interface JsonSchemaState {
   jsonData: string
@@ -56,13 +55,10 @@ export function JsonSchemaValidator() {
     validationResults: [],
   })
 
-  const { addToHistory, history } = useToolHistory<JsonSchemaState>(
-    'jsonschema',
-    {
-      maxSize: 10,
-      key: 'jsonschema-state',
-    },
-  )
+  const { add, history } = useToolHistory<JsonSchemaState>('jsonschema', {
+    max: 10,
+    key: 'jsonschema-state',
+  })
 
   // 验证 JSON Schema
   useEffect(() => {
@@ -146,8 +142,8 @@ export function JsonSchemaValidator() {
     a.download = `json-schema-${Date.now()}.txt`
     a.click()
     URL.revokeObjectURL(url)
-    addToHistory({ ...state } as ToolHistoryItem)
-  }, [state.jsonData, state.jsonSchema, state.isValid, addToHistory, state])
+    add({ ...state })
+  }, [state.jsonData, state.jsonSchema, state.isValid, add, state])
 
   const handleClear = useCallback(() => {
     setState((prev) => ({
@@ -329,8 +325,8 @@ export function JsonSchemaValidator() {
             历史记录
           </h3>
           <div className="max-h-36 space-y-1 overflow-y-auto">
-            {history.map((item, index) => {
-              const historyState = item as JsonSchemaState
+            {history.map((entry, index) => {
+              const historyState = entry.input
               return (
                 <div
                   key={index}

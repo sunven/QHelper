@@ -3,7 +3,6 @@ import { optimize } from 'svgo'
 import { Copy, Download, Image, Zap, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToolHistory } from '@/hooks/useToolHistory'
-import type { ToolHistoryItem } from '@/types'
 
 interface SvgState {
   input: string
@@ -45,8 +44,8 @@ export function SvgOptimizer() {
     optimizedSize: 0,
   })
 
-  const { addToHistory, history } = useToolHistory<SvgState>('svgoptimizer', {
-    maxSize: 10,
+  const { add, history } = useToolHistory<SvgState>('svgoptimizer', {
+    max: 10,
     key: 'svgoptimizer-state',
   })
 
@@ -122,9 +121,9 @@ export function SvgOptimizer() {
     a.click()
     URL.revokeObjectURL(url)
     if (!state.error && state.output) {
-      addToHistory({ ...state } as ToolHistoryItem)
+      add({ ...state })
     }
-  }, [state.output, addToHistory, state])
+  }, [state.output, add, state])
 
   const handleClear = useCallback(() => {
     setState((prev) => ({ ...prev, input: '', output: '', error: null }))
@@ -285,17 +284,20 @@ export function SvgOptimizer() {
             历史记录
           </h3>
           <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
-            {history.map((item, index) => (
-              <div
-                key={index}
-                className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
-                onClick={() => handleInputChange((item as SvgState).input)}
-              >
-                <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
-                  {(item as SvgState).input.slice(0, 100)}...
+            {history.map((entry, index) => {
+              const item = entry.input
+              return (
+                <div
+                  key={index}
+                  className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
+                  onClick={() => handleInputChange((item as SvgState).input)}
+                >
+                  <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
+                    {(item as SvgState).input.slice(0, 100)}...
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

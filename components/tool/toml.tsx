@@ -10,7 +10,6 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useToolHistory } from '@/hooks/useToolHistory'
-import type { ToolHistoryItem } from '@/types'
 
 interface TomlState {
   input: string
@@ -38,8 +37,8 @@ dc = "eqdc10"
     error: null,
   })
 
-  const { addToHistory, history } = useToolHistory<TomlState>('toml', {
-    maxSize: 10,
+  const { add, history } = useToolHistory<TomlState>('toml', {
+    max: 10,
     key: 'toml-state',
   })
 
@@ -101,9 +100,9 @@ dc = "eqdc10"
     a.click()
     URL.revokeObjectURL(url)
     if (!state.error) {
-      addToHistory({ ...state } as ToolHistoryItem)
+      add({ ...state })
     }
-  }, [state.output, state.mode, addToHistory, state])
+  }, [state.output, state.mode, add, state])
 
   const handleSwap = useCallback(() => {
     handleModeChange(
@@ -250,17 +249,20 @@ dc = "eqdc10"
             历史记录
           </h3>
           <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
-            {history.map((item, index) => (
-              <div
-                key={index}
-                className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
-                onClick={() => handleInputChange((item as TomlState).input)}
-              >
-                <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
-                  {(item as TomlState).input.slice(0, 100)}...
+            {history.map((entry, index) => {
+              const item = entry.input
+              return (
+                <div
+                  key={index}
+                  className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
+                  onClick={() => handleInputChange((item as TomlState).input)}
+                >
+                  <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
+                    {(item as TomlState).input.slice(0, 100)}...
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

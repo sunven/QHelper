@@ -10,7 +10,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useToolHistory } from '@/hooks/useToolHistory'
-import type { ToolHistoryItem } from '@/types'
 
 interface HtmlFormatState {
   input: string
@@ -32,13 +31,10 @@ export function HtmlFormatter() {
     mode: 'beautify',
   })
 
-  const { addToHistory, history } = useToolHistory<HtmlFormatState>(
-    'htmlformat',
-    {
-      maxSize: 10,
-      key: 'htmlformat-state',
-    },
-  )
+  const { add, history } = useToolHistory<HtmlFormatState>('htmlformat', {
+    max: 10,
+    key: 'htmlformat-state',
+  })
 
   // 格式化或压缩 HTML
   useEffect(() => {
@@ -106,8 +102,8 @@ export function HtmlFormatter() {
     a.download = `html-${state.mode}-${Date.now()}.html`
     a.click()
     URL.revokeObjectURL(url)
-    addToHistory({ ...state } as ToolHistoryItem)
-  }, [state.output, state.mode, addToHistory, state])
+    add({ ...state })
+  }, [state.output, state.mode, add, state])
 
   const handleClear = useCallback(() => {
     setState((prev) => ({ ...prev, input: '', output: '' }))
@@ -271,19 +267,22 @@ export function HtmlFormatter() {
             历史记录
           </h3>
           <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
-            {history.map((item, index) => (
-              <div
-                key={index}
-                className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
-                onClick={() =>
-                  handleInputChange((item as HtmlFormatState).input)
-                }
-              >
-                <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
-                  {(item as HtmlFormatState).input.slice(0, 100)}...
+            {history.map((entry, index) => {
+              const item = entry.input
+              return (
+                <div
+                  key={index}
+                  className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-700 dark:hover:bg-slate-600"
+                  onClick={() =>
+                    handleInputChange((item as HtmlFormatState).input)
+                  }
+                >
+                  <div className="line-clamp-1 text-xs text-slate-600 dark:text-slate-400">
+                    {(item as HtmlFormatState).input.slice(0, 100)}...
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

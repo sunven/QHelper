@@ -96,9 +96,13 @@ export function ConvertTool() {
   const [result, setResult] = useState('')
 
   // 历史记录
-  const { history, addHistory, clearHistory } = useToolHistory<string, string>(
+  type ConvertHistorySnapshot = {
+    source: string
+    result: string
+  }
+  const { history, add, clear } = useToolHistory<ConvertHistorySnapshot>(
     'convert',
-    { maxHistory: 50 },
+    { max: 50 },
   )
 
   // 执行编解码并添加历史记录
@@ -106,7 +110,7 @@ export function ConvertTool() {
     const nextResult = encodeFn()
     setResult(nextResult)
     if (srcText && nextResult) {
-      addHistory(srcText, nextResult, { type })
+      add({ source: srcText, result: nextResult }, { type })
     }
   }
 
@@ -321,7 +325,7 @@ export function ConvertTool() {
           <CardHeader className="border-b border-border/70">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm">历史记录</CardTitle>
-              <Button variant="outline" size="sm" onClick={clearHistory}>
+              <Button variant="outline" size="sm" onClick={() => void clear()}>
                 清除历史 ({history.length})
               </Button>
             </div>
@@ -335,7 +339,7 @@ export function ConvertTool() {
                   <div
                     key={entry.id}
                     className="cursor-pointer rounded-none border border-border/70 bg-muted/55 p-2 text-xs transition-colors hover:bg-muted/80"
-                    onClick={() => restoreHistory(entry.input)}
+                    onClick={() => restoreHistory(entry.input.source)}
                   >
                     <div className="mb-1 flex items-center justify-between gap-2">
                       <span className="text-muted-foreground">
@@ -346,8 +350,8 @@ export function ConvertTool() {
                       </span>
                     </div>
                     <div className="truncate font-mono">
-                      {entry.input.slice(0, 50)}
-                      {entry.input.length > 50 ? '...' : ''}
+                      {entry.input.source.slice(0, 50)}
+                      {entry.input.source.length > 50 ? '...' : ''}
                     </div>
                   </div>
                 ))}

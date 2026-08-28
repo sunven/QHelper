@@ -29,7 +29,6 @@ import {
   useKeyboardShortcuts,
   type KeyboardShortcut,
 } from '@/hooks/useKeyboardShortcuts'
-import type { HistoryEntry } from '@/types/storage'
 
 // 文件大小阈值
 const SIZE_THRESHOLDS = {
@@ -105,20 +104,17 @@ export function JsonTool() {
   const {
     history,
     loading: historyLoading,
-    addHistory,
-    clearHistory,
-    removeHistory,
-  } = useToolHistory<string, object>('json', { maxHistory: 50 })
+    add,
+    remove: removeHistoryEntry,
+  } = useToolHistory<string>('json', { max: 50 })
 
   // 将历史记录转换为旧格式以保持兼容性
-  const historys: HistoryItem[] = history.map(
-    (entry: HistoryEntry<string, object>) => ({
-      name:
-        (entry.metadata?.name as string) ||
-        `历史记录 ${new Date(entry.timestamp).toLocaleString()}`,
-      content: entry.input,
-    }),
-  )
+  const historys: HistoryItem[] = history.map((entry) => ({
+    name:
+      (entry.metadata?.name as string) ||
+      `历史记录 ${new Date(entry.timestamp).toLocaleString()}`,
+    content: entry.input,
+  }))
 
   // 处理 JSON 输入变化
   useEffect(() => {
@@ -345,8 +341,8 @@ export function JsonTool() {
   function saveHistory() {
     if (!historyName || !jsoncon) return
     try {
-      const parsed = JSON.parse(jsoncon)
-      addHistory(jsoncon, parsed, { name: historyName })
+      JSON.parse(jsoncon)
+      add(jsoncon, { name: historyName })
       setIsSaveShow(false)
       setHistoryName('')
     } catch {
@@ -363,7 +359,7 @@ export function JsonTool() {
   async function remove(_his: HistoryItem, index: number) {
     // 从历史记录中找到对应的 entry 并删除
     if (history[index]) {
-      await removeHistory(history[index].id)
+      await removeHistoryEntry(history[index].id)
     }
   }
 
