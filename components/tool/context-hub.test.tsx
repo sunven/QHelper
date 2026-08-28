@@ -1,43 +1,40 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { App } from './context-hub'
+import { ContextHub } from './context-hub'
 
-vi.mock('@/components/tool/ToolPageShell', () => ({
-  ToolPageShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
-}))
-
-describe('context-hub/App', () => {
+describe('context-hub/ContextHub', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('renders an empty local-only input experience', () => {
-    render(<App />)
+    render(<ContextHub />)
 
     expect(screen.getByRole('textbox', { name: 'Context input' })).toBeVisible()
     expect(screen.getAllByText('等待输入')[0]).toBeVisible()
-    expect(screen.getByText('内容仅在本地识别，默认不会保存历史。')).toBeVisible()
+    expect(
+      screen.getByText('内容仅在本地识别，默认不会保存历史。'),
+    ).toBeVisible()
   })
 
   it('detects JSON and recommends the JSON formatter', async () => {
-    render(<App />)
+    render(<ContextHub />)
 
     fireEvent.change(screen.getByRole('textbox', { name: 'Context input' }), {
       target: { value: '{"ok":true}' },
     })
 
     expect(screen.getAllByText('JSON')[0]).toBeVisible()
-    expect(screen.getByRole('link', { name: '打开 JSON 格式化' })).toHaveAttribute(
-      'href',
-      '/tools/json.html',
-    )
+    expect(
+      screen.getByRole('link', { name: '打开 JSON 格式化' }),
+    ).toHaveAttribute('href', '/tools/json.html')
   })
 
   it('detects URL input and shows URL facts', async () => {
     const user = userEvent.setup()
 
-    render(<App />)
+    render(<ContextHub />)
 
     await user.type(
       screen.getByRole('textbox', { name: 'Context input' }),
@@ -47,16 +44,15 @@ describe('context-hub/App', () => {
     expect(screen.getAllByText('URL')[0]).toBeVisible()
     expect(screen.getByText('Host')).toBeVisible()
     expect(screen.getByText('example.com')).toBeVisible()
-    expect(screen.getByRole('link', { name: '打开 URL 解析器' })).toHaveAttribute(
-      'href',
-      '/tools/urlparser.html',
-    )
+    expect(
+      screen.getByRole('link', { name: '打开 URL 解析器' }),
+    ).toHaveAttribute('href', '/tools/urlparser.html')
   })
 
   it('detects JWT input and renders a local preview action', async () => {
     const user = userEvent.setup()
 
-    render(<App />)
+    render(<ContextHub />)
 
     await user.type(
       screen.getByRole('textbox', { name: 'Context input' }),
@@ -76,7 +72,7 @@ describe('context-hub/App', () => {
   it('shows a neutral fallback for unknown input', async () => {
     const user = userEvent.setup()
 
-    render(<App />)
+    render(<ContextHub />)
 
     await user.type(
       screen.getByRole('textbox', { name: 'Context input' }),
@@ -90,7 +86,7 @@ describe('context-hub/App', () => {
   it('clears input without writing to extension storage', async () => {
     const user = userEvent.setup()
 
-    render(<App />)
+    render(<ContextHub />)
 
     const input = screen.getByRole('textbox', { name: 'Context input' })
     fireEvent.change(input, {

@@ -21,7 +21,6 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ToolPageShell } from '@/components/tool/ToolPageShell';
 
 type ScanState = 'idle' | 'loading' | 'ready' | 'cleaning' | 'error'
 
@@ -99,11 +98,20 @@ function DownloadRow({
   muted?: boolean
 }) {
   return (
-    <li className={cn('rounded-none border border-slate-200 bg-white p-3', muted && 'bg-slate-50 text-slate-500')}>
+    <li
+      className={cn(
+        'rounded-none border border-slate-200 bg-white p-3',
+        muted && 'bg-slate-50 text-slate-500',
+      )}
+    >
       <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
-          <div className="truncate text-sm font-semibold text-slate-900">{getFileName(item.filename)}</div>
-          <div className="mt-1 truncate font-mono text-xs text-slate-500">{item.filename || '无本地路径'}</div>
+          <div className="truncate text-sm font-semibold text-slate-900">
+            {getFileName(item.filename)}
+          </div>
+          <div className="mt-1 truncate font-mono text-xs text-slate-500">
+            {item.filename || '无本地路径'}
+          </div>
           <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-slate-500">
             <span>{formatBytes(item.totalBytes)}</span>
             <span>{formatDate(item.startTime)}</span>
@@ -126,7 +134,7 @@ function DownloadRow({
   )
 }
 
-export function App() {
+export function DownloadsTool() {
   const [downloads, setDownloads] = useState<DownloadHistoryItem[]>([])
   const [scanState, setScanState] = useState<ScanState>('idle')
   const [errorMessage, setErrorMessage] = useState('')
@@ -152,7 +160,9 @@ export function App() {
       setScanState('ready')
     } catch (error) {
       setScanState('error')
-      setErrorMessage(error instanceof Error ? error.message : '扫描下载记录失败')
+      setErrorMessage(
+        error instanceof Error ? error.message : '扫描下载记录失败',
+      )
     }
   }, [])
 
@@ -177,31 +187,57 @@ export function App() {
       setScanState('ready')
     } catch (error) {
       setScanState('error')
-      setErrorMessage(error instanceof Error ? error.message : '清理下载历史失败')
+      setErrorMessage(
+        error instanceof Error ? error.message : '清理下载历史失败',
+      )
     }
   }, [cleanupIds])
 
   return (
-    <ToolPageShell toolId="downloads">
+    <>
       <section className="grid gap-2 md:grid-cols-4">
-        <SummaryCard label="确认缺失" value={summary.missing.length} tone="danger" />
-        <SummaryCard label="已存在" value={summary.existing.length} tone="safe" />
-        <SummaryCard label="已跳过" value={summary.unknown.length} tone="warning" />
+        <SummaryCard
+          label="确认缺失"
+          value={summary.missing.length}
+          tone="danger"
+        />
+        <SummaryCard
+          label="已存在"
+          value={summary.existing.length}
+          tone="safe"
+        />
+        <SummaryCard
+          label="已跳过"
+          value={summary.unknown.length}
+          tone="warning"
+        />
         <SummaryCard label="总记录" value={downloads.length} />
       </section>
 
       <section className="mt-2 rounded-none border border-slate-200 bg-white p-3 shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-slate-950">失效下载记录</h2>
+            <h2 className="text-sm font-semibold text-slate-950">
+              失效下载记录
+            </h2>
             <p className="mt-1 text-xs leading-5 text-slate-500">
               仅清理确认原始文件不存在的下载历史记录。无法确认的记录会跳过，不会进入批量清理。
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={scanDownloads} disabled={isBusy} className="h-8 gap-1.5">
-              {scanState === 'loading' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={scanDownloads}
+              disabled={isBusy}
+              className="h-8 gap-1.5"
+            >
+              {scanState === 'loading' ? (
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <RefreshCw className="h-3.5 w-3.5" />
+              )}
               扫描
             </Button>
             <Button
@@ -240,7 +276,9 @@ export function App() {
         {scanState === 'loading' || scanState === 'cleaning' ? (
           <div className="mt-3 flex items-center justify-center gap-2 rounded-none border border-slate-200 bg-slate-50 px-3 py-8 text-sm text-slate-500">
             <Loader2 className="h-4 w-4 animate-spin" />
-            {scanState === 'loading' ? '正在扫描下载记录...' : '正在清理下载历史...'}
+            {scanState === 'loading'
+              ? '正在扫描下载记录...'
+              : '正在清理下载历史...'}
           </div>
         ) : null}
 
@@ -270,7 +308,11 @@ export function App() {
           </p>
           <ul className="mt-3 grid grid-cols-2 gap-2">
             {summary.unknown.map((item) => (
-              <DownloadRow key={`unknown-${item.id}-${item.filename}`} item={item} muted />
+              <DownloadRow
+                key={`unknown-${item.id}-${item.filename}`}
+                item={item}
+                muted
+              />
             ))}
           </ul>
         </section>
@@ -279,22 +321,39 @@ export function App() {
       {confirmOpen ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/45 p-4">
           <div className="w-full max-w-md rounded-none border border-slate-200 bg-white p-4 shadow-xl">
-            <h2 className="text-base font-semibold text-slate-950">确认清理下载历史</h2>
+            <h2 className="text-base font-semibold text-slate-950">
+              确认清理下载历史
+            </h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              将从下载历史中移除 {cleanupIds.length} 条确认缺失的记录。此操作不会删除任何本地文件。
+              将从下载历史中移除 {cleanupIds.length}{' '}
+              条确认缺失的记录。此操作不会删除任何本地文件。
             </p>
             <div className="mt-4 flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setConfirmOpen(false)} disabled={scanState === 'cleaning'}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfirmOpen(false)}
+                disabled={scanState === 'cleaning'}
+              >
                 取消
               </Button>
-              <Button type="button" onClick={confirmCleanup} disabled={scanState === 'cleaning'} className="gap-1.5 bg-red-600 hover:bg-red-700">
-                {scanState === 'cleaning' ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+              <Button
+                type="button"
+                onClick={confirmCleanup}
+                disabled={scanState === 'cleaning'}
+                className="gap-1.5 bg-red-600 hover:bg-red-700"
+              >
+                {scanState === 'cleaning' ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5" />
+                )}
                 确认清理
               </Button>
             </div>
           </div>
         </div>
       ) : null}
-    </ToolPageShell>
+    </>
   )
 }

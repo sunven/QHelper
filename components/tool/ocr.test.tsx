@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { App } from './ocr'
+import { OcrTool } from './ocr'
 
 const { createWorker, worker } = vi.hoisted(() => {
   const worker = {
@@ -23,11 +23,7 @@ vi.mock('tesseract.js', () => ({
   },
 }))
 
-vi.mock('@/components/tool/ToolPageShell', () => ({
-  ToolPageShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
-}))
-
-describe('ocr/App', () => {
+describe('ocr/OcrTool', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(chrome.storage.local.get).mockImplementation(
@@ -60,9 +56,12 @@ describe('ocr/App', () => {
     const user = userEvent.setup()
     const file = new File(['image'], 'sample.png', { type: 'image/png' })
 
-    render(<App />)
+    render(<OcrTool />)
 
-    await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file)
+    await user.upload(
+      document.querySelector('input[type="file"]') as HTMLInputElement,
+      file,
+    )
     await user.click(screen.getByRole('button', { name: '开始识别' }))
 
     await waitFor(() => {
@@ -90,13 +89,16 @@ describe('ocr/App', () => {
       () => Promise.resolve({ tool_ocr_language: 'jpn' }) as never,
     )
 
-    render(<App />)
+    render(<OcrTool />)
 
     await waitFor(() => {
       expect(screen.getByRole('combobox')).toHaveTextContent('日本語')
     })
 
-    await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file)
+    await user.upload(
+      document.querySelector('input[type="file"]') as HTMLInputElement,
+      file,
+    )
     await user.click(screen.getByRole('button', { name: '开始识别' }))
 
     await waitFor(() => {
@@ -115,10 +117,11 @@ describe('ocr/App', () => {
   it('rejects non-image files before creating a worker', async () => {
     const file = new File(['text'], 'sample.txt', { type: 'text/plain' })
 
-    render(<App />)
+    render(<OcrTool />)
 
-    const dropZone = screen.getByText('拖拽、粘贴或选择图片').closest('div')
-      ?.parentElement
+    const dropZone = screen
+      .getByText('拖拽、粘贴或选择图片')
+      .closest('div')?.parentElement
 
     expect(dropZone).toBeTruthy()
     fireEvent.drop(dropZone as HTMLElement, {

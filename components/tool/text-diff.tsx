@@ -15,8 +15,6 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
-import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 
@@ -188,80 +186,70 @@ export function TextDiffTool() {
   }
 
   return (
-    <ToolPageShell toolId="text-diff" className="h-full">
-      <section className="flex h-full min-h-[32rem] flex-col overflow-hidden border border-border bg-background">
-        <header className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-border bg-muted/30 px-3">
-          <div className="flex min-w-0 items-center gap-2 text-xs font-medium">
-            <span>原始文本</span>
-            <ArrowRight aria-hidden className="size-3 text-muted-foreground" />
-            <span>修改后文本</span>
-          </div>
-          <div className="flex shrink-0 items-center gap-1.5">
-            <Badge aria-live="polite" variant="outline">
-              {STATUS_TEXT[status]}
-            </Badge>
-            <Button
-              aria-label="上一个差异"
-              disabled={status !== 'different'}
-              onClick={() => moveToDifference(goToPreviousChunk)}
-              size="icon-sm"
-              title="上一个差异"
-              type="button"
-              variant="outline"
-            >
-              <ChevronUp aria-hidden />
-            </Button>
-            <Button
-              aria-label="下一个差异"
-              disabled={status !== 'different'}
-              onClick={() => moveToDifference(goToNextChunk)}
-              size="icon-sm"
-              title="下一个差异"
-              type="button"
-              variant="outline"
-            >
-              <ChevronDown aria-hidden />
-            </Button>
-            <Button
-              aria-label="交换文本"
-              disabled={status === 'empty'}
-              onClick={swapTexts}
-              size="icon-sm"
-              title="交换文本"
-              type="button"
-              variant="outline"
-            >
-              <ArrowLeftRight aria-hidden />
-            </Button>
-            <Button
-              aria-label="清空文本"
-              disabled={status === 'empty'}
-              onClick={clearTexts}
-              size="icon-sm"
-              title="清空文本"
-              type="button"
-              variant="outline"
-            >
-              <Trash2 aria-hidden />
-            </Button>
-          </div>
-        </header>
-        <div className="relative min-h-0 flex-1">
-          <div
-            ref={editorHostRef}
-            className="h-full overflow-hidden [&_.cm-mergeView]:h-full [&_.cm-mergeView]:w-full [&_.cm-mergeViewEditors]:min-h-full [&_.cm-mergeViewEditor]:min-w-0"
-            data-testid="text-diff-editor"
-          />
+    <section className="flex h-full min-h-[32rem] flex-col overflow-hidden border border-border bg-background">
+      <header className="flex h-10 shrink-0 items-center justify-between gap-3 border-b border-border bg-muted/30 px-3">
+        <div className="flex min-w-0 items-center gap-2 text-xs font-medium">
+          <span>原始文本</span>
+          <ArrowRight aria-hidden className="size-3 text-muted-foreground" />
+          <span>修改后文本</span>
         </div>
-      </section>
-    </ToolPageShell>
-  )
-}
-
-export function App() {
-  return (
-    <ToolErrorBoundary toolId="text-diff" toolName="文本 Diff">
-      <TextDiffTool />
-    </ToolErrorBoundary>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <Badge aria-live="polite" variant="outline">
+            {STATUS_TEXT[status]}
+          </Badge>
+          <Button
+            aria-label="上一个差异"
+            disabled={status !== 'different'}
+            onClick={() => moveToDifference(goToPreviousChunk)}
+            size="icon-sm"
+            title="上一个差异"
+            type="button"
+            variant="outline"
+          >
+            <ChevronUp aria-hidden />
+          </Button>
+          <Button
+            aria-label="下一个差异"
+            disabled={status !== 'different'}
+            onClick={() => moveToDifference(goToNextChunk)}
+            size="icon-sm"
+            title="下一个差异"
+            type="button"
+            variant="outline"
+          >
+            <ChevronDown aria-hidden />
+          </Button>
+          <Button
+            aria-label="交换文本"
+            disabled={status === 'empty'}
+            onClick={swapTexts}
+            size="icon-sm"
+            title="交换文本"
+            type="button"
+            variant="outline"
+          >
+            <ArrowLeftRight aria-hidden />
+          </Button>
+          <Button
+            aria-label="清空文本"
+            disabled={status === 'empty'}
+            onClick={clearTexts}
+            size="icon-sm"
+            title="清空文本"
+            type="button"
+            variant="outline"
+          >
+            <Trash2 aria-hidden />
+          </Button>
+        </div>
+      </header>
+      <div className="relative min-h-0 flex-1">
+        <div
+          ref={editorHostRef}
+          className="h-full overflow-hidden [&_.cm-mergeView]:h-full [&_.cm-mergeView]:w-full [&_.cm-mergeViewEditors]:min-h-full [&_.cm-mergeViewEditor]:min-w-0"
+          data-testid="text-diff-editor"
+        />
+      </div>
+    </section>
   )
 }

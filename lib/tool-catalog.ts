@@ -10,6 +10,8 @@ export const TOOL_BOOKMARKS_ID = 'bookmarks'
 export const WEB_SUMMARY_LAUNCH_ID = 'web-summary-launch'
 export const CLEAR_COOKIE_LAUNCH_ID = 'clear-cookie'
 
+export type OrdinaryToolId = (typeof registeredTools)[number]['id']
+
 export type LaunchSurface =
   | 'popup-main'
   | 'popup-header'
@@ -149,7 +151,9 @@ export const TOOL_CATEGORIES: ToolCatalogCategory[] = TOOL_CATEGORY_ORDER.map(
   }),
 ).filter((category) => category.tools.length > 0)
 
-function toOrdinaryToolLaunchEntry(tool: ToolCatalogTool): ToolCatalogLaunchEntry {
+function toOrdinaryToolLaunchEntry(
+  tool: ToolCatalogTool,
+): ToolCatalogLaunchEntry {
   return {
     id: tool.key,
     name: tool.name,
@@ -168,9 +172,7 @@ function toOrdinaryToolLaunchEntry(tool: ToolCatalogTool): ToolCatalogLaunchEntr
 
 const ORDINARY_TOOL_LAUNCH_ENTRIES = TOOL_CATEGORIES.flatMap(
   (category) => category.tools,
-).map(
-  toOrdinaryToolLaunchEntry,
-)
+).map(toOrdinaryToolLaunchEntry)
 
 const SYSTEM_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
   {
@@ -213,7 +215,8 @@ const SYSTEM_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
   {
     id: CLEAR_COOKIE_LAUNCH_ID,
     name: '清除 Cookie',
-    description: '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
+    description:
+      '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
     category: ToolCategory.OTHER,
     icon: 'Trash',
     surfaces: ['popup-main'],

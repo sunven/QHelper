@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { App } from './qrcode'
+import { QrCodeTool } from './qrcode'
 
 const { html5QrcodeInstances, Html5Qrcode, scanFile, start, stop, clear } =
   vi.hoisted(() => {
@@ -67,11 +67,7 @@ vi.mock('html5-qrcode', () => ({
   },
 }))
 
-vi.mock('@/components/tool/ToolPageShell', () => ({
-  ToolPageShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
-}))
-
-describe('qrcode/App', () => {
+describe('qrcode/QrCodeTool', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     html5QrcodeInstances.length = 0
@@ -99,7 +95,7 @@ describe('qrcode/App', () => {
   it('renders a QR code from typed content', async () => {
     const user = userEvent.setup()
 
-    render(<App />)
+    render(<QrCodeTool />)
 
     const input = screen.getByLabelText('内容')
     await user.clear(input)
@@ -117,12 +113,12 @@ describe('qrcode/App', () => {
       .spyOn(HTMLAnchorElement.prototype, 'click')
       .mockImplementation(() => undefined)
 
-    render(<App />)
+    render(<QrCodeTool />)
 
     await user.click(screen.getByRole('button', { name: '下载 SVG' }))
 
     expect(URL.createObjectURL).toHaveBeenCalledWith(
-        expect.objectContaining({ type: 'image/svg+xml;charset=utf-8' }),
+      expect.objectContaining({ type: 'image/svg+xml;charset=utf-8' }),
     )
     expect(click).toHaveBeenCalled()
 
@@ -133,9 +129,12 @@ describe('qrcode/App', () => {
     const user = userEvent.setup()
     const file = new File(['image'], 'qrcode.png', { type: 'image/png' })
 
-    render(<App />)
+    render(<QrCodeTool />)
 
-    await user.upload(document.querySelector('input[type="file"]') as HTMLInputElement, file)
+    await user.upload(
+      document.querySelector('input[type="file"]') as HTMLInputElement,
+      file,
+    )
     await user.click(screen.getByRole('button', { name: '识别图片' }))
 
     await waitFor(() => {
@@ -149,7 +148,9 @@ describe('qrcode/App', () => {
     })
 
     expect(scanFile).toHaveBeenCalledWith(file, false)
-    expect(await screen.findByDisplayValue('https://example.com/from-image')).toBeVisible()
+    expect(
+      await screen.findByDisplayValue('https://example.com/from-image'),
+    ).toBeVisible()
     expect(screen.getByText('图片识别完成')).toBeVisible()
     expect(clear).toHaveBeenCalled()
   })
@@ -157,10 +158,11 @@ describe('qrcode/App', () => {
   it('rejects non-image files before scanning', async () => {
     const file = new File(['text'], 'qrcode.txt', { type: 'text/plain' })
 
-    render(<App />)
+    render(<QrCodeTool />)
 
-    const dropZone = screen.getByText('拖拽或选择图片').closest('div')
-      ?.parentElement
+    const dropZone = screen
+      .getByText('拖拽或选择图片')
+      .closest('div')?.parentElement
 
     expect(dropZone).toBeTruthy()
     fireEvent.drop(dropZone as HTMLElement, {
@@ -181,7 +183,7 @@ describe('qrcode/App', () => {
       return null
     })
 
-    render(<App />)
+    render(<QrCodeTool />)
 
     await user.click(screen.getByRole('button', { name: '摄像头' }))
 

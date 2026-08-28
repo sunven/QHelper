@@ -1,53 +1,53 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import { Component, ErrorInfo, ReactNode } from 'react'
+import { Button } from './ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
 
 interface Props {
-  children: ReactNode;
-  toolId?: string;
-  toolName?: string;
-  fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  children: ReactNode
+  toolId: string
+  toolName: string
+  fallback?: ReactNode
+  onError?: (error: Error, errorInfo: ErrorInfo) => void
 }
 
 interface State {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
+  hasError: boolean
+  error: Error | null
+  errorInfo: ErrorInfo | null
 }
 
 export class ToolErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
-    super(props);
+    super(props)
     this.state = {
       hasError: false,
       error: null,
       errorInfo: null,
-    };
+    }
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    return { hasError: true, error };
+    return { hasError: true, error }
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    this.setState({ errorInfo });
+    this.setState({ errorInfo })
 
     // 记录错误到控制台
-    console.error(`Error in tool ${this.props.toolId ?? 'unknown-tool'}:`, error, errorInfo);
+    console.error(`Error in tool ${this.props.toolId}:`, error, errorInfo)
 
     // 调用自定义错误处理函数
-    this.props.onError?.(error, errorInfo);
+    this.props.onError?.(error, errorInfo)
 
     // 可选：将错误上报到日志服务
-    this.reportError(error, errorInfo);
+    this.reportError(error, errorInfo)
   }
 
   private reportError(error: Error, errorInfo: ErrorInfo): void {
     const errorReport = {
-      toolId: this.props.toolId ?? 'unknown-tool',
-      toolName: this.props.toolName ?? '当前工具',
+      toolId: this.props.toolId,
+      toolName: this.props.toolName,
       error: {
         message: error.message,
         name: error.name,
@@ -57,11 +57,11 @@ export class ToolErrorBoundary extends Component<Props, State> {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href,
-    };
+    }
 
     // TODO: 实现错误上报逻辑（例如发送到日志服务）
     if (import.meta.env.DEV) {
-      console.debug('Error report:', errorReport);
+      console.debug('Error report:', errorReport)
     }
   }
 
@@ -70,17 +70,17 @@ export class ToolErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
-    });
-  };
+    })
+  }
 
   handleGoHome = (): void => {
-    window.location.href = '/popup.html';
-  };
+    window.location.href = '/popup.html'
+  }
 
   render(): ReactNode {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        return this.props.fallback;
+        return this.props.fallback
       }
 
       return (
@@ -95,7 +95,7 @@ export class ToolErrorBoundary extends Component<Props, State> {
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground mb-2">工具</p>
-                <p className="font-medium">{this.props.toolName ?? '当前工具'}</p>
+                <p className="font-medium">{this.props.toolName}</p>
               </div>
 
               {this.state.error && (
@@ -108,11 +108,19 @@ export class ToolErrorBoundary extends Component<Props, State> {
               )}
 
               <div className="flex gap-2">
-                <Button onClick={this.handleRetry} variant="default" className="flex-1">
+                <Button
+                  onClick={this.handleRetry}
+                  variant="default"
+                  className="flex-1"
+                >
                   <RefreshCw className="w-4 h-4 mr-2" />
                   重试
                 </Button>
-                <Button onClick={this.handleGoHome} variant="outline" className="flex-1">
+                <Button
+                  onClick={this.handleGoHome}
+                  variant="outline"
+                  className="flex-1"
+                >
                   <Home className="w-4 h-4 mr-2" />
                   返回首页
                 </Button>
@@ -120,9 +128,9 @@ export class ToolErrorBoundary extends Component<Props, State> {
             </CardContent>
           </Card>
         </div>
-      );
+      )
     }
 
-    return this.props.children;
+    return this.props.children
   }
 }

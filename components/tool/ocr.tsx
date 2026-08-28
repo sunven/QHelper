@@ -1,5 +1,3 @@
-import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
-import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -66,7 +64,9 @@ function getTesseractWorkerOptions(
 }
 
 function downloadTextFile(text: string, filename: string) {
-  const url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }))
+  const url = URL.createObjectURL(
+    new Blob([text], { type: 'text/plain;charset=utf-8' }),
+  )
   const link = document.createElement('a')
 
   link.href = url
@@ -129,8 +129,8 @@ export function OcrTool() {
 
   useEffect(() => {
     const handlePaste = (event: ClipboardEvent) => {
-      const imageItem = Array.from(event.clipboardData?.items ?? []).find((item) =>
-        item.type.startsWith('image/'),
+      const imageItem = Array.from(event.clipboardData?.items ?? []).find(
+        (item) => item.type.startsWith('image/'),
       )
       const file = imageItem?.getAsFile()
 
@@ -275,187 +275,178 @@ export function OcrTool() {
     : statusText
 
   return (
-    <ToolPageShell toolId="ocr">
-      <div className="mx-auto grid max-w-[1320px] gap-2 xl:grid-cols-[minmax(300px,0.9fr)_minmax(260px,0.55fr)_minmax(420px,1.15fr)]">
-        <Card>
-          <CardHeader className="pb-1">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FileImage className="h-4 w-4" />
-              图片
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <div
-              className="flex min-h-[min(44vh,420px)] items-center justify-center overflow-hidden rounded-none border-2 border-dashed border-border bg-muted/20"
-              onDragOver={(event) => event.preventDefault()}
-              onDrop={handleDrop}
-            >
-              {previewUrl ? (
-                <img
-                  src={previewUrl}
-                  alt="OCR 预览"
-                  className="max-h-[min(54vh,520px)] w-full object-contain"
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-2 px-4 text-center text-muted-foreground">
-                  <Upload className="h-8 w-8" />
-                  <span className="text-sm">拖拽、粘贴或选择图片</span>
-                </div>
-              )}
-            </div>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileInputChange}
-            />
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Button onClick={() => fileInputRef.current?.click()} size="sm">
-                <Upload className="mr-2 h-4 w-4" />
-                选择图片
-              </Button>
-              <Button
-                disabled={!selectedFile || isProcessing}
-                onClick={reset}
-                size="sm"
-                variant="outline"
-              >
-                <RotateCcw className="mr-2 h-4 w-4" />
-                重置
-              </Button>
-            </div>
-
-            {selectedFile && (
-              <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs">
-                <span className="text-muted-foreground">文件</span>
-                <span className="truncate font-medium">{selectedFile.name}</span>
-                <span className="text-muted-foreground">大小</span>
-                <span>{formatFileSize(selectedFile.size)}</span>
+    <div className="mx-auto grid max-w-[1320px] gap-2 xl:grid-cols-[minmax(300px,0.9fr)_minmax(260px,0.55fr)_minmax(420px,1.15fr)]">
+      <Card>
+        <CardHeader className="pb-1">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileImage className="h-4 w-4" />
+            图片
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <div
+            className="flex min-h-[min(44vh,420px)] items-center justify-center overflow-hidden rounded-none border-2 border-dashed border-border bg-muted/20"
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={handleDrop}
+          >
+            {previewUrl ? (
+              <img
+                src={previewUrl}
+                alt="OCR 预览"
+                className="max-h-[min(54vh,520px)] w-full object-contain"
+              />
+            ) : (
+              <div className="flex flex-col items-center gap-2 px-4 text-center text-muted-foreground">
+                <Upload className="h-8 w-8" />
+                <span className="text-sm">拖拽、粘贴或选择图片</span>
               </div>
             )}
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardHeader className="pb-1">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ScanText className="h-4 w-4" />
-              识别
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="flex items-center gap-2 text-sm font-medium">
-                <Languages className="h-4 w-4" />
-                语言
-              </label>
-              <Select
-                disabled={isProcessing}
-                value={language}
-                onValueChange={setLanguage}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {OCR_LANGUAGES.map((item) => (
-                    <SelectItem key={item.code} value={item.code}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileInputChange}
+          />
 
-            <Button
-              className="w-full"
-              disabled={!selectedFile || isProcessing}
-              onClick={recognizeImage}
-              size="sm"
-            >
-              {isProcessing ? (
-                <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <ScanText className="mr-2 h-4 w-4" />
-              )}
-              开始识别
+          <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={() => fileInputRef.current?.click()} size="sm">
+              <Upload className="mr-2 h-4 w-4" />
+              选择图片
             </Button>
+            <Button
+              disabled={!selectedFile || isProcessing}
+              onClick={reset}
+              size="sm"
+              variant="outline"
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              重置
+            </Button>
+          </div>
 
-            {progressLabel && (
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>{progressLabel}</span>
-                  {confidence !== null && (
-                    <span>可信度 {confidence.toFixed(1)}%</span>
-                  )}
-                </div>
-                <div className="h-2 overflow-hidden rounded-none bg-muted">
-                  <div
-                    className="h-full bg-primary transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>识别失败</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            <p className="text-xs leading-relaxed text-muted-foreground">
-              图片内容只在当前浏览器页面中识别。首次使用会加载 OCR 引擎和语言模型，后续会使用浏览器缓存。
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-1">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <ScanText className="h-4 w-4" />
-              识别结果
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Textarea
-              className="h-[min(56vh,560px)] font-mono text-xs"
-              placeholder="OCR 结果将显示在这里"
-              readOnly
-              value={result}
-            />
-
-            <div className="flex flex-wrap justify-end gap-2">
-              <Button disabled={!result} onClick={copyResult} size="sm">
-                <Copy className="mr-2 h-4 w-4" />
-                复制
-              </Button>
-              <Button
-                disabled={!result}
-                onClick={() => downloadTextFile(result, 'ocr-result.txt')}
-                size="sm"
-                variant="outline"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                下载文本
-              </Button>
+          {selectedFile && (
+            <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs">
+              <span className="text-muted-foreground">文件</span>
+              <span className="truncate font-medium">{selectedFile.name}</span>
+              <span className="text-muted-foreground">大小</span>
+              <span>{formatFileSize(selectedFile.size)}</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </ToolPageShell>
-  )
-}
+          )}
+        </CardContent>
+      </Card>
 
-export function App() {
-  return (
-    <ToolErrorBoundary toolId="ocr" toolName="OCR 文字识别">
-      <OcrTool />
-    </ToolErrorBoundary>
+      <Card>
+        <CardHeader className="pb-1">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ScanText className="h-4 w-4" />
+            识别
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <Languages className="h-4 w-4" />
+              语言
+            </label>
+            <Select
+              disabled={isProcessing}
+              value={language}
+              onValueChange={setLanguage}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {OCR_LANGUAGES.map((item) => (
+                  <SelectItem key={item.code} value={item.code}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <Button
+            className="w-full"
+            disabled={!selectedFile || isProcessing}
+            onClick={recognizeImage}
+            size="sm"
+          >
+            {isProcessing ? (
+              <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <ScanText className="mr-2 h-4 w-4" />
+            )}
+            开始识别
+          </Button>
+
+          {progressLabel && (
+            <div className="space-y-1.5">
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{progressLabel}</span>
+                {confidence !== null && (
+                  <span>可信度 {confidence.toFixed(1)}%</span>
+                )}
+              </div>
+              <div className="h-2 overflow-hidden rounded-none bg-muted">
+                <div
+                  className="h-full bg-primary transition-all"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>识别失败</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            图片内容只在当前浏览器页面中识别。首次使用会加载 OCR
+            引擎和语言模型，后续会使用浏览器缓存。
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-1">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <ScanText className="h-4 w-4" />
+            识别结果
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Textarea
+            className="h-[min(56vh,560px)] font-mono text-xs"
+            placeholder="OCR 结果将显示在这里"
+            readOnly
+            value={result}
+          />
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button disabled={!result} onClick={copyResult} size="sm">
+              <Copy className="mr-2 h-4 w-4" />
+              复制
+            </Button>
+            <Button
+              disabled={!result}
+              onClick={() => downloadTextFile(result, 'ocr-result.txt')}
+              size="sm"
+              variant="outline"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              下载文本
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

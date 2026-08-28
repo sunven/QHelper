@@ -1,19 +1,13 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
-import { App } from './aes-gcm'
+import { describe, expect, it } from 'vitest'
+import { AesGcmTool } from './aes-gcm'
 
-vi.mock('@/components/tool/ToolPageShell', () => ({
-  ToolPageShell: ({ children }: { children: React.ReactNode }) => (
-    <main>{children}</main>
-  ),
-}))
-
-describe('aes-gcm/App', () => {
+describe('aes-gcm/AesGcmTool', () => {
   it('encrypts text and decrypts the generated payload', async () => {
     const user = userEvent.setup()
 
-    render(<App />)
+    render(<AesGcmTool />)
 
     await user.type(screen.getByLabelText('明文'), 'secret text')
     await user.type(screen.getAllByLabelText('口令')[0], 'passphrase')

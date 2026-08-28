@@ -44,6 +44,10 @@ _Avoid_: Tool registry, navigation config, route map
 A user-startable QHelper destination or command declared by the **Tool Catalog**. A **Launch Entry** describes identity, surface visibility, and launch intent for ordinary tool pages, system pages such as settings, extension pages such as bookmarks, side panel actions, and browser commands such as clearing cookies. A **Launch Entry** does not execute Chrome behavior itself; execution belongs to the adapter that consumes the catalog in its surface. Destructive browser commands are still **Launch Entries**, but must declare their risk so the adapter can confirm before execution.
 _Avoid_: Popup-only tool, special tool, action config
 
+**Tool Page Shell**:
+The uniform skeleton of every ordinary tool page: the accessibility heading, data attributes, and error fallback are applied by the tool route factory; tool components do not wrap themselves. Tool-specific layout variants are declared at the route mapping, not inside the tool. A **Tool Page Shell** is page structure, not tool behaviour.
+_Avoid_: Page template, tool container, App wrapper
+
 **Repository Page Helper**:
 An optional QHelper aid that appears in the context of the currently viewed public code repository. A **Repository Page Helper** is not a standalone tool in the **Tool Catalog** and should use the current repository as its subject unless the user explicitly chooses another subject. Multiple **Repository Page Helpers** may coexist when each has a distinct purpose.
 _Avoid_: Global widget, fixed repo helper, tool page

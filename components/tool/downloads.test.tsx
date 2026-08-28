@@ -1,22 +1,20 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { App } from './downloads'
+import { DownloadsTool } from './downloads'
 
-const { eraseDownloadHistoryRecords, listDownloadsForCleanup } = vi.hoisted(() => ({
-  eraseDownloadHistoryRecords: vi.fn(),
-  listDownloadsForCleanup: vi.fn(),
-}))
+const { eraseDownloadHistoryRecords, listDownloadsForCleanup } = vi.hoisted(
+  () => ({
+    eraseDownloadHistoryRecords: vi.fn(),
+    listDownloadsForCleanup: vi.fn(),
+  }),
+)
 
 vi.mock('@/lib/chrome/downloads', () => ({
   eraseDownloadHistoryRecords,
   listDownloadsForCleanup,
 }))
 
-vi.mock('@/components/tool/ToolPageShell', () => ({
-  ToolPageShell: ({ children }: { children: React.ReactNode }) => <main>{children}</main>,
-}))
-
-describe('downloads/App', () => {
+describe('downloads/DownloadsTool', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     listDownloadsForCleanup.mockResolvedValue([
@@ -32,14 +30,16 @@ describe('downloads/App', () => {
   })
 
   it('automatically scans downloads once when the page opens', async () => {
-    render(<App />)
+    render(<DownloadsTool />)
 
     await waitFor(() => {
       expect(listDownloadsForCleanup).toHaveBeenCalledTimes(1)
     })
 
     expect(await screen.findByText('missing.zip')).toBeVisible()
-    expect(screen.getByText('确认缺失').nextElementSibling).toHaveTextContent('1')
+    expect(screen.getByText('确认缺失').nextElementSibling).toHaveTextContent(
+      '1',
+    )
     expect(eraseDownloadHistoryRecords).not.toHaveBeenCalled()
   })
 })

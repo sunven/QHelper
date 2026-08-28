@@ -16,12 +16,6 @@ vi.mock('@/hooks/useToolHistory', () => ({
   }),
 }))
 
-vi.mock('@/components/tool/ToolPageShell', () => ({
-  ToolPageShell: ({ children }: { children: React.ReactNode }) => (
-    <main>{children}</main>
-  ),
-}))
-
 describe('convert/ConvertTool', () => {
   beforeEach(() => {
     addHistory.mockClear()

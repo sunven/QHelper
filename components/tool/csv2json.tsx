@@ -1,128 +1,128 @@
-import { useState, useMemo } from 'react';
-import { ToolErrorBoundary } from '@/components/ToolErrorBoundary';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
-import { FileJson, FileText, Copy } from 'lucide-react';
-import { ToolPageShell } from '@/components/tool/ToolPageShell';
+import { useState, useMemo } from 'react'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { FileJson, FileText, Copy } from 'lucide-react'
 
 export function CSVToJSON() {
-  const [input, setInput] = useState('');
-  const [output, setOutput] = useState('');
-  const [error, setError] = useState('');
-  const [hasHeader, setHasHeader] = useState(true);
-  const [prettyPrint, setPrettyPrint] = useState(true);
+  const [input, setInput] = useState('')
+  const [output, setOutput] = useState('')
+  const [error, setError] = useState('')
+  const [hasHeader, setHasHeader] = useState(true)
+  const [prettyPrint, setPrettyPrint] = useState(true)
 
   const result = useMemo(() => {
-    if (!input.trim()) return { json: null, count: 0 };
+    if (!input.trim()) return { json: null, count: 0 }
 
     try {
-      const lines = input.trim().split('\n').filter((line) => line.trim());
-      if (lines.length === 0) return { json: null, count: 0 };
+      const lines = input
+        .trim()
+        .split('\n')
+        .filter((line) => line.trim())
+      if (lines.length === 0) return { json: null, count: 0 }
 
       // 解析 CSV
       const parseCSVRow = (row: string): string[] => {
-        const result: string[] = [];
-        let current = '';
-        let inQuotes = false;
+        const result: string[] = []
+        let current = ''
+        let inQuotes = false
 
         for (let i = 0; i < row.length; i++) {
-          const char = row[i];
-          const nextChar = row[i + 1];
+          const char = row[i]
+          const nextChar = row[i + 1]
 
           if (char === '"') {
             if (inQuotes && nextChar === '"') {
-              current += '"';
-              i++;
+              current += '"'
+              i++
             } else {
-              inQuotes = !inQuotes;
+              inQuotes = !inQuotes
             }
           } else if (char === ',' && !inQuotes) {
-            result.push(current);
-            current = '';
+            result.push(current)
+            current = ''
           } else {
-            current += char;
+            current += char
           }
         }
-        result.push(current);
+        result.push(current)
 
-        return result;
-      };
+        return result
+      }
 
-      const rows = lines.map(parseCSVRow);
-      const maxCols = Math.max(...rows.map((r) => r.length));
+      const rows = lines.map(parseCSVRow)
+      const maxCols = Math.max(...rows.map((r) => r.length))
 
       // 填充不足的列
       rows.forEach((row) => {
         while (row.length < maxCols) {
-          row.push('');
+          row.push('')
         }
-      });
+      })
 
-      let json: unknown;
+      let json: unknown
 
       if (hasHeader && rows.length > 1) {
-        const headers = rows[0];
+        const headers = rows[0]
         const data = rows.slice(1).map((row) => {
-          const obj: Record<string, string> = {};
+          const obj: Record<string, string> = {}
           headers.forEach((header, index) => {
-            obj[header] = row[index];
-          });
-          return obj;
-        });
-        json = data;
+            obj[header] = row[index]
+          })
+          return obj
+        })
+        json = data
       } else {
-        json = rows;
+        json = rows
       }
 
       const jsonString = prettyPrint
         ? JSON.stringify(json, null, 2)
-        : JSON.stringify(json);
+        : JSON.stringify(json)
 
-      return { json: jsonString, count: Array.isArray(json) ? json.length : 1 };
+      return { json: jsonString, count: Array.isArray(json) ? json.length : 1 }
     } catch (e) {
-      setError(e instanceof Error ? e.message : '解析失败');
-      return { json: null, count: 0 };
+      setError(e instanceof Error ? e.message : '解析失败')
+      return { json: null, count: 0 }
     }
-  }, [input, hasHeader, prettyPrint]);
+  }, [input, hasHeader, prettyPrint])
 
   // 当结果改变时更新输出
   useMemo(() => {
     if (result.json) {
-      setOutput(result.json);
-      setError('');
+      setOutput(result.json)
+      setError('')
     }
-  }, [result]);
+  }, [result])
 
   function handleConvert() {
     // result 会自动更新
   }
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(output);
+    await navigator.clipboard.writeText(output)
   }
 
   function handleClear() {
-    setInput('');
-    setOutput('');
-    setError('');
+    setInput('')
+    setOutput('')
+    setError('')
   }
 
   function handleSample() {
     const sample = `name,age,city
 张三,25,北京
 李四,30,上海
-王五,28,广州`;
-    setInput(sample);
+王五,28,广州`
+    setInput(sample)
   }
 
   return (
-    <ToolPageShell toolId="csv2json">
-      <div className="mx-auto max-w-[1440px] space-y-2">
-        <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(420px,1fr)_minmax(420px,1fr)]">
-          <div className="space-y-2">
+    <div className="mx-auto max-w-[1440px] space-y-2">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(420px,1fr)_minmax(420px,1fr)]">
+        <div className="space-y-2">
           <Card>
             <CardHeader className="pb-1">
               <div className="flex items-center justify-between">
@@ -167,7 +167,9 @@ export function CSVToJSON() {
                 <Checkbox
                   id="prettyPrint"
                   checked={prettyPrint}
-                  onCheckedChange={(checked) => setPrettyPrint(checked === true)}
+                  onCheckedChange={(checked) =>
+                    setPrettyPrint(checked === true)
+                  }
                 />
                 <Label htmlFor="prettyPrint" className="cursor-pointer">
                   美化输出 (Pretty Print)
@@ -208,29 +210,24 @@ export function CSVToJSON() {
                 placeholder="JSON 结果将显示在这里..."
                 className="min-h-[min(58vh,600px)] bg-muted/50 font-mono text-sm"
               />
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardContent className="pt-3">
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-              <span className="font-medium text-foreground">使用说明：</span>
-              <ul className="flex flex-wrap gap-x-4 gap-y-1">
-                <li>支持逗号分隔 CSV</li>
-                <li>支持双引号字段</li>
-                <li>第一行可作为字段名</li>
-                <li>可输出对象数组或二维数组</li>
-              </ul>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
-    </ToolPageShell>
-  );
-}
 
-export function App() {
-  return <ToolErrorBoundary toolId="csv2json" toolName="CSV 转 JSON"><CSVToJSON /></ToolErrorBoundary>;
+      <Card>
+        <CardContent className="pt-3">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">使用说明：</span>
+            <ul className="flex flex-wrap gap-x-4 gap-y-1">
+              <li>支持逗号分隔 CSV</li>
+              <li>支持双引号字段</li>
+              <li>第一行可作为字段名</li>
+              <li>可输出对象数组或二维数组</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
 }

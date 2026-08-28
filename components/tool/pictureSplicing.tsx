@@ -7,8 +7,6 @@ import {
   X,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
-import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -231,178 +229,165 @@ export function PictureSplicingTool() {
   }
 
   return (
-    <ToolPageShell
-      toolId="pictureSplicing"
-      description="上传、排序并生成拼接图，适合快速合并截图、海报或长图素材。"
-    >
-      <div className="mx-auto grid max-w-[1320px] gap-2 lg:grid-cols-[minmax(360px,0.78fr)_minmax(520px,1.22fr)]">
+    <div className="mx-auto grid max-w-[1320px] gap-2 lg:grid-cols-[minmax(360px,0.78fr)_minmax(520px,1.22fr)]">
+      <Card>
+        <CardHeader className="pb-1">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Upload className="w-4 h-4" />
+            上传图片
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            size="sm"
+            className="w-full"
+          >
+            <Upload className="w-4 h-4 mr-2" />
+            选择图片
+          </Button>
+          <p className="mt-1.5 text-center text-xs text-muted-foreground">
+            支持拖拽或 Ctrl + V 粘贴
+          </p>
+        </CardContent>
+
+        {images.length > 0 && !canvasUrl && (
+          <CardContent className="space-y-2 border-t pt-3">
+            <div className="flex items-center gap-2 text-sm font-semibold">
+              <Settings className="h-4 w-4" />
+              拼接设置
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">拼接方向</label>
+                <Select
+                  value={direction}
+                  onValueChange={(value) =>
+                    setDirection(value as 'horizontal' | 'vertical')
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="horizontal">水平拼接</SelectItem>
+                    <SelectItem value="vertical">垂直拼接</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">图片间距（px）</label>
+                <Input
+                  type="number"
+                  value={gap}
+                  onChange={(e) => setGap(Number(e.target.value))}
+                  min={0}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">背景颜色</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="h-9 w-12 cursor-pointer p-1"
+                  />
+                  <Input
+                    type="text"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <Button onClick={generateCanvas} size="sm" className="w-full">
+              生成拼接图片
+            </Button>
+          </CardContent>
+        )}
+      </Card>
+
+      {images.length > 0 && !canvasUrl && (
         <Card>
           <CardHeader className="pb-1">
             <CardTitle className="flex items-center gap-2 text-base">
-              <Upload className="w-4 h-4" />
-              上传图片
+              <ImageIcon className="w-4 h-4" />
+              图片列表 ({images.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              multiple
-              onChange={handleFileSelect}
-              className="hidden"
-            />
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              size="sm"
-              className="w-full"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              选择图片
-            </Button>
-            <p className="mt-1.5 text-center text-xs text-muted-foreground">
-              支持拖拽或 Ctrl + V 粘贴
+            <div className="flex max-h-[calc(100vh-14rem)] flex-wrap gap-2 overflow-y-auto">
+              {images.map((img) => (
+                <ImageListItem
+                  key={img.id}
+                  id={img.id}
+                  src={img.src}
+                  isDragging={draggedImageId === img.id}
+                  onDragStart={setDraggedImageId}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(overId) => {
+                    if (draggedImageId) {
+                      moveImage(draggedImageId, overId)
+                    }
+                  }}
+                  onDragEnd={() => setDraggedImageId(null)}
+                  onRemove={removeImage}
+                />
+              ))}
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              拖拽图片可以调整顺序
             </p>
           </CardContent>
-
-          {images.length > 0 && !canvasUrl && (
-            <CardContent className="space-y-2 border-t pt-3">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <Settings className="h-4 w-4" />
-                拼接设置
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">拼接方向</label>
-                  <Select
-                    value={direction}
-                    onValueChange={(value) =>
-                      setDirection(value as 'horizontal' | 'vertical')
-                    }
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="horizontal">水平拼接</SelectItem>
-                      <SelectItem value="vertical">垂直拼接</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">图片间距（px）</label>
-                  <Input
-                    type="number"
-                    value={gap}
-                    onChange={(e) => setGap(Number(e.target.value))}
-                    min={0}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">背景颜色</label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="h-9 w-12 cursor-pointer p-1"
-                    />
-                    <Input
-                      type="text"
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="flex-1"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Button onClick={generateCanvas} size="sm" className="w-full">
-                生成拼接图片
-              </Button>
-            </CardContent>
-          )}
         </Card>
+      )}
 
-        {images.length > 0 && !canvasUrl && (
-          <Card>
-            <CardHeader className="pb-1">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ImageIcon className="w-4 h-4" />
-                图片列表 ({images.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex max-h-[calc(100vh-14rem)] flex-wrap gap-2 overflow-y-auto">
-                {images.map((img) => (
-                  <ImageListItem
-                    key={img.id}
-                    id={img.id}
-                    src={img.src}
-                    isDragging={draggedImageId === img.id}
-                    onDragStart={setDraggedImageId}
-                    onDragOver={(event) => event.preventDefault()}
-                    onDrop={(overId) => {
-                      if (draggedImageId) {
-                        moveImage(draggedImageId, overId)
-                      }
-                    }}
-                    onDragEnd={() => setDraggedImageId(null)}
-                    onRemove={removeImage}
-                  />
-                ))}
-              </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                拖拽图片可以调整顺序
-              </p>
-            </CardContent>
-          </Card>
-        )}
+      {canvasUrl && (
+        <Card>
+          <CardHeader className="pb-1">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ImageIcon className="w-4 h-4" />
+              拼接结果
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <img
+              src={canvasUrl}
+              alt="拼接结果"
+              className="max-h-[calc(100vh-14rem)] w-full rounded-none border border-border/70 object-contain"
+            />
 
-        {canvasUrl && (
-          <Card>
-            <CardHeader className="pb-1">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <ImageIcon className="w-4 h-4" />
-                拼接结果
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <img
-                src={canvasUrl}
-                alt="拼接结果"
-                className="max-h-[calc(100vh-14rem)] w-full rounded-none border border-border/70 object-contain"
-              />
-
-              <div className="flex gap-2">
-                <Button onClick={downloadCanvas} size="sm" className="flex-1">
-                  <Download className="w-4 h-4 mr-2" />
-                  下载拼接结果
-                </Button>
-                <Button
-                  onClick={clearImages}
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  清除并重新开始
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </ToolPageShell>
-  )
-}
-
-export function App() {
-  return (
-    <ToolErrorBoundary toolId="pictureSplicing" toolName="图片拼接">
-      <PictureSplicingTool />
-    </ToolErrorBoundary>
+            <div className="flex gap-2">
+              <Button onClick={downloadCanvas} size="sm" className="flex-1">
+                <Download className="w-4 h-4 mr-2" />
+                下载拼接结果
+              </Button>
+              <Button
+                onClick={clearImages}
+                variant="outline"
+                size="sm"
+                className="flex-1"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                清除并重新开始
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   )
 }

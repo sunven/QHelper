@@ -1,11 +1,13 @@
-import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { buildDownloadFileName, mergeRemoteText, parseMergeInput } from '@/lib/filemerge/merge'
+import {
+  buildDownloadFileName,
+  mergeRemoteText,
+  parseMergeInput,
+} from '@/lib/filemerge/merge'
 import { Download, FileCode } from 'lucide-react'
 import { useState } from 'react'
-import { ToolPageShell } from '@/components/tool/ToolPageShell';
 
 function downloadByData(data: string) {
   const url = window.URL.createObjectURL(
@@ -41,33 +43,27 @@ export function FileMergeTool() {
   }
 
   return (
-    <ToolPageShell toolId="filemerge">
-      <div className="mx-auto max-w-[1280px]">
-        <Card>
-          <CardHeader className="pb-1">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <FileCode className="h-4 w-4" />
-              脚本列表
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Textarea
-              value={source}
-              onChange={(event) => setSource(event.target.value)}
-              placeholder={'<script src="xxx.js"></script> 或 xxx.js  多个换行'}
-              className="h-[min(68vh,680px)] font-mono text-sm"
-            />
-            <Button type="button" onClick={() => void handleDownload()} size="sm">
-              <Download className="h-4 w-4" />
-              download
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </ToolPageShell>
+    <div className="mx-auto max-w-[1280px]">
+      <Card>
+        <CardHeader className="pb-1">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileCode className="h-4 w-4" />
+            脚本列表
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2">
+          <Textarea
+            value={source}
+            onChange={(event) => setSource(event.target.value)}
+            placeholder={'<script src="xxx.js"></script> 或 xxx.js  多个换行'}
+            className="h-[min(68vh,680px)] font-mono text-sm"
+          />
+          <Button type="button" onClick={() => void handleDownload()} size="sm">
+            <Download className="h-4 w-4" />
+            download
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   )
-}
-
-export function App() {
-  return <ToolErrorBoundary toolId="filemerge" toolName="JS 文件合并"><FileMergeTool /></ToolErrorBoundary>;
 }

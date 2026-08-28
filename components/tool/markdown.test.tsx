@@ -1,12 +1,6 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { App } from './markdown'
-
-vi.mock('@/components/tool/ToolPageShell', () => ({
-  ToolPageShell: ({ children }: { children: React.ReactNode }) => (
-    <main>{children}</main>
-  ),
-}))
+import { MarkdownEditor } from './markdown'
 
 const maliciousMarkdown = `# Title
 
@@ -47,14 +41,14 @@ function getPreview(container: HTMLElement): HTMLElement {
   return preview
 }
 
-describe('markdown/App', () => {
+describe('markdown/MarkdownEditor', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     restoreUrlStatics()
   })
 
   it('sanitizes rendered markdown before injecting preview HTML', async () => {
-    const { container } = render(<App />)
+    const { container } = render(<MarkdownEditor />)
 
     fireEvent.change(screen.getByPlaceholderText('输入 Markdown 内容...'), {
       target: { value: maliciousMarkdown },
@@ -94,7 +88,7 @@ describe('markdown/App', () => {
       value: revokeObjectURL,
     })
 
-    render(<App />)
+    render(<MarkdownEditor />)
 
     fireEvent.change(screen.getByPlaceholderText('输入 Markdown 内容...'), {
       target: { value: maliciousMarkdown },

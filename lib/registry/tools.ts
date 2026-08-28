@@ -6,7 +6,7 @@ import { ToolCategory } from './ToolMetadata'
  *
  * 新增工具时，在此处添加工具元数据
  */
-export const tools: ToolMetadata[] = [
+export const tools = [
   // ===== 常用工具 =====
   {
     id: 'json',
@@ -257,4 +257,4 @@ export const tools: ToolMetadata[] = [
     icon: 'FileCode',
     description: 'XML 美化、压缩、格式化、验证',
   },
-]
+] as const satisfies readonly ToolMetadata[]
