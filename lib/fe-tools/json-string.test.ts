@@ -1,14 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  DEFAULT_JSON_STRING_SETTINGS,
-  getJsonStringSettings,
   JSON_STRING_SETTINGS_STORAGE_KEY,
   isJsonString,
   jsonStringSettings,
-  normalizeJsonStringSettings,
-  setJsonStringSettings,
   shouldCaptureJsonRequest,
-  subscribeJsonStringSettings,
   transformJsonStringToJson,
 } from './json-string'
 
@@ -64,7 +59,9 @@ describe('fe-tools/json-string', () => {
   })
 
   it('captures local json requests', () => {
-    const headers = [{ name: 'content-type', value: 'Application/JSON; charset=utf-8' }]
+    const headers = [
+      { name: 'content-type', value: 'Application/JSON; charset=utf-8' },
+    ]
 
     expect(
       shouldCaptureJsonRequest({
@@ -90,13 +87,17 @@ describe('fe-tools/json-string', () => {
     expect(
       shouldCaptureJsonRequest({
         request: { url: 'chrome-extension://abc/api' },
-        response: { headers: [{ name: 'content-type', value: 'application/json' }] },
+        response: {
+          headers: [{ name: 'content-type', value: 'application/json' }],
+        },
       }),
     ).toBe(false)
     expect(
       shouldCaptureJsonRequest({
         request: { url: 'https://example.com/api' },
-        response: { headers: [{ name: 'content-type', value: 'application/json' }] },
+        response: {
+          headers: [{ name: 'content-type', value: 'application/json' }],
+        },
       }),
     ).toBe(false)
     expect(
@@ -108,7 +109,9 @@ describe('fe-tools/json-string', () => {
     expect(
       shouldCaptureJsonRequest({
         request: { url: 'not a url' },
-        response: { headers: [{ name: 'content-type', value: 'application/json' }] },
+        response: {
+          headers: [{ name: 'content-type', value: 'application/json' }],
+        },
       }),
     ).toBe(false)
   })
@@ -116,20 +119,13 @@ describe('fe-tools/json-string', () => {
   it('defines Json String settings as a synced Tool Setting', () => {
     expect(jsonStringSettings).toMatchObject({
       key: JSON_STRING_SETTINGS_STORAGE_KEY,
-      defaults: DEFAULT_JSON_STRING_SETTINGS,
-    })
-  })
-
-  it('normalizes Json String settings to disabled by default', () => {
-    expect(normalizeJsonStringSettings(undefined)).toEqual({ enabled: false })
-    expect(normalizeJsonStringSettings({ enabled: true })).toEqual({
-      enabled: true,
+      defaults: { enabled: false },
     })
   })
 
   it('keeps compatible get and set exports on the definition', async () => {
-    await expect(getJsonStringSettings()).resolves.toEqual({ enabled: false })
-    await expect(setJsonStringSettings({ enabled: true })).resolves.toEqual({
+    await expect(jsonStringSettings.get()).resolves.toEqual({ enabled: false })
+    await expect(jsonStringSettings.set({ enabled: true })).resolves.toEqual({
       settings: { enabled: true },
       storageArea: 'sync',
     })
@@ -137,7 +133,7 @@ describe('fe-tools/json-string', () => {
 
   it('subscribes through the definition without exposing storage area', () => {
     const listener = vi.fn()
-    const unsubscribe = subscribeJsonStringSettings(listener)
+    const unsubscribe = jsonStringSettings.subscribe(listener)
     const calls = vi.mocked(chrome.storage.onChanged.addListener).mock.calls
     const handleChange = calls[calls.length - 1]?.[0]
 

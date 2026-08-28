@@ -2,12 +2,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { DictionaryOverlay } from '@/components/dictionary/DictionaryOverlay'
 import '@/components/dictionary/styles.css'
 import { ballStore, panelStore } from './stores'
-import {
-  DEFAULT_DICTIONARY_SETTINGS,
-  getDictionarySettings,
-  subscribeDictionarySettings,
-  type DictionarySettings,
-} from './settings'
+import { dictionarySettings, type DictionarySettings } from './settings'
 import { createDictionaryFetchMessage, createYoudaoUrl } from './youdao'
 import type { DictionaryData } from './types'
 
@@ -165,9 +160,9 @@ export function installDictionarySelectionLookupController(
   documentRef: Document,
   deps: DictionarySelectionControllerDeps = {},
 ) {
-  const getSettings = deps.getSettings || getDictionarySettings
+  const getSettings = deps.getSettings || dictionarySettings.get
   const onSettingsChanged =
-    deps.onSettingsChanged || subscribeDictionarySettings
+    deps.onSettingsChanged || dictionarySettings.subscribe
   let disposed = false
   let cleanupLookup: (() => void) | undefined
 
@@ -194,7 +189,7 @@ export function installDictionarySelectionLookupController(
   void getSettings()
     .then(applySettings)
     .catch(() => {
-      applySettings(DEFAULT_DICTIONARY_SETTINGS)
+      applySettings(dictionarySettings.defaults)
     })
 
   const cleanupSettings = onSettingsChanged(applySettings)

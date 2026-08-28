@@ -1,12 +1,7 @@
 import { createRoot, type Root } from 'react-dom/client'
 import { V2exBase64Overlay } from '@/components/v2ex-base64/V2exBase64Overlay'
 import overlayStyles from '@/components/v2ex-base64/styles.css?inline'
-import {
-  DEFAULT_V2EX_BASE64_SETTINGS,
-  getV2exBase64Settings,
-  subscribeV2exBase64Settings,
-  type V2exBase64Settings,
-} from './settings'
+import { v2exBase64Settings, type V2exBase64Settings } from './settings'
 
 const ROOT_ATTRIBUTE = 'data-qhelper-v2ex-base64-root'
 
@@ -87,9 +82,9 @@ export function installV2exBase64OverlayController(
   documentRef: Document,
   deps: V2exBase64ContentDeps = {},
 ) {
-  const getSettings = deps.getSettings || getV2exBase64Settings
+  const getSettings = deps.getSettings || v2exBase64Settings.get
   const onSettingsChanged =
-    deps.onSettingsChanged || subscribeV2exBase64Settings
+    deps.onSettingsChanged || v2exBase64Settings.subscribe
   const overlay = installV2exBase64Overlay(documentRef, deps)
   let disposed = false
 
@@ -104,7 +99,7 @@ export function installV2exBase64OverlayController(
   void getSettings()
     .then(applySettings)
     .catch(() => {
-      applySettings(DEFAULT_V2EX_BASE64_SETTINGS)
+      applySettings(v2exBase64Settings.defaults)
     })
 
   const unsubscribeSettings = onSettingsChanged(applySettings)

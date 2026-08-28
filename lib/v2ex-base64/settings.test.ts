@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  DEFAULT_V2EX_BASE64_SETTINGS,
   normalizeV2exBase64Entries,
   normalizeV2exBase64Settings,
   V2EX_BASE64_SETTINGS_STORAGE_KEY,
@@ -27,7 +26,7 @@ describe('v2ex-base64/settings', () => {
   it('defines V2EX Base64 settings as a synced tool setting', () => {
     expect(v2exBase64Settings).toMatchObject({
       key: V2EX_BASE64_SETTINGS_STORAGE_KEY,
-      defaults: DEFAULT_V2EX_BASE64_SETTINGS,
+      defaults: { entries: [] },
     })
   })
 

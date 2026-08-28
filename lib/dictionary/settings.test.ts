@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import {
-  DEFAULT_DICTIONARY_SETTINGS,
-  DICTIONARY_SETTINGS_STORAGE_KEY,
-  dictionarySettings,
-  normalizeDictionarySettings,
-} from './settings'
+import { DICTIONARY_SETTINGS_STORAGE_KEY, dictionarySettings } from './settings'
 
 describe('dictionary/settings', () => {
   beforeEach(() => {
@@ -26,16 +21,7 @@ describe('dictionary/settings', () => {
   it('defines dictionary settings as a synced Tool Setting', () => {
     expect(dictionarySettings).toMatchObject({
       key: DICTIONARY_SETTINGS_STORAGE_KEY,
-      defaults: DEFAULT_DICTIONARY_SETTINGS,
-    })
-  })
-
-  it('normalizes dictionary settings to disabled by default', () => {
-    expect(normalizeDictionarySettings(undefined)).toEqual({
-      selectionLookupEnabled: false,
-    })
-    expect(normalizeDictionarySettings({ selectionLookupEnabled: true })).toEqual({
-      selectionLookupEnabled: true,
+      defaults: { selectionLookupEnabled: false },
     })
   })
 
@@ -52,7 +38,9 @@ describe('dictionary/settings', () => {
     await expect(dictionarySettings.get()).resolves.toEqual({
       selectionLookupEnabled: false,
     })
-    await expect(dictionarySettings.set({ selectionLookupEnabled: false })).resolves.toEqual({
+    await expect(
+      dictionarySettings.set({ selectionLookupEnabled: false }),
+    ).resolves.toEqual({
       settings: { selectionLookupEnabled: false },
       storageArea: 'sync',
     })

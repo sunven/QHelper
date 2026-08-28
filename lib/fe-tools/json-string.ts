@@ -6,16 +6,12 @@ export type JsonStringSettings = {
   enabled: boolean
 }
 
-export const jsonStringSettings = defineSetting(JSON_STRING_SETTINGS_STORAGE_KEY, {
-  enabled: false,
-})
-
-export const DEFAULT_JSON_STRING_SETTINGS = jsonStringSettings.defaults
-export const getJsonStringSettings = jsonStringSettings.get
-export const setJsonStringSettings = jsonStringSettings.set
-export const subscribeJsonStringSettings = jsonStringSettings.subscribe
-export const normalizeJsonStringSettings = (v: Partial<JsonStringSettings> | undefined) =>
-  ({ ...jsonStringSettings.defaults, ...v })
+export const jsonStringSettings = defineSetting(
+  JSON_STRING_SETTINGS_STORAGE_KEY,
+  {
+    enabled: false,
+  },
+)
 
 type HeaderLike = {
   name?: string
@@ -61,12 +57,15 @@ export function transformJsonStringToJson<T>(data: T): T {
   }
 
   if (data && typeof data === 'object') {
-    const result: Record<string, unknown> = { ...(data as Record<string, unknown>) }
+    const result: Record<string, unknown> = {
+      ...(data as Record<string, unknown>),
+    }
 
     for (const [key, value] of Object.entries(result)) {
       if (typeof value === 'string') {
         const parsed = parseJsonString(value)
-        result[key] = parsed === false ? value : transformJsonStringToJson(parsed)
+        result[key] =
+          parsed === false ? value : transformJsonStringToJson(parsed)
         continue
       }
 
@@ -81,7 +80,9 @@ export function transformJsonStringToJson<T>(data: T): T {
   return data
 }
 
-export function shouldCaptureJsonRequest(requestLike: JsonRequestLike): boolean {
+export function shouldCaptureJsonRequest(
+  requestLike: JsonRequestLike,
+): boolean {
   const requestUrl = requestLike.request?.url
   if (!requestUrl || requestUrl.startsWith('chrome-extension://')) {
     return false

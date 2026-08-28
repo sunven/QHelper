@@ -1,7 +1,6 @@
 import {
-  getJsonStringSettings,
+  jsonStringSettings,
   shouldCaptureJsonRequest,
-  subscribeJsonStringSettings,
   type JsonRequestLike,
 } from '@/lib/fe-tools/json-string'
 import {
@@ -33,11 +32,11 @@ function applyJsonStringSettings(enabled: boolean) {
 }
 
 void clearCapturedJsonStringRequests()
-void getJsonStringSettings().then((settings) => {
+void jsonStringSettings.get().then((settings) => {
   applyJsonStringSettings(settings.enabled)
 })
 
-subscribeJsonStringSettings((settings) => {
+jsonStringSettings.subscribe((settings) => {
   applyJsonStringSettings(settings.enabled)
 })
 

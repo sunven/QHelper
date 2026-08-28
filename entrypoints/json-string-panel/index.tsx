@@ -1,6 +1,5 @@
 import {
-  getJsonStringSettings,
-  subscribeJsonStringSettings,
+  jsonStringSettings,
   transformJsonStringToJson,
   type JsonStringSettings,
 } from '@/lib/fe-tools/json-string'
@@ -21,14 +20,16 @@ function parseCapturedContent(content: string) {
 }
 
 function JsonStringPanel() {
-  const [requestData, setRequestData] = useState<CapturedJsonStringRequest[]>([])
+  const [requestData, setRequestData] = useState<CapturedJsonStringRequest[]>(
+    [],
+  )
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [settings, setSettings] = useState<JsonStringSettings | null>(null)
 
   useEffect(() => {
     let mounted = true
 
-    getJsonStringSettings().then((nextSettings) => {
+    jsonStringSettings.get().then((nextSettings) => {
       if (mounted) {
         setSettings(nextSettings)
       }
@@ -47,7 +48,7 @@ function JsonStringPanel() {
         }
       },
     )
-    const unsubscribeSettings = subscribeJsonStringSettings((nextSettings) => {
+    const unsubscribeSettings = jsonStringSettings.subscribe((nextSettings) => {
       if (!mounted) {
         return
       }
@@ -66,7 +67,8 @@ function JsonStringPanel() {
     }
   }, [])
 
-  const selectedRequest = selectedIndex === null ? null : requestData[selectedIndex]
+  const selectedRequest =
+    selectedIndex === null ? null : requestData[selectedIndex]
   const preview = useMemo(() => {
     if (!selectedRequest) {
       return { error: '', value: '' }
@@ -75,7 +77,11 @@ function JsonStringPanel() {
     try {
       return {
         error: '',
-        value: JSON.stringify(parseCapturedContent(selectedRequest.content), null, 2),
+        value: JSON.stringify(
+          parseCapturedContent(selectedRequest.content),
+          null,
+          2,
+        ),
       }
     } catch (err) {
       return {
@@ -93,7 +99,9 @@ function JsonStringPanel() {
     return (
       <main className="grid h-screen place-items-center bg-white p-6 text-slate-900">
         <section className="max-w-sm text-center">
-          <h1 className="font-mono text-sm font-semibold">Json String 已停用</h1>
+          <h1 className="font-mono text-sm font-semibold">
+            Json String 已停用
+          </h1>
           <p className="mt-2 text-xs leading-5 text-slate-500">
             可在 QHelper 设置中重新启用。
           </p>
@@ -120,7 +128,9 @@ function JsonStringPanel() {
                 className={`cursor-pointer border-b border-slate-100 hover:bg-slate-50 ${selectedIndex === index ? 'bg-emerald-50' : ''}`}
                 onClick={() => setSelectedIndex(index)}
               >
-                <td className="truncate px-2 py-1.5 text-xs text-slate-700">{request.request.url}</td>
+                <td className="truncate px-2 py-1.5 text-xs text-slate-700">
+                  {request.request.url}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -132,7 +142,10 @@ function JsonStringPanel() {
             {preview.error}
           </div>
         ) : (
-          <pre aria-label="JSON preview" className="whitespace-pre-wrap break-words font-mono text-xs leading-5">
+          <pre
+            aria-label="JSON preview"
+            className="whitespace-pre-wrap break-words font-mono text-xs leading-5"
+          >
             {preview.value}
           </pre>
         )}

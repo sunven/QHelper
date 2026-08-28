@@ -28,8 +28,3 @@ export const v2exBase64Settings = defineSetting<V2exBase64Settings>(
   { entries: [] },
   normalizeV2exBase64Settings,
 )
-
-export const DEFAULT_V2EX_BASE64_SETTINGS = v2exBase64Settings.defaults
-export const getV2exBase64Settings = v2exBase64Settings.get
-export const setV2exBase64Settings = v2exBase64Settings.set
-export const subscribeV2exBase64Settings = v2exBase64Settings.subscribe

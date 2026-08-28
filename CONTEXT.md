@@ -12,9 +12,13 @@ _Avoid_: Tool data, runtime state, cache
 The source-of-truth declaration for a **Tool Setting**. It names the preference and defines how QHelper interprets it, without being captured content, request data, tool history, or an API credential.
 _Avoid_: Setting wrapper, storage config, option schema
 
-**Tool Setting Page State**:
-The page-level state that presents **Tool Settings** for editing. It owns loading, subscriptions, optimistic saves, rollback, **Local Setting Fallback** messaging, and autosave behavior; the Settings page UI renders this state but does not call individual **Tool Setting Definitions** directly.
-_Avoid_: Settings component logic, settings form helper, options page state
+**Tool Setting Control**:
+A per-setting module that owns load, subscription, optimistic save, rollback, and **Local Setting Fallback** messaging for one **Tool Setting Definition**. The Settings page composes one control per definition and does not call the definitions directly.
+_Avoid_: Settings hook state, per-tool settings wrapper
+
+**Autosave Tool Setting**:
+The **Tool Setting Control** variant for draft-style editing. It owns the draft state, debounce timing, save-race guard, and failed-draft retry; a save failure keeps the draft for retry instead of rolling back.
+_Avoid_: Debounced input, draft cache
 
 **Synced Setting**:
 A low-sensitivity **Tool Setting** that should follow the user's browser profile across devices. Synced Settings are small preferences, not captured content, request data, tool history, API credentials, or backups.
