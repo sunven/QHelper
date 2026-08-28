@@ -64,6 +64,10 @@ _Avoid_: Star widget, fixed star chart, repository analytics
 The external Star History page for a repository's public star-growth history. A **Star History View** may point to a **Star History Detail** when the user wants the full external view.
 _Avoid_: Internal analytics page, embedded report
 
+**Inactive Repository Warning**:
+A **Repository Page Helper** for a **Repository Home Page** that recolors the repository's own last-commit timestamp when the current repository's default branch has received no new commits for a prolonged period. The recoloring is the warning: an active repository leaves the timestamp untouched. It is repository-specific public metadata, not captured content, request data, tool history, or a **Tool Setting**.
+_Avoid_: Stale repo alert, activity monitor, maintenance score
+
 ## Example Dialogue
 
 Developer: "Should Json String request data be a Synced Setting?"
@@ -125,3 +129,11 @@ Domain expert: "Yes. The Star History View can point to the Star History Detail 
 Developer: "Should each Repository Page Helper install its own GitHub SPA navigation and DOM recovery loop?"
 
 Domain expert: "No. That is the Repository Page Helper Lifecycle. Each helper adapter should provide render and recovery decisions while the lifecycle owns GitHub navigation and retry mechanics."
+
+Developer: "Should the Inactive Repository Warning use the repository's last push time to decide inactivity?"
+
+Domain expert: "No. Inactivity means the default branch has received no new commits. Pushes to other branches do not count."
+
+Developer: "Should an archived repository show the Inactive Repository Warning?"
+
+Domain expert: "No. Archive status is the repository's own stronger signal; the warning is for repositories that are simply quiet."

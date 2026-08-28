@@ -1,18 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
+  createGitHubInactiveWarningHelper,
   createGitHubStarHistoryViewHelper,
   createGitHubZreadButtonHelper,
+  inactiveWarningHelper,
   installRepositoryPageHelpers,
   starHistoryHelper,
   zreadHelper,
 } = vi.hoisted(() => {
+  const inactiveWarningHelper = { render: vi.fn() };
   const starHistoryHelper = { render: vi.fn() };
   const zreadHelper = { render: vi.fn() };
 
   return {
+    createGitHubInactiveWarningHelper: vi.fn(() => inactiveWarningHelper),
     createGitHubStarHistoryViewHelper: vi.fn(() => starHistoryHelper),
     createGitHubZreadButtonHelper: vi.fn(() => zreadHelper),
+    inactiveWarningHelper,
     installRepositoryPageHelpers: vi.fn(),
     starHistoryHelper,
     zreadHelper,
@@ -27,6 +32,10 @@ vi.mock('@/lib/github/repository-page-helper', () => ({
   installRepositoryPageHelpers,
 }));
 
+vi.mock('@/lib/github/inactive-warning-view', () => ({
+  createGitHubInactiveWarningHelper,
+}));
+
 vi.mock('@/lib/github/star-history-view', () => ({
   createGitHubStarHistoryViewHelper,
 }));
@@ -39,6 +48,7 @@ import githubContentScript from '../entrypoints/github.content';
 
 describe('entrypoints/github.content.ts', () => {
   beforeEach(() => {
+    createGitHubInactiveWarningHelper.mockClear();
     createGitHubStarHistoryViewHelper.mockClear();
     createGitHubZreadButtonHelper.mockClear();
     installRepositoryPageHelpers.mockClear();
@@ -52,9 +62,11 @@ describe('entrypoints/github.content.ts', () => {
 
     expect(createGitHubZreadButtonHelper).toHaveBeenCalledWith(document);
     expect(createGitHubStarHistoryViewHelper).toHaveBeenCalledWith(document);
+    expect(createGitHubInactiveWarningHelper).toHaveBeenCalledWith(document);
     expect(installRepositoryPageHelpers).toHaveBeenCalledWith(window, document, [
       zreadHelper,
       starHistoryHelper,
+      inactiveWarningHelper,
     ]);
   });
 });

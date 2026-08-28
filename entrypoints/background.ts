@@ -10,6 +10,7 @@ import {
   ensureCopyPageTitleContextMenu,
 } from '@/lib/fe-tools/context-menu'
 import { handleDictionaryFetchMessage } from '@/lib/dictionary/background'
+import { handleInactiveWarningMessage } from '@/lib/github/inactive-warning-background'
 import { handleStarHistorySvgMessage } from '@/lib/github/star-history-background'
 import type {
   OpenWebSummaryMessage,
@@ -63,6 +64,10 @@ export default defineBackground(() => {
     }
 
     if (handleStarHistorySvgMessage(message, sendResponse)) {
+      return true
+    }
+
+    if (handleInactiveWarningMessage(message, sendResponse)) {
       return true
     }
 
