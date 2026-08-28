@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import { tools } from '@/lib/registry/tools'
 import {
@@ -8,14 +8,20 @@ import {
   TOOL_CATEGORIES,
   TOOL_CATEGORY_LABELS,
   createOrdinaryToolRoutes,
+  getCurrentToolIdFromLocation,
   getLaunchDirectory,
   getLaunchEntry,
   getToolCatalogCategoryForTool,
   getToolCatalogTool,
+  getToolIdFromPathname,
   getToolNavigationPath,
+  getToolRoutePath,
   getToolsSpaAliases,
   getToolsSpaPath,
+  getToolsSpaUrl,
   isOrdinaryToolId,
+  isToolsSpaLocation,
+  parseToolRouteParam,
 } from './tool-catalog'
 
 describe('tool-catalog', () => {
@@ -93,16 +99,17 @@ describe('tool-catalog', () => {
         'clear-cookie',
       ]),
     )
-    expect(directory.groups.find((group) => group.category === ToolCategory.AI))
-      .toMatchObject({
-        name: TOOL_CATEGORY_LABELS[ToolCategory.AI],
-        entries: expect.arrayContaining([
-          expect.objectContaining({
-            id: 'web-summary-launch',
-            intent: { kind: 'side-panel-action', action: 'open-web-summary' },
-          }),
-        ]),
-      })
+    expect(
+      directory.groups.find((group) => group.category === ToolCategory.AI),
+    ).toMatchObject({
+      name: TOOL_CATEGORY_LABELS[ToolCategory.AI],
+      entries: expect.arrayContaining([
+        expect.objectContaining({
+          id: 'web-summary-launch',
+          intent: { kind: 'side-panel-action', action: 'open-web-summary' },
+        }),
+      ]),
+    })
     expect(getLaunchEntry('bookmarks')).toMatchObject({
       intent: {
         kind: 'extension-page',
@@ -152,12 +159,63 @@ describe('tool-catalog', () => {
       ORDINARY_TOOL_IDS.map((id) => [id, () => id]),
     )
 
-    expect(createOrdinaryToolRoutes(componentByToolId).map((route) => route.id)).toEqual(
-      ORDINARY_TOOL_IDS,
-    )
+    expect(
+      createOrdinaryToolRoutes(componentByToolId).map((route) => route.id),
+    ).toEqual(ORDINARY_TOOL_IDS)
 
     expect(() => createOrdinaryToolRoutes({})).toThrow(
       'Missing tool component for "json"',
     )
+  })
+})
+
+describe('tool catalog routing helpers', () => {
+  it('builds path-based routes for ordinary tools', () => {
+    expect(DEFAULT_TOOL_ID).toBe('json')
+    expect(getToolsSpaPath('json')).toBe('tools/json.html')
+    expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html')
+    expect(getToolRoutePath('jsonschema')).toBe('/jsonschema.html')
+    expect(getToolRoutePath('settings')).toBe('/settings.html')
+  })
+
+  it('parses route params by stripping the html extension', () => {
+    expect(parseToolRouteParam('json.html')).toBe('json')
+    expect(parseToolRouteParam('trans-radix.html')).toBe('trans-radix')
+    expect(parseToolRouteParam('json')).toBe('json')
+    expect(parseToolRouteParam('json-string-panel.html')).toBeNull()
+    expect(parseToolRouteParam('settings')).toBeNull()
+    expect(parseToolRouteParam(undefined)).toBeNull()
+  })
+
+  it('detects the current tool from an SPA pathname', () => {
+    expect(getToolIdFromPathname('/tools/json.html')).toBe('json')
+    expect(getToolIdFromPathname('/tools/trans-radix.html')).toBe('trans-radix')
+    expect(getToolIdFromPathname('/tools/json-string-panel.html')).toBeNull()
+    expect(
+      getCurrentToolIdFromLocation({ pathname: '/tools/downloads.html' }),
+    ).toBe('downloads')
+    expect(getCurrentToolIdFromLocation({ pathname: '/tools' })).toBeNull()
+    expect(
+      getCurrentToolIdFromLocation({ pathname: '/downloads.html' }),
+    ).toBeNull()
+  })
+
+  it('uses chrome.runtime.getURL when available', () => {
+    vi.stubGlobal('chrome', {
+      runtime: {
+        getURL: vi.fn((path: string) => `chrome-extension://test/${path}`),
+      },
+    })
+
+    expect(getToolsSpaUrl('json')).toBe(
+      'chrome-extension://test/tools/json.html',
+    )
+
+    vi.unstubAllGlobals()
+  })
+
+  it('detects the shared SPA entry', () => {
+    expect(isToolsSpaLocation({ pathname: '/tools/json.html' })).toBe(true)
+    expect(isToolsSpaLocation({ pathname: '/json.html' })).toBe(false)
   })
 })

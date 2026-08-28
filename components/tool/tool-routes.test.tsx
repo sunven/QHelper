@@ -1,8 +1,7 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { toolRoutes } from '@/components/tool/tool-routes'
-import { getToolCatalogTool } from '@/lib/tool-catalog'
-import { ORDINARY_TOOL_IDS } from '@/lib/tools-spa'
+import { ORDINARY_TOOL_IDS, getToolCatalogTool } from '@/lib/tool-catalog'
 
 describe('toolRoutes', () => {
   it('maps every ordinary tool id to a component', () => {

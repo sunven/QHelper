@@ -23,10 +23,11 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import {
+  DEFAULT_TOOL_ID,
   getToolCatalogCategoryForTool,
   getToolCatalogTool,
+  getToolsSpaPath,
 } from '@/lib/tool-catalog'
-import { DEFAULT_TOOL_ID, getToolsSpaPath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
 
 type ToolWorkspaceShellProps = {

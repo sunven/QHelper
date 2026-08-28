@@ -1,7 +1,7 @@
-"use client"
+'use client'
 
-import type * as React from "react"
-import { ToolSideNavigation } from "@/components/ToolSideNavigation"
+import type * as React from 'react'
+import { ToolSideNavigation } from '@/components/ToolSideNavigation'
 import {
   Sidebar,
   SidebarContent,
@@ -10,9 +10,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { DEFAULT_TOOL_ID, getToolsSpaPath } from "@/lib/tools-spa"
-import { ToolboxIcon } from "@phosphor-icons/react"
+} from '@/components/ui/sidebar'
+import { DEFAULT_TOOL_ID, getToolsSpaPath } from '@/lib/tool-catalog'
+import { ToolboxIcon } from '@phosphor-icons/react'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (

@@ -254,12 +254,55 @@ const launchEntryById = new Map(
 
 export function isOrdinaryToolId(
   toolId: string | null | undefined,
-): toolId is string {
+): toolId is OrdinaryToolId {
   return typeof toolId === 'string' && ordinaryToolIdSet.has(toolId)
 }
 
 export function getToolsSpaPath(toolId: string): string {
   return getToolEntryPath(toolId)
+}
+
+export function getToolRoutePath(toolId: string): string {
+  const routePrefix = `${TOOLS_ROUTE_BASE}/`
+  return `/${getToolsSpaPath(toolId).slice(routePrefix.length)}`
+}
+
+export function getToolsSpaUrl(toolId: string): string {
+  const path = getToolsSpaPath(toolId)
+
+  if (typeof chrome !== 'undefined' && chrome.runtime?.getURL) {
+    return chrome.runtime.getURL(path)
+  }
+
+  return `/${path}`
+}
+
+export function parseToolRouteParam(
+  toolId: string | undefined,
+): OrdinaryToolId | null {
+  const candidate = toolId?.replace(/\.html$/, '')
+  return isOrdinaryToolId(candidate) ? candidate : null
+}
+
+export function getToolIdFromPathname(pathname: string): OrdinaryToolId | null {
+  const [base, candidateWithExtension] = pathname.replace(/^\/+/, '').split('/')
+  if (base !== TOOLS_ROUTE_BASE) {
+    return null
+  }
+
+  return parseToolRouteParam(candidateWithExtension)
+}
+
+export function getCurrentToolIdFromLocation(
+  location: Pick<Location, 'pathname'> = window.location,
+): OrdinaryToolId | null {
+  return getToolIdFromPathname(location.pathname)
+}
+
+export function isToolsSpaLocation(
+  location: Pick<Location, 'pathname'> = window.location,
+): boolean {
+  return location.pathname.includes(`/${TOOLS_ROUTE_BASE}/`)
 }
 
 export function getLaunchEntry(

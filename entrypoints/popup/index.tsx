@@ -28,7 +28,9 @@ import { removeAll } from '@/lib/chrome/cookies'
 import { create } from '@/lib/chrome/tabs'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import {
+  TOOL_SETTINGS_ID,
   getLaunchDirectory,
+  getLaunchEntry,
   type ToolCatalogLaunchEntry,
 } from '@/lib/tool-catalog'
 import { cn } from '@/lib/utils'
@@ -189,7 +191,7 @@ function App() {
 
   const popupDirectory = useMemo(() => getLaunchDirectory('popup-main'), [])
   const settingsEntry = useMemo(
-    () => getLaunchDirectory('popup-header').entries[0],
+    () => getLaunchEntry(TOOL_SETTINGS_ID, { visibleOn: 'popup-header' }),
     [],
   )
 

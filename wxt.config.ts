@@ -1,30 +1,36 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { basename, dirname, join } from 'node:path';
-import { defineConfig } from 'wxt';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'node:fs'
+import { createRequire } from 'node:module'
+import { basename, dirname, join } from 'node:path'
+import { defineConfig } from 'wxt'
 import {
   TOOLS_ROUTE_BASE,
   TOOLS_SPA_ENTRY,
   getToolsSpaAliases,
-} from './lib/tools-spa';
+} from './lib/tool-catalog'
 
-const require = createRequire(import.meta.url);
+const require = createRequire(import.meta.url)
 
 function uglifyJsBrowserPlugin() {
-  const virtualModuleId = 'virtual:uglify-js-browser';
-  const resolvedVirtualModuleId = `\0${virtualModuleId}`;
+  const virtualModuleId = 'virtual:uglify-js-browser'
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`
 
   return {
     name: 'qhelper-uglify-js-browser',
     enforce: 'pre' as const,
     resolveId(id: string) {
       if (id === 'uglify-js') {
-        return resolvedVirtualModuleId;
+        return resolvedVirtualModuleId
       }
     },
     load(id: string) {
       if (id !== resolvedVirtualModuleId) {
-        return null;
+        return null
       }
 
       const sourceFiles = [
@@ -40,11 +46,16 @@ function uglifyJsBrowserPlugin() {
         'lib/propmangle.js',
         'lib/minify.js',
         'tools/exports.js',
-      ];
+      ]
       const uglifySource = sourceFiles
-        .map((file) => readFileSync(require.resolve(`uglify-js/${file}`), 'utf8'))
-        .join('\n\n');
-      const domprops = readFileSync(require.resolve('uglify-js/tools/domprops.json'), 'utf8');
+        .map((file) =>
+          readFileSync(require.resolve(`uglify-js/${file}`), 'utf8'),
+        )
+        .join('\n\n')
+      const domprops = readFileSync(
+        require.resolve('uglify-js/tools/domprops.json'),
+        'utf8',
+      )
 
       return `
 const exports = {};
@@ -56,48 +67,50 @@ const uglifyMinify = exports.minify;
 const uglifyParse = exports.parse;
 export { uglifyMinify as minify, uglifyParse as parse };
 export default exports;
-`;
+`
     },
-  };
+  }
 }
 
 function writeToolsRouteAliases(outDir: string) {
-  const htmlPath = join(outDir, TOOLS_SPA_ENTRY);
+  const htmlPath = join(outDir, TOOLS_SPA_ENTRY)
   if (!existsSync(htmlPath)) {
-    return [];
+    return []
   }
 
-  const html = readFileSync(htmlPath, 'utf8');
-  const aliases = getToolsSpaAliases().map((alias) => alias.path);
+  const html = readFileSync(htmlPath, 'utf8')
+  const aliases = getToolsSpaAliases().map((alias) => alias.path)
 
   for (const alias of aliases) {
-    const aliasPath = join(outDir, alias);
-    mkdirSync(dirname(aliasPath), { recursive: true });
-    writeFileSync(aliasPath, html);
+    const aliasPath = join(outDir, alias)
+    mkdirSync(dirname(aliasPath), { recursive: true })
+    writeFileSync(aliasPath, html)
   }
 
-  return aliases;
+  return aliases
 }
 
 function copyTesseractAssets(outDir: string) {
-  const targetDir = join(outDir, 'libs/tesseract');
-  mkdirSync(targetDir, { recursive: true });
+  const targetDir = join(outDir, 'libs/tesseract')
+  mkdirSync(targetDir, { recursive: true })
 
   const assets = [
     require.resolve('tesseract.js/dist/worker.min.js'),
     require.resolve('tesseract.js-core/tesseract-core-lstm.wasm.js'),
     require.resolve('tesseract.js-core/tesseract-core-simd-lstm.wasm.js'),
-    require.resolve('tesseract.js-core/tesseract-core-relaxedsimd-lstm.wasm.js'),
-  ];
+    require.resolve(
+      'tesseract.js-core/tesseract-core-relaxedsimd-lstm.wasm.js',
+    ),
+  ]
 
   for (const assetPath of assets) {
-    copyFileSync(assetPath, join(targetDir, basename(assetPath)));
+    copyFileSync(assetPath, join(targetDir, basename(assetPath)))
   }
 
   return assets.map((assetPath) => ({
     type: 'asset' as const,
     fileName: `libs/tesseract/${basename(assetPath)}`,
-  }));
+  }))
 }
 
 export default defineConfig({
@@ -123,7 +136,18 @@ export default defineConfig({
     name: 'QHelper前端助手',
     description: 'json解析',
     version: '1.2',
-    permissions: ['cookies', 'tabs', 'storage', 'activeTab', 'sidePanel', 'contextMenus', 'bookmarks', 'scripting', 'downloads', 'videoCapture'],
+    permissions: [
+      'cookies',
+      'tabs',
+      'storage',
+      'activeTab',
+      'sidePanel',
+      'contextMenus',
+      'bookmarks',
+      'scripting',
+      'downloads',
+      'videoCapture',
+    ],
     host_permissions: ['<all_urls>'],
     icons: {
       16: '/icons/q-16.png',
@@ -143,18 +167,17 @@ export default defineConfig({
 
   hooks: {
     'build:done': (wxt, output) => {
-      const aliases = writeToolsRouteAliases(wxt.config.outDir);
+      const aliases = writeToolsRouteAliases(wxt.config.outDir)
       output.publicAssets.push(
         ...aliases.map((fileName) => ({ type: 'asset' as const, fileName })),
         ...copyTesseractAssets(wxt.config.outDir),
-      );
+      )
     },
     'prepare:publicPaths': (_, paths) => {
       paths.push({
         type: 'templateLiteral',
         path: `${TOOLS_ROUTE_BASE}/\${string}`,
-      });
+      })
     },
   },
-
-});
+})

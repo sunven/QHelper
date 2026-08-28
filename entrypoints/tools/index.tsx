@@ -2,7 +2,11 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { SettingsPage } from '@/components/tool/settings'
 import { ToolWorkspaceShell } from '@/components/tool/ToolWorkspaceShell'
-import { DEFAULT_TOOL_ID, getToolRoutePath, TOOLS_ROUTE_BASE } from '@/lib/tools-spa'
+import {
+  DEFAULT_TOOL_ID,
+  getToolRoutePath,
+  TOOLS_ROUTE_BASE,
+} from '@/lib/tool-catalog'
 import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
 import { ThemeProvider } from '@/components/theme-provider'

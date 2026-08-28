@@ -29,10 +29,14 @@ import {
 } from '@/components/ui/sidebar'
 import {
   TOOL_CATEGORIES,
+  getCurrentToolIdFromLocation,
+  getToolCatalogCategoryForTool,
+  getToolRoutePath,
+  getToolsSpaUrl,
+  parseToolRouteParam,
+  type OrdinaryToolId,
   type ToolCatalogTool as Tool,
 } from '@/lib/tool-catalog'
-import { getCurrentToolKey, navigateToTool } from '@/lib/navigation-utils'
-import { getToolRoutePath } from '@/lib/tools-spa'
 import { cn } from '@/lib/utils'
 
 type ToolMenuItem = {
@@ -55,17 +59,6 @@ const categoryIcons: Record<string, React.ReactNode> = {
   other: <ClockIcon />,
 }
 
-export function findCategoryKeyForTool(toolKey: string | null): string | null {
-  if (!toolKey) {
-    return null
-  }
-
-  const category = TOOL_CATEGORIES.find((item) =>
-    item.tools.some((tool) => tool.key === toolKey),
-  )
-  return category?.key ?? null
-}
-
 export function createToolMenuItems(): ToolMenuItem[] {
   return TOOL_CATEGORIES.map((category) => ({
     key: category.key,
@@ -75,18 +68,6 @@ export function createToolMenuItems(): ToolMenuItem[] {
       label: tool.name,
     })),
   }))
-}
-
-function createToolByKey(): Map<string, Tool> {
-  const toolByKey = new Map<string, Tool>()
-
-  for (const category of TOOL_CATEGORIES) {
-    for (const tool of category.tools) {
-      toolByKey.set(tool.key, tool)
-    }
-  }
-
-  return toolByKey
 }
 
 export function ToolSideNavigation({ className }: { className?: string }) {
@@ -99,7 +80,7 @@ export function ToolSideNavigation({ className }: { className?: string }) {
   return (
     <StandaloneToolSideNavigation
       className={className}
-      currentToolKey={getCurrentToolKey()}
+      currentToolKey={getCurrentToolIdFromLocation()}
     />
   )
 }
@@ -111,10 +92,9 @@ function RouterToolSideNavigation({ className }: { className?: string }) {
   return (
     <ToolSideNavigationContent
       className={className}
-      currentToolKey={location.pathname
-        .replace(/^\/+/, '')
-        .split('/')[0]
-        ?.replace(/\.html$/, '') || null}
+      currentToolKey={parseToolRouteParam(
+        location.pathname.replace(/^\/+/, '').split('/')[0],
+      )}
       onToolSelect={(tool) => {
         void navigate(getToolRoutePath(tool.key))
       }}
@@ -127,13 +107,15 @@ function StandaloneToolSideNavigation({
   currentToolKey,
 }: {
   className?: string
-  currentToolKey: string | null
+  currentToolKey: OrdinaryToolId | null
 }) {
   return (
     <ToolSideNavigationContent
       className={className}
       currentToolKey={currentToolKey}
-      onToolSelect={navigateToTool}
+      onToolSelect={(tool) => {
+        window.location.href = getToolsSpaUrl(tool.key)
+      }}
     />
   )
 }
@@ -144,11 +126,11 @@ function ToolSideNavigationContent({
   onToolSelect,
 }: {
   className?: string
-  currentToolKey: string | null
+  currentToolKey: OrdinaryToolId | null
   onToolSelect: (tool: Tool) => void
 }) {
-  const currentCategoryKey = findCategoryKeyForTool(currentToolKey)
-  const toolByKey = React.useMemo(() => createToolByKey(), [])
+  const currentCategoryKey =
+    getToolCatalogCategoryForTool(currentToolKey)?.key ?? null
   const [openKeys, setOpenKeys] = React.useState<string[]>(() =>
     currentCategoryKey ? [currentCategoryKey] : [],
   )
@@ -173,13 +155,9 @@ function ToolSideNavigationContent({
     })
   }
 
-  function handleToolSelect(event: React.MouseEvent, toolKey: string) {
+  function handleToolSelect(event: React.MouseEvent, tool: Tool) {
     event.preventDefault()
-
-    const tool = toolByKey.get(toolKey)
-    if (tool) {
-      onToolSelect(tool)
-    }
+    onToolSelect(tool)
   }
 
   return (
@@ -225,9 +203,7 @@ function ToolSideNavigationContent({
                         >
                           <a
                             href={tool.path}
-                            onClick={(event) =>
-                              handleToolSelect(event, tool.key)
-                            }
+                            onClick={(event) => handleToolSelect(event, tool)}
                             role="menuitem"
                           >
                             <span>{tool.name}</span>
