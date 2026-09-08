@@ -57,3 +57,18 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
     }, wait);
   };
 }
+
+/**
+ * 提取错误的可展示信息：Error 取 message，字符串错误原样返回，其余回落 fallback
+ */
+export function getErrorMessage(error: unknown, fallback = '未知错误'): string {
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
+
+  if (typeof error === 'string' && error) {
+    return error
+  }
+
+  return fallback
+}

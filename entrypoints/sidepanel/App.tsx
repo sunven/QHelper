@@ -4,7 +4,7 @@ import { ErrorMessage } from '@/components/ui/error-message'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { usePersistedValue } from '@/hooks/usePersistedValue'
-import { cn, copyToClipboard } from '@/lib/utils'
+import { cn, copyToClipboard, getErrorMessage } from '@/lib/utils'
 import { streamWebPageSummary } from '@/lib/web-summary/ai'
 import {
   DEFAULT_WEB_SUMMARY_CONFIG,
@@ -12,71 +12,18 @@ import {
   normalizeWebSummaryConfig,
   validateWebSummaryConfig,
 } from '@/lib/web-summary/config'
-import { extractPageContent } from '@/lib/web-summary/content'
+import {
+  extractTabContent,
+  getRefreshHint,
+  resolveSummarizableTab,
+} from '@/lib/web-summary/page-source'
 import { renderSafeMarkdown } from '@/lib/web-summary/markdown'
 import type {
   OpenWebSummaryResponse,
-  WebSummaryPageContent,
   WebSummaryPendingAction,
 } from '@/types/web-summary'
 import { Bot, Copy, Eye, EyeOff, LoaderCircle, PanelsTopLeft, Settings2, SquareStop, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return '未知错误'
-}
-
-function isUnsupportedUrl(url?: string | null): boolean {
-  if (!url) {
-    return true
-  }
-
-  return /^(about:|chrome:|chrome-extension:|edge:|moz-extension:|opera:|vivaldi:)/.test(url)
-}
-
-function getRefreshHint(error: unknown): string {
-  const message = getErrorMessage(error)
-  if (/Cannot access|Extension manifest must request permission|activeTab|Cannot load contents/i.test(message)) {
-    return '无法访问当前网页内容，请确认这是普通网页，并从当前页面重新发起总结。'
-  }
-
-  return message
-}
-
-async function getTabById(tabId?: number) {
-  if (tabId) {
-    try {
-      return await chrome.tabs.get(tabId)
-    } catch {
-      // fall through to active tab lookup
-    }
-  }
-
-  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
-  return activeTab
-}
-
-async function extractPageContentFromTab(tabId: number): Promise<WebSummaryPageContent> {
-  if (!chrome.scripting?.executeScript) {
-    throw new Error('当前浏览器不支持按需提取网页内容。')
-  }
-
-  const [injectionResult] = await chrome.scripting.executeScript({
-    target: { tabId },
-    func: extractPageContent,
-  })
-  const pageContent = injectionResult?.result
-
-  if (!pageContent) {
-    throw new Error('未能从当前网页提取正文内容。')
-  }
-
-  return pageContent as WebSummaryPageContent
-}
 
 export function App() {
   const { value: storedConfig, setValue: setStoredConfig, loading: configLoading } = usePersistedValue(
@@ -125,14 +72,13 @@ export function App() {
       return
     }
 
-    const targetTab = await getTabById(requestedTabId)
-    if (!targetTab?.id) {
-      setError('未找到当前活动网页。')
-      return
-    }
-
-    if (isUnsupportedUrl(targetTab.url)) {
-      setError('当前页面不是普通网页，无法提取正文内容。')
+    const targetTab = await resolveSummarizableTab(requestedTabId).catch(
+      (caughtError: unknown) => {
+        setError(getErrorMessage(caughtError))
+        return undefined
+      },
+    )
+    if (!targetTab) {
       return
     }
 
@@ -144,7 +90,7 @@ export function App() {
     setAbortController(controller)
 
     try {
-      const pageContent = await extractPageContentFromTab(targetTab.id)
+      const pageContent = await extractTabContent(targetTab.id)
 
       setStatusText('正在生成摘要…')
 
@@ -177,7 +123,12 @@ export function App() {
     let active = true
 
     const bootstrap = async () => {
-      const currentTab = await getTabById()
+      let currentTab: chrome.tabs.Tab | undefined
+      try {
+        currentTab = await resolveSummarizableTab()
+      } catch {
+        currentTab = undefined
+      }
 
       const pendingAction = await chrome.runtime.sendMessage(
         {
@@ -200,7 +151,13 @@ export function App() {
   }, [])
 
   const handleLaunchFromPopup = async () => {
-    const activeTab = await getTabById()
+    let activeTab: chrome.tabs.Tab | undefined
+    try {
+      activeTab = await resolveSummarizableTab()
+    } catch {
+      activeTab = undefined
+    }
+
     const response = await chrome.runtime.sendMessage({
       type: 'OPEN_WEB_SUMMARY',
       tabId: activeTab?.id,

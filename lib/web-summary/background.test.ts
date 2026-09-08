@@ -1,58 +1,79 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
-  consumePendingWebSummaryAction,
+  createWebSummaryPanelProtocol,
   ensureWebSummaryContextMenu,
-  openWebSummaryPanel,
   type WebSummaryBackgroundDeps,
   WEB_SUMMARY_CONTEXT_MENU_ID,
 } from './background'
 
+function createDeps(overrides: Partial<WebSummaryBackgroundDeps> = {}) {
+  return {
+    getActiveTabId: vi.fn(),
+    openSidePanel: vi.fn(() => Promise.resolve()),
+    ...overrides,
+  }
+}
+
 describe('web-summary/background', () => {
   it('opens the sidepanel for the requested tab and stores a pending action', async () => {
-    const pendingActions = new Map()
-    const deps: WebSummaryBackgroundDeps = {
-      getActiveTabId: vi.fn(),
-      openSidePanel: vi.fn(() => Promise.resolve()),
-    }
+    const deps = createDeps()
+    const protocol = createWebSummaryPanelProtocol(deps)
 
-    const action = await openWebSummaryPanel(
-      { type: 'OPEN_WEB_SUMMARY', tabId: 42 },
-      pendingActions,
-      deps,
-    )
+    const action = await protocol.openPanel({
+      type: 'OPEN_WEB_SUMMARY',
+      tabId: 42,
+    })
 
     expect(action).toEqual({ type: 'SUMMARIZE_ACTIVE_PAGE', tabId: 42 })
     expect(deps.openSidePanel).toHaveBeenCalledWith({ tabId: 42 })
-    expect(pendingActions.get(42)).toEqual(action)
+    expect(await protocol.consumeReady(42)).toEqual(action)
   })
 
   it('falls back to the current active tab when the popup omits tabId', async () => {
-    const pendingActions = new Map()
-    const deps: WebSummaryBackgroundDeps = {
-      getActiveTabId: vi.fn(() => Promise.resolve(7)),
-      openSidePanel: vi.fn(() => Promise.resolve()),
-    }
+    const deps = createDeps({ getActiveTabId: vi.fn(() => Promise.resolve(7)) })
+    const protocol = createWebSummaryPanelProtocol(deps)
 
-    await openWebSummaryPanel(
-      { type: 'OPEN_WEB_SUMMARY' },
-      pendingActions,
-      deps,
-    )
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY' })
 
     expect(deps.getActiveTabId).toHaveBeenCalled()
     expect(deps.openSidePanel).toHaveBeenCalledWith({ tabId: 7 })
   })
 
-  it('consumes pending actions only once', () => {
-    const pendingActions = new Map([
-      [3, { type: 'SUMMARIZE_ACTIVE_PAGE' as const, tabId: 3 }],
-    ])
+  it('rejects when no active tab can be resolved', async () => {
+    const protocol = createWebSummaryPanelProtocol(createDeps())
 
-    expect(consumePendingWebSummaryAction(3, pendingActions)).toEqual({
+    await expect(
+      protocol.openPanel({ type: 'OPEN_WEB_SUMMARY' }),
+    ).rejects.toThrow('未找到当前活动标签页。')
+  })
+
+  it('consumes pending actions only once', async () => {
+    const protocol = createWebSummaryPanelProtocol(createDeps())
+
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 3 })
+
+    expect(protocol.consumeReady(3)).toEqual({
       type: 'SUMMARIZE_ACTIVE_PAGE',
       tabId: 3,
     })
-    expect(consumePendingWebSummaryAction(3, pendingActions)).toBeNull()
+    expect(protocol.consumeReady(3)).toBeNull()
+    expect(protocol.consumeReady(undefined)).toBeNull()
+  })
+
+  it('keeps pending actions per tab isolated', async () => {
+    const protocol = createWebSummaryPanelProtocol(createDeps())
+
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 3 })
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 4 })
+
+    expect(protocol.consumeReady(4)).toEqual({
+      type: 'SUMMARIZE_ACTIVE_PAGE',
+      tabId: 4,
+    })
+    expect(protocol.consumeReady(3)).toEqual({
+      type: 'SUMMARIZE_ACTIVE_PAGE',
+      tabId: 3,
+    })
   })
 
   it('registers a dedicated context-menu entry for opening the sidepanel', async () => {

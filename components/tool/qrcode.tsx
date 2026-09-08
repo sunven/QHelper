@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { useToolState } from '@/hooks/useToolState'
-import { copyToClipboard, formatFileSize } from '@/lib/utils'
+import { copyToClipboard, formatFileSize, getErrorMessage } from '@/lib/utils'
 import {
   AlertCircle,
   Camera,
@@ -40,18 +40,6 @@ const QR_LEVELS: Array<{ value: QrCorrectionLevel; label: string }> = [
 ]
 
 const DEFAULT_QR_TEXT = 'https://github.com/sunven/QHelper'
-
-function getErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message
-  }
-
-  if (typeof error === 'string' && error) {
-    return error
-  }
-
-  return fallback
-}
 
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)

@@ -1,15 +1,8 @@
 import type { WebSummaryConfig, WebSummaryPageContent } from '@/types/web-summary'
+import { getErrorMessage } from '@/lib/utils'
 
 export const WEB_SUMMARY_SYSTEM_PROMPT =
   '你是网页阅读助手。请基于用户提供的网页内容，输出 Markdown，总结为“总结”“关键要点”“建议行动”三个部分；信息不足时明确说明，不要编造。'
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return '未知错误'
-}
 
 export function buildWebSummaryPrompt(pageContent: WebSummaryPageContent): string {
   return [

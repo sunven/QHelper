@@ -2,10 +2,13 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 
-const { usePersistedValue, streamWebPageSummary } = vi.hoisted(() => ({
-  usePersistedValue: vi.fn(),
-  streamWebPageSummary: vi.fn(),
-}))
+const { usePersistedValue, streamWebPageSummary, resolveSummarizableTab, extractTabContent } =
+  vi.hoisted(() => ({
+    usePersistedValue: vi.fn(),
+    streamWebPageSummary: vi.fn(),
+    resolveSummarizableTab: vi.fn(),
+    extractTabContent: vi.fn(),
+  }))
 
 vi.mock('@/hooks/usePersistedValue', () => ({
   usePersistedValue,
@@ -14,6 +17,32 @@ vi.mock('@/hooks/usePersistedValue', () => ({
 vi.mock('@/lib/web-summary/ai', () => ({
   streamWebPageSummary,
 }))
+
+// 提取 seam：mock 掉 tab 解析与注入，保留纯函数 getRefreshHint 的真实现
+vi.mock('@/lib/web-summary/page-source', async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import('@/lib/web-summary/page-source')>()
+  return {
+    ...actual,
+    resolveSummarizableTab,
+    extractTabContent,
+  }
+})
+
+const ARTICLE_TAB = {
+  id: 1,
+  title: 'Article page',
+  url: 'https://example.com/article',
+} as chrome.tabs.Tab
+
+const PAGE_CONTENT = {
+  title: 'Article page',
+  url: 'https://example.com/article',
+  content: 'content',
+  source: 'article',
+  truncated: false,
+  charCount: 7,
+}
 
 describe('sidepanel/App', () => {
   beforeEach(() => {
@@ -27,31 +56,8 @@ describe('sidepanel/App', () => {
       setValue: vi.fn(() => Promise.resolve()),
       loading: false,
     })
-
-    ;(chrome.tabs.query as any).mockResolvedValue([
-      {
-        id: 1,
-        title: 'Article page',
-        url: 'https://example.com/article',
-      },
-    ] as chrome.tabs.Tab[])
-    ;(chrome.tabs.get as any).mockResolvedValue({
-      id: 1,
-      title: 'Article page',
-      url: 'https://example.com/article',
-    } as chrome.tabs.Tab)
-    ;(chrome.scripting.executeScript as any).mockResolvedValue([
-      {
-        result: {
-          title: 'Article page',
-          url: 'https://example.com/article',
-          content: 'content',
-          source: 'article',
-          truncated: false,
-          charCount: 7,
-        },
-      },
-    ])
+    resolveSummarizableTab.mockResolvedValue(ARTICLE_TAB)
+    extractTabContent.mockResolvedValue(PAGE_CONTENT)
     ;(chrome.runtime.sendMessage as any).mockResolvedValue(null)
   })
 
@@ -124,7 +130,7 @@ describe('sidepanel/App', () => {
     expect(screen.queryByText('```markdown')).not.toBeInTheDocument()
   })
 
-  it('extracts page content with on-demand scripting', async () => {
+  it('summarizes the content extracted from the resolved tab', async () => {
     streamWebPageSummary.mockResolvedValue('done')
 
     render(<App />)
@@ -132,12 +138,8 @@ describe('sidepanel/App', () => {
     fireEvent.click(await screen.findByTestId('web-summary-summarize'))
 
     await waitFor(() => {
-      expect(chrome.scripting.executeScript).toHaveBeenCalledWith({
-        target: { tabId: 1 },
-        func: expect.any(Function),
-      })
+      expect(extractTabContent).toHaveBeenCalledWith(1)
     })
-    expect(chrome.tabs.sendMessage).not.toHaveBeenCalled()
     expect(streamWebPageSummary).toHaveBeenCalledWith(
       expect.objectContaining({
         pageContent: expect.objectContaining({
@@ -149,9 +151,7 @@ describe('sidepanel/App', () => {
   })
 
   it('shows a recoverable error when on-demand extraction fails', async () => {
-    ;(chrome.scripting.executeScript as any).mockRejectedValueOnce(
-      new Error('Cannot access contents of url'),
-    )
+    extractTabContent.mockRejectedValueOnce(new Error('Cannot access contents of url'))
 
     render(<App />)
 
@@ -163,20 +163,17 @@ describe('sidepanel/App', () => {
     expect(streamWebPageSummary).not.toHaveBeenCalled()
   })
 
-  it('does not inject into unsupported browser pages', async () => {
-    ;(chrome.tabs.query as any).mockResolvedValue([
-      {
-        id: 1,
-        title: 'Extension page',
-        url: 'chrome://extensions',
-      },
-    ] as chrome.tabs.Tab[])
+  it('does not summarize unsupported browser pages', async () => {
+    // bootstrap 与点击都会尝试解析，持续抛错（bootstrap 吞掉自己的那次）
+    resolveSummarizableTab.mockRejectedValue(
+      new Error('当前页面不是普通网页，无法提取正文内容。'),
+    )
 
     render(<App />)
 
     fireEvent.click(await screen.findByTestId('web-summary-summarize'))
 
     expect(await screen.findByText('当前页面不是普通网页，无法提取正文内容。')).toBeVisible()
-    expect(chrome.scripting.executeScript).not.toHaveBeenCalled()
+    expect(extractTabContent).not.toHaveBeenCalled()
   })
 })

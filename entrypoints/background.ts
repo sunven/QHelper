@@ -1,7 +1,6 @@
 import {
-  consumePendingWebSummaryAction,
+  createWebSummaryPanelProtocol,
   ensureWebSummaryContextMenu,
-  openWebSummaryPanel,
   WEB_SUMMARY_CONTEXT_MENU_ID,
 } from '@/lib/web-summary/background'
 import {
@@ -12,23 +11,16 @@ import {
 import { handleDictionaryFetchMessage } from '@/lib/dictionary/background'
 import { handleInactiveWarningMessage } from '@/lib/github/inactive-warning-background'
 import { handleStarHistorySvgMessage } from '@/lib/github/star-history-background'
+import { getErrorMessage } from '@/lib/utils'
 import type {
   OpenWebSummaryMessage,
   OpenWebSummaryResponse,
   WebSummarySidePanelReadyMessage,
 } from '@/types/web-summary'
 
-const pendingActions = new Map()
-
-function getErrorMessage(error: unknown): string {
-  if (error instanceof Error) {
-    return error.message
-  }
-
-  return '未知错误'
-}
-
 export default defineBackground(() => {
+  const panelProtocol = createWebSummaryPanelProtocol()
+
   const syncContextMenus = () => {
     void Promise.all([
       ensureWebSummaryContextMenu(),
@@ -49,13 +41,12 @@ export default defineBackground(() => {
       return
     }
 
-    void openWebSummaryPanel(
-      {
+    void panelProtocol
+      .openPanel({
         type: 'OPEN_WEB_SUMMARY',
         tabId: tab?.id,
-      },
-      pendingActions,
-    ).catch(() => undefined)
+      })
+      .catch(() => undefined)
   })
 
   chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
@@ -72,10 +63,8 @@ export default defineBackground(() => {
     }
 
     if ((message as OpenWebSummaryMessage | undefined)?.type === 'OPEN_WEB_SUMMARY') {
-      void openWebSummaryPanel(
-        message as OpenWebSummaryMessage,
-        pendingActions,
-      )
+      void panelProtocol
+        .openPanel(message as OpenWebSummaryMessage)
         .then((action) => {
           const response: OpenWebSummaryResponse = {
             ok: true,
@@ -97,10 +86,7 @@ export default defineBackground(() => {
     if ((message as WebSummarySidePanelReadyMessage | undefined)?.type === 'WEB_SUMMARY_SIDE_PANEL_READY') {
       const readyMessage = message as WebSummarySidePanelReadyMessage
       sendResponse(
-        consumePendingWebSummaryAction(
-          readyMessage.tabId ?? sender.tab?.id,
-          pendingActions,
-        ),
+        panelProtocol.consumeReady(readyMessage.tabId ?? sender.tab?.id),
       )
       return false
     }
