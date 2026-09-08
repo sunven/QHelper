@@ -72,6 +72,10 @@ _Avoid_: Star widget, fixed star chart, repository analytics
 The external Star History page for a repository's public star-growth history. A **Star History View** may point to a **Star History Detail** when the user wants the full external view.
 _Avoid_: Internal analytics page, embedded report
 
+**Transform Tool Page**:
+The shared page module for ordinary tools that turn one input text into one derived output. The factory `createTransformToolPage(config)` in `components/tool/transform-tool-page.tsx` owns state shape (output and error are derived on each render, never stored), the history key derivation and the success-guarded snapshot-on-download policy, download and copy behavior, and the two-pane layout with inline error display. A **Transform Tool Page** does not own the transform function or the options panel; those belong to each tool's declaration. Persisted history entries store `{ input, options }` only; restoring re-derives the output. It is a page shape, not a tool identity: the tool stays an ordinary tool in the **Tool Catalog** and keeps its **Tool Page Shell**.
+_Avoid_: tool template, format-tool wrapper, tool page factory
+
 **Inactive Repository Warning**:
 A **Repository Page Helper** for a **Repository Home Page** that recolors the repository's own last-commit timestamp when the current repository's default branch has received no new commits for a prolonged period. The recoloring is the warning: an active repository leaves the timestamp untouched. It is repository-specific public metadata, not captured content, request data, tool history, or a **Tool Setting**.
 _Avoid_: Stale repo alert, activity monitor, maintenance score
