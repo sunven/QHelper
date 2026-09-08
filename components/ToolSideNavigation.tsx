@@ -27,6 +27,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
+import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import {
   TOOL_CATEGORIES,
   getCurrentToolIdFromLocation,
@@ -48,15 +49,15 @@ type ToolMenuItem = {
   }[]
 }
 
-const categoryIcons: Record<string, React.ReactNode> = {
-  common: <BracketsCurlyIcon />,
-  encoding: <BinaryIcon />,
-  image: <ImageIcon />,
-  security: <LockKeyIcon />,
-  web_format: <GlobeIcon />,
-  data_format: <DatabaseIcon />,
-  ai: <RobotIcon />,
-  other: <ClockIcon />,
+const categoryIcons: Record<ToolCategory, React.ReactNode> = {
+  [ToolCategory.COMMON]: <BracketsCurlyIcon />,
+  [ToolCategory.ENCODING]: <BinaryIcon />,
+  [ToolCategory.IMAGE]: <ImageIcon />,
+  [ToolCategory.SECURITY]: <LockKeyIcon />,
+  [ToolCategory.WEB_FORMAT]: <GlobeIcon />,
+  [ToolCategory.DATA_FORMAT]: <DatabaseIcon />,
+  [ToolCategory.AI]: <RobotIcon />,
+  [ToolCategory.OTHER]: <ClockIcon />,
 }
 
 export function createToolMenuItems(): ToolMenuItem[] {

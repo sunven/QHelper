@@ -1,3 +1,4 @@
+import type { ToolIconToken } from '@/components/tool-icons'
 import type { ToolMetadata } from './registry/ToolMetadata'
 import { ToolCategory } from './registry/ToolMetadata'
 import { tools as registeredTools } from './registry/tools'
@@ -15,7 +16,6 @@ export type OrdinaryToolId = (typeof registeredTools)[number]['id']
 export type LaunchSurface =
   | 'popup-main'
   | 'popup-header'
-  | 'tool-sidebar'
   | 'build-alias'
 
 export type LaunchIntent =
@@ -54,7 +54,7 @@ export type ToolCatalogLaunchEntry = {
   name: string
   description?: string
   category?: ToolCategory
-  icon: string
+  icon: ToolIconToken
   surfaces: readonly LaunchSurface[]
   intent: LaunchIntent
   risk?: LaunchRisk
@@ -82,7 +82,7 @@ export type ToolCatalogTool = {
   name: string
   path: string
   category: ToolCategory
-  icon: string
+  icon: ToolIconToken
   description?: string
   preserveActivity: boolean
 }
@@ -160,7 +160,7 @@ function toOrdinaryToolLaunchEntry(
     description: tool.description,
     category: tool.category,
     icon: tool.icon,
-    surfaces: ['popup-main', 'tool-sidebar', 'build-alias'],
+    surfaces: ['popup-main', 'build-alias'],
     intent: {
       kind: 'ordinary-tool-page',
       toolId: tool.key,

@@ -1,3 +1,5 @@
+import type { ToolIconToken } from '@/components/tool-icons'
+
 /**
  * 工具分类枚举
  */
@@ -20,7 +22,7 @@ export interface ToolMetadata {
   id: string
   name: string
   category: ToolCategory
-  icon: string
+  icon: ToolIconToken
 
   // 描述
   description: string

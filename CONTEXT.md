@@ -45,7 +45,7 @@ An ordinary QHelper tool for interactively comparing two revisions of plain text
 _Avoid_: JSON Diff, Text Preview
 
 **Tool Catalog**:
-The source-of-truth collection of QHelper tools and their user-facing identity. It defines tool names, categories, category order, category labels, descriptions, stable icon tokens, and paths for navigation, popup entry points, and tool routes. Ordinary tool paths are derived by the **Tool Catalog** from the tool id unless an entry is explicitly not an ordinary tool page. The **Tool Catalog** does not own React icon modules or visual accent styles; those belong to the surface adapter.
+The source-of-truth collection of QHelper tools and their user-facing identity. It defines tool names, categories, category order, category labels, descriptions, stable icon tokens, and paths for navigation, popup entry points, and tool routes. Ordinary tool paths are derived by the **Tool Catalog** from the tool id unless an entry is explicitly not an ordinary tool page. The **Tool Catalog** does not own React icon modules or visual accent styles; those belong to the shared surface-icons adapter (`components/tool-icons.tsx`, the single resolver of icon tokens) and each surface's accent styles.
 _Avoid_: Tool registry, navigation config, route map
 
 **Launch Entry**:

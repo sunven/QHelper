@@ -1,29 +1,18 @@
 import {
   ArrowsLeftRightIcon,
-  BookmarkSimpleIcon,
   BracketsCurlyIcon,
-  CalculatorIcon,
-  ClockIcon,
-  CodeIcon,
-  FileCodeIcon,
-  FileJsIcon,
-  FileTextIcon,
-  HashIcon,
+  GearSixIcon,
   ImageIcon,
-  ImageSquareIcon,
   LinkIcon,
-  MagicWandIcon,
-  PaletteIcon,
   ShieldCheckIcon,
   SparkleIcon,
-  TrashIcon,
   WrenchIcon,
-  GearSixIcon,
 } from '@phosphor-icons/react'
 import type { Icon } from '@phosphor-icons/react'
 import { useEffect, useMemo } from 'react'
 import ReactDOM from 'react-dom/client'
 import { Button } from '@/components/ui/button'
+import { getToolIcon } from '@/components/tool-icons'
 import { removeAll } from '@/lib/chrome/cookies'
 import { create } from '@/lib/chrome/tabs'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
@@ -36,28 +25,6 @@ import {
 import { cn } from '@/lib/utils'
 import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
-
-const toolIconByName: Record<string, Icon> = {
-  ArrowsLeftRight: ArrowsLeftRightIcon,
-  BookmarkSimple: BookmarkSimpleIcon,
-  BracketsCurly: BracketsCurlyIcon,
-  Calculator: CalculatorIcon,
-  Clock: ClockIcon,
-  Code: CodeIcon,
-  FileCode: FileCodeIcon,
-  FileJs: FileJsIcon,
-  FileText: FileTextIcon,
-  Hash: HashIcon,
-  Image: ImageIcon,
-  ImageSquare: ImageSquareIcon,
-  Link: LinkIcon,
-  MagicWand: MagicWandIcon,
-  Palette: PaletteIcon,
-  ShieldCheck: ShieldCheckIcon,
-  Sparkle: SparkleIcon,
-  Trash: TrashIcon,
-  Wrench: WrenchIcon,
-}
 
 const categoryIconMap: Record<ToolCategory, Icon> = {
   [ToolCategory.COMMON]: SparkleIcon,
@@ -164,11 +131,6 @@ async function handleLaunchEntryClick(entry: ToolCatalogLaunchEntry) {
     const message = error instanceof Error ? error.message : '操作失败'
     alert(message)
   }
-}
-
-function getToolIcon(iconName: string) {
-  const Icon = toolIconByName[iconName] || WrenchIcon
-  return <Icon data-icon="inline-start" weight="duotone" />
 }
 
 function App() {
