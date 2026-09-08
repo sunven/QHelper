@@ -3,7 +3,7 @@ import { Maximize2, Minimize2 } from 'lucide-react'
 import { createTransformToolPage } from '@/components/tool/transform-tool-page'
 
 // 转换方向由 mode 表达，无额外选项
-type CssOptions = Record<string, never>
+type CssOptions = object
 
 /** CSS 美化/压缩：纯函数，直接可测 */
 export function transformCss(

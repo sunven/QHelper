@@ -3,7 +3,40 @@ import { FileCode, FileJson } from 'lucide-react'
 import { createTransformToolPage } from '@/components/tool/transform-tool-page'
 
 // 转换方向由 mode 表达，无额外选项
-type TomlOptions = Record<string, never>
+type TomlOptions = object
+
+type TomlValue = string | number | boolean | TomlValue[] | { [key: string]: TomlValue }
+
+/**
+ * JSON → TOML 序列化。toml-j0.4 只有 parse（stringify 在包中不存在，
+ * 旧代码调用它永远抛错），这里提供最小的 TOML 输出。
+ */
+function jsonToToml(value: { [key: string]: TomlValue }): string {
+  const lines: string[] = []
+  const tables: string[] = []
+
+  for (const [key, entry] of Object.entries(value)) {
+    if (entry !== null && typeof entry === 'object' && !Array.isArray(entry)) {
+      tables.push(`[${key}]\n${jsonToToml(entry)}`)
+      continue
+    }
+    if (entry === null) {
+      lines.push(`${key} = "" # null`)
+      continue
+    }
+    if (typeof entry === 'number' || typeof entry === 'boolean') {
+      lines.push(`${key} = ${String(entry)}`)
+      continue
+    }
+    if (Array.isArray(entry)) {
+      lines.push(`${key} = ${JSON.stringify(entry)}`)
+      continue
+    }
+    lines.push(`${key} = ${JSON.stringify(entry)}`)
+  }
+
+  return [...lines, ...tables].join('\n') + (lines.length + tables.length > 0 ? '\n' : '')
+}
 
 /** TOML ↔ JSON 转换：纯函数，直接可测 */
 export function transformToml(
@@ -15,8 +48,7 @@ export function transformToml(
       const result = TOMLParser.parse(input)
       return JSON.stringify(result, null, 2)
     }
-    const jsonObj = JSON.parse(input)
-    return TOMLParser.stringify(jsonObj)
+    return jsonToToml(JSON.parse(input) as { [key: string]: TomlValue })
   } catch (err) {
     return err instanceof Error ? err : new Error('解析错误')
   }

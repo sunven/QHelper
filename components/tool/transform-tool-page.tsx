@@ -21,17 +21,17 @@ export type TransformResult = string | Error
 export type TransformToolPageConfig<Mode extends string, Options extends object> = {
   toolId: string
   /** 纯函数转换：输入 + 当前选项 → 输出或错误 */
-  transform: (input: string, options: Options & { mode: Mode }) => TransformResult
+  transform: (input: string, options: Omit<Options, 'mode'> & { mode: Mode }) => TransformResult
   /** 初始示例输入 */
   defaultInput: string
   /** 初始选项（不含 mode；mode 取 directions 第一项） */
-  defaultOptions: Options
+  defaultOptions: Omit<Options, 'mode'>
   /** 转换方向列表；两项及以上时渲染方向按钮与交换按钮 */
   directions: TransformDirection<Mode>[]
   /** options 插槽：渲染工具特有控件（缩进选择等） */
   renderOptions?: (
-    options: Options & { mode: Mode },
-    setOptions: (patch: Partial<Options>) => void,
+    options: Omit<Options, 'mode'> & { mode: Mode },
+    setOptions: (patch: Partial<Omit<Options, 'mode'>>) => void,
   ) => React.ReactNode
   /** 下载文件名：前缀与按 mode 的扩展名 */
   download: { prefix: string; extension: (mode: Mode) => string }
@@ -59,14 +59,17 @@ export function createTransformToolPage<Mode extends string, Options extends obj
   } = config
 
   function TransformToolPage() {
+    // options 由 defaultOptions（工具特有字段）与 mode（方向）组成
     const [input, setInput] = useState(defaultInput)
-    const [options, setOptions] = useState<Options & { mode: Mode }>(() => ({
-      ...defaultOptions,
-      mode: directions[0].mode,
-    }))
+    const [options, setOptions] = useState<Omit<Options, 'mode'> & { mode: Mode }>(
+      () => ({
+        ...defaultOptions,
+        mode: directions[0].mode,
+      }),
+    )
     const { add, history } = useToolHistory<{
       input: string
-      options: Options & { mode: Mode }
+      options: Omit<Options, 'mode'> & { mode: Mode }
     }>(toolId, {
       max: 10,
       key: `${toolId}-state`,
@@ -102,9 +105,12 @@ export function createTransformToolPage<Mode extends string, Options extends obj
       setInput(output)
     }, [output])
 
-    const handleOptionsChange = useCallback((patch: Partial<Options>) => {
-      setOptions((prev) => ({ ...prev, ...patch }))
-    }, [])
+    const handleOptionsChange = useCallback(
+      (patch: Partial<Omit<Options, 'mode'>>) => {
+        setOptions((prev) => ({ ...prev, ...patch }))
+      },
+      [],
+    )
 
     const handleClear = useCallback(() => {
       setInput('')
@@ -116,11 +122,16 @@ export function createTransformToolPage<Mode extends string, Options extends obj
       }
       const blob = new Blob([output], { type: 'text/plain' })
       const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${download.prefix}-${Date.now()}.${download.extension(options.mode)}`
-      a.click()
-      URL.revokeObjectURL(url)
+      try {
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${download.prefix}-${Date.now()}.${download.extension(options.mode)}`
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+      } finally {
+        URL.revokeObjectURL(url)
+      }
       add({ input, options })
     }, [output, error, input, options, add])
 
