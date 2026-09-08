@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { defineSetting } from './settings'
+import { defineSetting, watchSetting } from './settings'
 
 type TestSetting = {
   enabled: boolean
@@ -185,5 +185,108 @@ describe('settings/defineSetting', () => {
       settings: { enabled: true },
       storageArea: 'sync',
     })
+  })
+})
+
+describe('settings/watchSetting', () => {
+  type WatchedSetting = { enabled: boolean }
+
+  function createFakeSetting(
+    initial: Promise<WatchedSetting>,
+    defaults: WatchedSetting = { enabled: false },
+  ) {
+    let listener: ((value: WatchedSetting) => void) | undefined
+    return {
+      defaults,
+      get: vi.fn(() => initial),
+      subscribe: vi.fn((next: (value: WatchedSetting) => void) => {
+        listener = next
+        return () => {
+          listener = undefined
+        }
+      }),
+      notify: (value: WatchedSetting) => listener?.(value),
+    }
+  }
+
+  it('applies the setting once read', async () => {
+    const apply = vi.fn()
+    const setting = createFakeSetting(Promise.resolve({ enabled: true }))
+
+    watchSetting(setting, apply)
+
+    await vi.waitFor(() => {
+      expect(apply).toHaveBeenCalledWith({ enabled: true })
+    })
+  })
+
+  it('applies defaults when the initial read fails', async () => {
+    const apply = vi.fn()
+    const setting = createFakeSetting(
+      Promise.reject(new Error('storage unavailable')),
+      { enabled: false },
+    )
+
+    watchSetting(setting, apply)
+
+    await vi.waitFor(() => {
+      expect(apply).toHaveBeenCalledWith({ enabled: false })
+    })
+  })
+
+  it('re-applies on setting changes', async () => {
+    const apply = vi.fn()
+    const setting = createFakeSetting(Promise.resolve({ enabled: true }))
+
+    watchSetting(setting, apply)
+    await vi.waitFor(() => {
+      expect(apply).toHaveBeenCalled()
+    })
+    apply.mockClear()
+
+    setting.notify({ enabled: false })
+
+    expect(apply).toHaveBeenCalledWith({ enabled: false })
+  })
+
+  it('stops applying after dispose', async () => {
+    const apply = vi.fn()
+    const setting = createFakeSetting(Promise.resolve({ enabled: true }))
+
+    const dispose = watchSetting(setting, apply)
+    await vi.waitFor(() => {
+      expect(apply).toHaveBeenCalled()
+    })
+    apply.mockClear()
+
+    dispose()
+    setting.notify({ enabled: true })
+
+    expect(apply).not.toHaveBeenCalled()
+  })
+
+  it('lets deps override the setting read and subscription', async () => {
+    const apply = vi.fn()
+    const setting = createFakeSetting(Promise.resolve({ enabled: true }))
+    let listener: ((value: WatchedSetting) => void) | undefined
+    const onSettingsChanged = vi.fn(
+      (next: (value: WatchedSetting) => void) => {
+        listener = next
+        return () => undefined
+      },
+    )
+
+    watchSetting(setting, apply, {
+      getSettings: () => Promise.resolve({ enabled: false }),
+      onSettingsChanged,
+    })
+
+    await vi.waitFor(() => {
+      expect(apply).toHaveBeenCalledWith({ enabled: false })
+    })
+
+    listener?.({ enabled: true })
+    expect(apply).toHaveBeenLastCalledWith({ enabled: true })
+    expect(setting.subscribe).not.toHaveBeenCalled()
   })
 })

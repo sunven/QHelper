@@ -24,6 +24,10 @@ _Avoid_: Debounced input, draft cache
 A low-sensitivity **Tool Setting** that should follow the user's browser profile across devices. Synced Settings are small preferences, not captured content, request data, tool history, API credentials, or backups.
 _Avoid_: Cloud backup, telemetry, synced data
 
+**Tool Setting Watcher**:
+The shared loop that reads a **Tool Setting**, applies it, falls back to the definition's defaults when the initial read fails, and re-applies on setting changes. `watchSetting(setting, apply, deps)` in `lib/settings.ts` owns the loop; a content controller declares only its apply strategy (mount/unmount or render) and its own cleanup. It is the read/subscribe half of a gated page feature, not the page behavior itself.
+_Avoid_: Settings gate loop, content bootstrap, settings polling
+
 **Local Setting Fallback**:
 A device-local copy of a **Synced Setting** used when browser profile sync cannot read or write successfully. It preserves tool behavior on the current device without changing captured content, request data, tool history, or credentials into Synced Settings.
 _Avoid_: Sync failure, offline mode, backup

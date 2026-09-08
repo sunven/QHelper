@@ -3,6 +3,7 @@ import { DictionaryOverlay } from '@/components/dictionary/DictionaryOverlay'
 import '@/components/dictionary/styles.css'
 import { ballStore, panelStore } from './stores'
 import { dictionarySettings, type DictionarySettings } from './settings'
+import { watchSetting } from '@/lib/settings'
 import { createDictionaryFetchMessage, createYoudaoUrl } from './youdao'
 import type { DictionaryData } from './types'
 
@@ -160,43 +161,29 @@ export function installDictionarySelectionLookupController(
   documentRef: Document,
   deps: DictionarySelectionControllerDeps = {},
 ) {
-  const getSettings = deps.getSettings || dictionarySettings.get
-  const onSettingsChanged =
-    deps.onSettingsChanged || dictionarySettings.subscribe
-  let disposed = false
   let cleanupLookup: (() => void) | undefined
 
-  function applySettings(settings: DictionarySettings) {
-    if (disposed) {
-      return
-    }
-
-    if (settings.selectionLookupEnabled) {
-      if (!cleanupLookup) {
-        cleanupLookup = installDictionarySelectionLookup(
+  // apply 策略：开关决定惰性安装或卸载；循环（读/订阅/回落）在 watchSetting
+  const disposeWatch = watchSetting(
+    dictionarySettings,
+    (settings) => {
+      if (settings.selectionLookupEnabled) {
+        cleanupLookup ??= installDictionarySelectionLookup(
           windowRef,
           documentRef,
           deps,
         )
+        return
       }
-      return
-    }
 
-    cleanupLookup?.()
-    cleanupLookup = undefined
-  }
-
-  void getSettings()
-    .then(applySettings)
-    .catch(() => {
-      applySettings(dictionarySettings.defaults)
-    })
-
-  const cleanupSettings = onSettingsChanged(applySettings)
+      cleanupLookup?.()
+      cleanupLookup = undefined
+    },
+    deps,
+  )
 
   return () => {
-    disposed = true
-    cleanupSettings()
+    disposeWatch()
     cleanupLookup?.()
     cleanupLookup = undefined
   }

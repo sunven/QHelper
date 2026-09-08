@@ -142,3 +142,42 @@ export function defineSetting<T extends object>(
 
   return { key, defaults, get, set, subscribe, reset }
 }
+
+export type SettingWatchDeps<T> = {
+  getSettings?: () => Promise<T>
+  onSettingsChanged?: (listener: (value: T) => void) => () => void
+}
+
+/**
+ * Tool Setting Watcher：读取 Tool Setting 并应用、读失败时回落 defaults、
+ * 设置变更时重新应用的共享循环；内容控制器只声明 apply 策略与卸载。
+ * 返回 dispose：退订并静默后续回调。
+ */
+export function watchSetting<T>(
+  setting: Pick<SettingDefinition<T>, 'defaults' | 'get' | 'subscribe'>,
+  apply: (value: T) => void,
+  deps: SettingWatchDeps<T> = {},
+): () => void {
+  const getSettings = deps.getSettings ?? setting.get
+  const onSettingsChanged = deps.onSettingsChanged ?? setting.subscribe
+  let disposed = false
+
+  const applySetting = (value: T) => {
+    if (!disposed) {
+      apply(value)
+    }
+  }
+
+  void getSettings()
+    .then(applySetting)
+    .catch(() => {
+      applySetting(setting.defaults)
+    })
+
+  const unsubscribe = onSettingsChanged(applySetting)
+
+  return () => {
+    disposed = true
+    unsubscribe()
+  }
+}

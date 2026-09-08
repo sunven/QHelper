@@ -2,6 +2,7 @@ import { createRoot, type Root } from 'react-dom/client'
 import { V2exBase64Overlay } from '@/components/v2ex-base64/V2exBase64Overlay'
 import overlayStyles from '@/components/v2ex-base64/styles.css?inline'
 import { v2exBase64Settings, type V2exBase64Settings } from './settings'
+import { watchSetting } from '@/lib/settings'
 
 const ROOT_ATTRIBUTE = 'data-qhelper-v2ex-base64-root'
 
@@ -82,31 +83,17 @@ export function installV2exBase64OverlayController(
   documentRef: Document,
   deps: V2exBase64ContentDeps = {},
 ) {
-  const getSettings = deps.getSettings || v2exBase64Settings.get
-  const onSettingsChanged =
-    deps.onSettingsChanged || v2exBase64Settings.subscribe
   const overlay = installV2exBase64Overlay(documentRef, deps)
-  let disposed = false
 
-  function applySettings(settings: V2exBase64Settings) {
-    if (disposed) {
-      return
-    }
-
-    overlay.renderOverlay(settings)
-  }
-
-  void getSettings()
-    .then(applySettings)
-    .catch(() => {
-      applySettings(v2exBase64Settings.defaults)
-    })
-
-  const unsubscribeSettings = onSettingsChanged(applySettings)
+  // apply 策略：设置内容直接驱动 overlay 渲染；循环（读/订阅/回落）在 watchSetting
+  const disposeWatch = watchSetting(
+    v2exBase64Settings,
+    overlay.renderOverlay,
+    deps,
+  )
 
   return () => {
-    disposed = true
-    unsubscribeSettings()
+    disposeWatch()
     overlay.unmountOverlay()
   }
 }
