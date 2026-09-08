@@ -3,10 +3,11 @@ import {
   parseRepoCoordinates,
   type RepoCoordinates,
 } from './repository';
+import { GITHUB_SITE_PROFILE } from '@/lib/github/site-profile';
 import {
-  installRepositoryPageHelper,
-  type RepositoryPageHelperAdapter,
-} from './repository-page-helper';
+  installPageHelpers,
+  type PageHelperAdapter,
+} from '@/lib/page-helper-lifecycle';
 
 export const ZREAD_BUTTON_ID = 'qhelper-zread-button';
 export const ZREAD_WRAPPER_SELECTOR = '[data-qhelper-zread-wrapper="true"]';
@@ -360,12 +361,14 @@ export function syncZreadButton(doc: Document, pathname: string): boolean {
 }
 
 export function installGitHubZreadButton(win: Window, doc: Document): void {
-  installRepositoryPageHelper(win, doc, createGitHubZreadButtonHelper(doc));
+  installPageHelpers(win, doc, GITHUB_SITE_PROFILE, [
+    createGitHubZreadButtonHelper(doc),
+  ]);
 }
 
 export function createGitHubZreadButtonHelper(
   doc: Document,
-): RepositoryPageHelperAdapter {
+): PageHelperAdapter {
   return {
     render: (pathname) => syncZreadButton(doc, pathname),
     shouldRetry: (pathname) => getRepositoryCoordinates(doc, pathname) !== null,

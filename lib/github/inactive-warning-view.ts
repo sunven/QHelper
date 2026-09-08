@@ -3,10 +3,11 @@ import {
   isRepositoryHomePath,
   type RepoCoordinates,
 } from './repository'
+import { GITHUB_SITE_PROFILE } from '@/lib/github/site-profile'
 import {
-  installRepositoryPageHelper,
-  type RepositoryPageHelperAdapter,
-} from './repository-page-helper'
+  installPageHelpers,
+  type PageHelperAdapter,
+} from '@/lib/page-helper-lifecycle'
 import {
   INACTIVE_WARNING_MESSAGE,
   type InactiveWarningResponse,
@@ -213,17 +214,15 @@ export function installGitHubInactiveWarningView(
   doc: Document,
   deps: InactiveWarningViewDeps = {},
 ): void {
-  installRepositoryPageHelper(
-    win,
-    doc,
+  installPageHelpers(win, doc, GITHUB_SITE_PROFILE, [
     createGitHubInactiveWarningHelper(doc, deps),
-  )
+  ])
 }
 
 export function createGitHubInactiveWarningHelper(
   doc: Document,
   deps: InactiveWarningViewDeps = {},
-): RepositoryPageHelperAdapter {
+): PageHelperAdapter {
   return {
     render: (pathname) => syncInactiveWarningView(doc, pathname, deps),
     shouldRetry: (pathname) =>

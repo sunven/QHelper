@@ -1,4 +1,5 @@
 import { parseRepoCoordinates, type RepoCoordinates } from '@/lib/github/repository';
+import type { PageHelperAdapter } from '@/lib/page-helper-lifecycle';
 
 const ZREAD_GITHUB_LINK_SELECTOR = '[data-qhelper-zread-github-link="true"]';
 
@@ -63,42 +64,21 @@ export function syncZreadGithubLink(doc: Document, pathname: string): boolean {
   return true;
 }
 
-export function installZreadGithubLink(win: Window, doc: Document): void {
-  let lastPathname = win.location.pathname;
+/** Zread 页面的 GitHub 链接助手：挂进 Page Helper Lifecycle 的 adapter 声明 */
+export function createZreadGithubLinkHelper(doc: Document): PageHelperAdapter {
+  return {
+    render: (pathname) => syncZreadGithubLink(doc, pathname),
+    shouldRecoverFromMutation: (pathname) => {
+      const repoCoordinates = parseRepoCoordinates(pathname);
+      if (!repoCoordinates) {
+        return false;
+      }
 
-  const render = () => {
-    lastPathname = win.location.pathname;
-    syncZreadGithubLink(doc, win.location.pathname);
+      const injectedLink = getInjectedZreadGitHubLink(doc);
+      return (
+        !injectedLink ||
+        injectedLink.parentElement !== findZreadGitHubLinkContainer(doc, repoCoordinates)
+      );
+    },
   };
-
-  const shouldRenderFromMutation = () => {
-    if (win.location.pathname !== lastPathname) {
-      return true;
-    }
-
-    const repoCoordinates = parseRepoCoordinates(win.location.pathname);
-    if (!repoCoordinates) {
-      return false;
-    }
-
-    const injectedLink = getInjectedZreadGitHubLink(doc);
-    return (
-      !injectedLink ||
-      injectedLink.parentElement !== findZreadGitHubLinkContainer(doc, repoCoordinates)
-    );
-  };
-
-  render();
-  win.addEventListener('popstate', render);
-
-  const observer = new MutationObserver(() => {
-    if (shouldRenderFromMutation()) {
-      render();
-    }
-  });
-
-  observer.observe(doc.documentElement, {
-    childList: true,
-    subtree: true,
-  });
 }

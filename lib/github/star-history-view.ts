@@ -3,10 +3,11 @@ import {
   isRepositoryHomePath,
   type RepoCoordinates,
 } from './repository';
+import { GITHUB_SITE_PROFILE } from '@/lib/github/site-profile';
 import {
-  installRepositoryPageHelper,
-  type RepositoryPageHelperAdapter,
-} from './repository-page-helper';
+  installPageHelpers,
+  type PageHelperAdapter,
+} from '@/lib/page-helper-lifecycle';
 import {
   STAR_HISTORY_SVG_MESSAGE,
   type StarHistorySvgResponse,
@@ -617,17 +618,15 @@ export function installGitHubStarHistoryView(
   doc: Document,
   deps: StarHistoryViewDeps = {},
 ): void {
-  installRepositoryPageHelper(
-    win,
-    doc,
+  installPageHelpers(win, doc, GITHUB_SITE_PROFILE, [
     createGitHubStarHistoryViewHelper(doc, deps),
-  );
+  ]);
 }
 
 export function createGitHubStarHistoryViewHelper(
   doc: Document,
   deps: StarHistoryViewDeps = {},
-): RepositoryPageHelperAdapter {
+): PageHelperAdapter {
   return {
     render: (pathname) => syncStarHistoryView(doc, pathname, deps),
     shouldRetry: (pathname) =>

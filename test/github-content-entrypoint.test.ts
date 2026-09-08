@@ -5,7 +5,7 @@ const {
   createGitHubStarHistoryViewHelper,
   createGitHubZreadButtonHelper,
   inactiveWarningHelper,
-  installRepositoryPageHelpers,
+  installPageHelpers,
   starHistoryHelper,
   zreadHelper,
 } = vi.hoisted(() => {
@@ -18,7 +18,7 @@ const {
     createGitHubStarHistoryViewHelper: vi.fn(() => starHistoryHelper),
     createGitHubZreadButtonHelper: vi.fn(() => zreadHelper),
     inactiveWarningHelper,
-    installRepositoryPageHelpers: vi.fn(),
+    installPageHelpers: vi.fn(),
     starHistoryHelper,
     zreadHelper,
   };
@@ -28,8 +28,8 @@ vi.mock('wxt/utils/define-content-script', () => ({
   defineContentScript: <T>(config: T) => config,
 }));
 
-vi.mock('@/lib/github/repository-page-helper', () => ({
-  installRepositoryPageHelpers,
+vi.mock('@/lib/page-helper-lifecycle', () => ({
+  installPageHelpers,
 }));
 
 vi.mock('@/lib/github/inactive-warning-view', () => ({
@@ -51,7 +51,7 @@ describe('entrypoints/github.content.ts', () => {
     createGitHubInactiveWarningHelper.mockClear();
     createGitHubStarHistoryViewHelper.mockClear();
     createGitHubZreadButtonHelper.mockClear();
-    installRepositoryPageHelpers.mockClear();
+    installPageHelpers.mockClear();
   });
 
   it('registers the GitHub content script and delegates to shared GitHub helpers', () => {
@@ -63,10 +63,14 @@ describe('entrypoints/github.content.ts', () => {
     expect(createGitHubZreadButtonHelper).toHaveBeenCalledWith(document);
     expect(createGitHubStarHistoryViewHelper).toHaveBeenCalledWith(document);
     expect(createGitHubInactiveWarningHelper).toHaveBeenCalledWith(document);
-    expect(installRepositoryPageHelpers).toHaveBeenCalledWith(window, document, [
-      zreadHelper,
-      starHistoryHelper,
-      inactiveWarningHelper,
-    ]);
+    expect(installPageHelpers).toHaveBeenCalledWith(
+      window,
+      document,
+      {
+        documentEvents: ['turbo:load', 'pjax:end'],
+        windowEvents: ['popstate'],
+      },
+      [zreadHelper, starHistoryHelper, inactiveWarningHelper],
+    );
   });
 });

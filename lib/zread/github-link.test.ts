@@ -1,5 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { installZreadGithubLink, syncZreadGithubLink } from './github-link';
+import { createZreadGithubLinkHelper, syncZreadGithubLink } from './github-link';
+import { installPageHelpers } from '@/lib/page-helper-lifecycle';
+
+/** 与 zread.content.ts 相同的 popstate-only profile */
+const ZREAD_SITE_PROFILE = { windowEvents: ['popstate'] };
+
+function installZreadGithubLink(win: Window, doc: Document): void {
+  installPageHelpers(win, doc, ZREAD_SITE_PROFILE, [
+    createZreadGithubLinkHelper(doc),
+  ]);
+}
 
 function createFakeWindow(pathname = '/Yeachan-Heo/oh-my-codex'): Window & {
   listeners: Record<string, Array<() => void>>;
