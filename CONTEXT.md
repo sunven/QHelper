@@ -29,8 +29,8 @@ A device-local copy of a **Synced Setting** used when browser profile sync canno
 _Avoid_: Sync failure, offline mode, backup
 
 **Persisted Tool Data**:
-Device-local information that lets a QHelper tool resume or display prior work on the same browser profile. Persisted Tool Data includes tool state and tool history, but not a **Synced Setting**.
-_Avoid_: Synced data, cloud state, backup
+Device-local information that lets a QHelper tool resume or display prior work on the same browser profile. Persisted Tool Data includes tool state and tool history, but not a **Synced Setting**. Single-value persisted state binds to React through `useToolState` (tool state, derives the storage key) or `usePersistedValue` (other device-local data); there is one binding, not one per surface. Both delegate to the same load/subscribe/write-through module over device-local storage.
+_Avoid_: Synced data, cloud state, backup, per-surface storage hook
 
 **Text Preview Workspace**:
 The **Persisted Tool Data** for the Text Preview tool. It contains open text tabs, the active tab, each tab's source, and local-file save status; it may reference recoverable local file handles, but it is not a **Tool Setting** or a **Synced Setting**.

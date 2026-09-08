@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ErrorMessage } from '@/components/ui/error-message'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useExtensionStorage } from '@/hooks/useExtensionStorage'
+import { usePersistedValue } from '@/hooks/usePersistedValue'
 import { cn, copyToClipboard } from '@/lib/utils'
 import { streamWebPageSummary } from '@/lib/web-summary/ai'
 import {
@@ -79,7 +79,7 @@ async function extractPageContentFromTab(tabId: number): Promise<WebSummaryPageC
 }
 
 export function App() {
-  const { value: storedConfig, setValue: setStoredConfig, loading: configLoading } = useExtensionStorage(
+  const { value: storedConfig, setValue: setStoredConfig, loading: configLoading } = usePersistedValue(
     WEB_SUMMARY_CONFIG_KEY,
     DEFAULT_WEB_SUMMARY_CONFIG,
   )

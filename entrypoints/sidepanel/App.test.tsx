@@ -2,13 +2,13 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 
-const { useExtensionStorage, streamWebPageSummary } = vi.hoisted(() => ({
-  useExtensionStorage: vi.fn(),
+const { usePersistedValue, streamWebPageSummary } = vi.hoisted(() => ({
+  usePersistedValue: vi.fn(),
   streamWebPageSummary: vi.fn(),
 }))
 
-vi.mock('@/hooks/useExtensionStorage', () => ({
-  useExtensionStorage,
+vi.mock('@/hooks/usePersistedValue', () => ({
+  usePersistedValue,
 }))
 
 vi.mock('@/lib/web-summary/ai', () => ({
@@ -18,7 +18,7 @@ vi.mock('@/lib/web-summary/ai', () => ({
 describe('sidepanel/App', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    useExtensionStorage.mockReturnValue({
+    usePersistedValue.mockReturnValue({
       value: {
         endpoint: 'https://example.com/v1/chat/completions',
         model: 'gpt-4.1-mini',
