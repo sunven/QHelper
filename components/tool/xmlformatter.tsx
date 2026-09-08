@@ -62,5 +62,6 @@ export const XmlFormatter = createTransformToolPage<'beautify' | 'minify', XmlOp
   download: {
     prefix: 'formatted',
     extension: () => 'xml',
+    mimeType: 'application/xml',
   },
 })

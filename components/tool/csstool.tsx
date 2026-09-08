@@ -59,5 +59,6 @@ export const CssTool = createTransformToolPage<'beautify' | 'minify', CssOptions
   download: {
     prefix: 'style',
     extension: () => 'css',
+    mimeType: 'text/css',
   },
 })

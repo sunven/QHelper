@@ -115,5 +115,6 @@ export const HtmlFormatter = createTransformToolPage<HtmlMode, HtmlFormatOptions
   download: {
     prefix: 'html',
     extension: () => 'html',
+    mimeType: 'text/html',
   },
 })

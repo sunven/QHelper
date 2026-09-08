@@ -18,8 +18,9 @@ vi.mock('@/hooks/useToolHistory', () => ({
 
 type Mode = 'upper' | 'lower'
 
-const transform = vi.fn((input: string, options: { mode: Mode }) =>
-  options.mode === 'upper' ? input.toUpperCase() : input.toLowerCase(),
+const transform = vi.fn(
+  (input: string, options: { mode: Mode }) =>
+    options.mode === 'upper' ? input.toUpperCase() : input.toLowerCase(),
 )
 
 const TestToolPage = createTransformToolPage<Mode, Record<string, never>>({
@@ -41,6 +42,26 @@ const TestToolPage = createTransformToolPage<Mode, Record<string, never>>({
       outputLabel: '小写结果',
     },
   ],
+  download: { prefix: 'text', extension: () => 'txt' },
+})
+
+const toolbarTransform = vi.fn((input: string) => input.toUpperCase())
+
+const ToolbarToolPage = createTransformToolPage<
+  'optimize',
+  Record<string, never>
+>({
+  toolId: 'test-tool',
+  transform: toolbarTransform,
+  defaultInput: 'Hello',
+  defaultOptions: {},
+  directions: [{ mode: 'optimize', label: '优化', inputLabel: '输入', outputLabel: '输出' }],
+  renderToolbar: ({ setInput }) => (
+    <button type="button" onClick={() => setInput('uploaded')}>
+      上传文件
+    </button>
+  ),
+  stats: (input, output) => <div>{`${input.length}→${output.length} 字节`}</div>,
   download: { prefix: 'text', extension: () => 'txt' },
 })
 
@@ -135,5 +156,26 @@ describe('createTransformToolPage', () => {
 
     const textareas = screen.getAllByRole('textbox') as HTMLTextAreaElement[]
     expect(textareas.map((el) => el.value)).toEqual(['', ''])
+  })
+
+  it('renderToolbar shows the top bar for a single-direction tool and setInput feeds the transform', async () => {
+    const user = userEvent.setup()
+    render(<ToolbarToolPage />)
+
+    // 单方向：无方向按钮，但顶栏因 renderToolbar 而可见
+    expect(screen.getByRole('button', { name: '上传文件' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '优化' })).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '上传文件' }))
+    expect(toolbarTransform).toHaveBeenLastCalledWith('uploaded', {
+      mode: 'optimize',
+    })
+  })
+
+  it('stats override replaces the default stats row', () => {
+    render(<ToolbarToolPage />)
+
+    expect(screen.getByText('5→5 字节')).toBeInTheDocument()
+    expect(screen.queryByText('输入字符: 5')).not.toBeInTheDocument()
   })
 })

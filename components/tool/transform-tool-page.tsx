@@ -33,8 +33,16 @@ export type TransformToolPageConfig<Mode extends string, Options extends object>
     options: Omit<Options, 'mode'> & { mode: Mode },
     setOptions: (patch: Partial<Omit<Options, 'mode'>>) => void,
   ) => React.ReactNode
-  /** 下载文件名：前缀与按 mode 的扩展名 */
-  download: { prefix: string; extension: (mode: Mode) => string }
+  /** 顶栏动作插槽：渲染工具特有的输入动作（文件上传等），需要 setInput 的场景 */
+  renderToolbar?: (api: { setInput: (value: string) => void }) => React.ReactNode
+  /** 统计行覆盖：提供时替换默认的字符数/压缩率统计 */
+  stats?: (input: string, output: string) => React.ReactNode
+  /** 下载文件名与 MIME 类型（默认 text/plain） */
+  download: {
+    prefix: string
+    extension: (mode: Mode) => string
+    mimeType?: string
+  }
 }
 
 const FALLBACK_DIRECTION_ICON = <FileCode className="w-4 h-4" />
@@ -55,6 +63,8 @@ export function createTransformToolPage<Mode extends string, Options extends obj
     defaultOptions,
     directions,
     renderOptions,
+    renderToolbar,
+    stats,
     download,
   } = config
 
@@ -120,7 +130,9 @@ export function createTransformToolPage<Mode extends string, Options extends obj
       if (!output || error) {
         return
       }
-      const blob = new Blob([output], { type: 'text/plain' })
+      const blob = new Blob([output], {
+        type: download.mimeType ?? 'text/plain',
+      })
       const url = URL.createObjectURL(blob)
       try {
         const a = document.createElement('a')
@@ -137,24 +149,25 @@ export function createTransformToolPage<Mode extends string, Options extends obj
 
     return (
       <div className="mx-auto max-w-[1520px] space-y-2">
-        {/* 顶栏：方向切换 + 交换 + 工具选项插槽 */}
-        {(directions.length > 1 || renderOptions) && (
+        {/* 顶栏：方向切换 + 交换 + 工具选项/动作插槽 */}
+        {(directions.length > 1 || renderOptions || renderToolbar) && (
           <Card>
             <CardContent className="flex flex-wrap items-center gap-2 p-2">
               <div className="flex items-center gap-1.5">
-                {directions.map((d) => (
-                  <Button
-                    key={d.mode}
-                    type="button"
-                    onClick={() => handleDirectionChange(d.mode)}
-                    variant={options.mode === d.mode ? 'default' : 'outline'}
-                    size="sm"
-                    className="gap-1.5"
-                  >
-                    {d.icon ?? FALLBACK_DIRECTION_ICON}
-                    {d.label}
-                  </Button>
-                ))}
+                {directions.length > 1 &&
+                  directions.map((d) => (
+                    <Button
+                      key={d.mode}
+                      type="button"
+                      onClick={() => handleDirectionChange(d.mode)}
+                      variant={options.mode === d.mode ? 'default' : 'outline'}
+                      size="sm"
+                      className="gap-1.5"
+                    >
+                      {d.icon ?? FALLBACK_DIRECTION_ICON}
+                      {d.label}
+                    </Button>
+                  ))}
                 {directions.length > 1 && (
                   <Button
                     type="button"
@@ -169,6 +182,7 @@ export function createTransformToolPage<Mode extends string, Options extends obj
                 )}
               </div>
               {renderOptions?.(options, handleOptionsChange)}
+              {renderToolbar?.({ setInput })}
               {error && (
                 <div className="flex min-w-0 items-center gap-1.5 truncate text-xs text-red-600 dark:text-red-400">
                   <Zap className="w-4 h-4 shrink-0" />
@@ -242,17 +256,20 @@ export function createTransformToolPage<Mode extends string, Options extends obj
         </div>
 
         {/* 统计信息 */}
-        {!error && (
-          <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
-            <span>输入字符: {input.length}</span>
-            <span>输出字符: {output.length}</span>
-            {input.length > 0 && (
-              <span>
-                压缩率: {Math.round((1 - output.length / input.length) * 100)}%
-              </span>
-            )}
-          </div>
-        )}
+        {!error &&
+          (stats ? (
+            stats(input, output)
+          ) : (
+            <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
+              <span>输入字符: {input.length}</span>
+              <span>输出字符: {output.length}</span>
+              {input.length > 0 && (
+                <span>
+                  压缩率: {Math.round((1 - output.length / input.length) * 100)}%
+                </span>
+              )}
+            </div>
+          ))}
 
         {/* 历史记录 */}
         {history.length > 0 && (
