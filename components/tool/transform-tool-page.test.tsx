@@ -3,8 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createTransformToolPage } from './transform-tool-page'
 
-const { add } = vi.hoisted(() => ({
+const { add, historyState } = vi.hoisted(() => ({
   add: vi.fn(),
+  historyState: { entries: [] as unknown[] },
 }))
 
 vi.mock('@/hooks/useToolHistory', () => ({
@@ -12,16 +13,49 @@ vi.mock('@/hooks/useToolHistory', () => ({
     if (toolId !== 'test-tool') {
       throw new Error(`unexpected toolId: ${toolId}`)
     }
-    return { history: [], add }
+    return {
+      history: historyState.entries,
+      loading: false,
+      add,
+      remove: vi.fn(),
+      clear: vi.fn(() => Promise.resolve()),
+    }
   },
 }))
 
 type Mode = 'upper' | 'lower'
 
-const transform = vi.fn(
-  (input: string, options: { mode: Mode }) =>
-    options.mode === 'upper' ? input.toUpperCase() : input.toLowerCase(),
+const transform = vi.fn((input: string, options: { mode: Mode }) =>
+  options.mode === 'upper' ? input.toUpperCase() : input.toLowerCase(),
 )
+
+type Options = { mode: Mode; suffix: string }
+
+const optionsTransform = vi.fn(
+  (input: string, options: Options) => `${options.mode}:${options.suffix}`,
+)
+
+const OptionsToolPage = createTransformToolPage<Mode, Options>({
+  toolId: 'test-tool',
+  transform: optionsTransform,
+  defaultInput: 'Hello',
+  defaultOptions: { suffix: '-' },
+  directions: [
+    {
+      mode: 'upper',
+      label: '转大写',
+      inputLabel: '原始文本',
+      outputLabel: '结果',
+    },
+    {
+      mode: 'lower',
+      label: '转小写',
+      inputLabel: '原始文本',
+      outputLabel: '结果',
+    },
+  ],
+  download: { prefix: 'text', extension: () => 'txt' },
+})
 
 const TestToolPage = createTransformToolPage<Mode, Record<string, never>>({
   toolId: 'test-tool',
@@ -55,13 +89,22 @@ const ToolbarToolPage = createTransformToolPage<
   transform: toolbarTransform,
   defaultInput: 'Hello',
   defaultOptions: {},
-  directions: [{ mode: 'optimize', label: '优化', inputLabel: '输入', outputLabel: '输出' }],
+  directions: [
+    {
+      mode: 'optimize',
+      label: '优化',
+      inputLabel: '输入',
+      outputLabel: '输出',
+    },
+  ],
   renderToolbar: ({ setInput }) => (
     <button type="button" onClick={() => setInput('uploaded')}>
       上传文件
     </button>
   ),
-  stats: (input, output) => <div>{`${input.length}→${output.length} 字节`}</div>,
+  stats: (input, output) => (
+    <div>{`${input.length}→${output.length} 字节`}</div>
+  ),
   download: { prefix: 'text', extension: () => 'txt' },
 })
 
@@ -77,6 +120,36 @@ describe('createTransformToolPage', () => {
     Object.defineProperty(URL, 'revokeObjectURL', {
       value: vi.fn(),
       configurable: true,
+    })
+    historyState.entries = []
+  })
+
+  it('restores both the input and the options when a history entry is selected', async () => {
+    historyState.entries = [
+      {
+        id: 'entry-0',
+        timestamp: 1_700_000_000_000,
+        input: { input: 'snapshot', options: { mode: 'lower', suffix: '!' } },
+      },
+    ]
+    const user = userEvent.setup()
+
+    render(<OptionsToolPage />)
+
+    // 初始:默认方向 upper + 默认选项 suffix '-'
+    expect(optionsTransform).toHaveBeenLastCalledWith('Hello', {
+      mode: 'upper',
+      suffix: '-',
+    })
+
+    await user.click(screen.getByText('snapshot...'))
+
+    // 输入恢复为快照值,选项(方向 + suffix)一并恢复
+    await waitFor(() => {
+      expect(optionsTransform).toHaveBeenLastCalledWith('snapshot', {
+        mode: 'lower',
+        suffix: '!',
+      })
     })
   })
 
@@ -125,7 +198,9 @@ describe('createTransformToolPage', () => {
   })
 
   it('snapshots only a successful transform on download', async () => {
-    transform.mockImplementation(() => new Error('解析失败') as unknown as string)
+    transform.mockImplementation(
+      () => new Error('解析失败') as unknown as string,
+    )
     const user = userEvent.setup()
     render(<TestToolPage />)
 
@@ -164,7 +239,9 @@ describe('createTransformToolPage', () => {
 
     // 单方向：无方向按钮，但顶栏因 renderToolbar 而可见
     expect(screen.getByRole('button', { name: '上传文件' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '优化' })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: '优化' }),
+    ).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '上传文件' }))
     expect(toolbarTransform).toHaveBeenLastCalledWith('uploaded', {

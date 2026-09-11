@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useState, type ComponentType } from 'react'
 import { ArrowLeftRight, Download, FileCode, Zap } from 'lucide-react'
+import { type ComponentType, useCallback, useMemo, useState } from 'react'
+import { CopyButton } from '@/components/tool/CopyButton'
+import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { CopyButton } from '@/components/tool/CopyButton'
 import { useToolHistory } from '@/hooks/useToolHistory'
 
 /** 一对转换方向：mode 决定转换方向，其余字段决定界面文案与图标 */
@@ -18,10 +19,16 @@ export type TransformDirection<Mode extends string> = {
 /** transform 的统一返回：Error 即转换失败，错误信息在输出栏内联展示 */
 export type TransformResult = string | Error
 
-export type TransformToolPageConfig<Mode extends string, Options extends object> = {
+export type TransformToolPageConfig<
+  Mode extends string,
+  Options extends object,
+> = {
   toolId: string
   /** 纯函数转换：输入 + 当前选项 → 输出或错误 */
-  transform: (input: string, options: Omit<Options, 'mode'> & { mode: Mode }) => TransformResult
+  transform: (
+    input: string,
+    options: Omit<Options, 'mode'> & { mode: Mode },
+  ) => TransformResult
   /** 初始示例输入 */
   defaultInput: string
   /** 初始选项（不含 mode；mode 取 directions 第一项） */
@@ -34,7 +41,9 @@ export type TransformToolPageConfig<Mode extends string, Options extends object>
     setOptions: (patch: Partial<Omit<Options, 'mode'>>) => void,
   ) => React.ReactNode
   /** 顶栏动作插槽：渲染工具特有的输入动作（文件上传等），需要 setInput 的场景 */
-  renderToolbar?: (api: { setInput: (value: string) => void }) => React.ReactNode
+  renderToolbar?: (api: {
+    setInput: (value: string) => void
+  }) => React.ReactNode
   /** 统计行覆盖：提供时替换默认的字符数/压缩率统计 */
   stats?: (input: string, output: string) => React.ReactNode
   /** 下载文件名与 MIME 类型（默认 text/plain） */
@@ -53,9 +62,10 @@ const FALLBACK_DIRECTION_ICON = <FileCode className="w-4 h-4" />
  * 历史 key 推导与"成功才快照"守卫、下载与复制、双栏布局与内联错误展示；
  * transform 函数与 options 面板属于各工具的声明。
  */
-export function createTransformToolPage<Mode extends string, Options extends object>(
-  config: TransformToolPageConfig<Mode, Options>,
-): ComponentType {
+export function createTransformToolPage<
+  Mode extends string,
+  Options extends object,
+>(config: TransformToolPageConfig<Mode, Options>): ComponentType {
   const {
     toolId,
     transform,
@@ -71,12 +81,12 @@ export function createTransformToolPage<Mode extends string, Options extends obj
   function TransformToolPage() {
     // options 由 defaultOptions（工具特有字段）与 mode（方向）组成
     const [input, setInput] = useState(defaultInput)
-    const [options, setOptions] = useState<Omit<Options, 'mode'> & { mode: Mode }>(
-      () => ({
-        ...defaultOptions,
-        mode: directions[0].mode,
-      }),
-    )
+    const [options, setOptions] = useState<
+      Omit<Options, 'mode'> & { mode: Mode }
+    >(() => ({
+      ...defaultOptions,
+      mode: directions[0].mode,
+    }))
     const { add, history } = useToolHistory<{
       input: string
       options: Omit<Options, 'mode'> & { mode: Mode }
@@ -265,35 +275,27 @@ export function createTransformToolPage<Mode extends string, Options extends obj
               <span>输出字符: {output.length}</span>
               {input.length > 0 && (
                 <span>
-                  压缩率: {Math.round((1 - output.length / input.length) * 100)}%
+                  压缩率: {Math.round((1 - output.length / input.length) * 100)}
+                  %
                 </span>
               )}
             </div>
           ))}
 
         {/* 历史记录 */}
-        {history.length > 0 && (
-          <Card>
-            <CardHeader className="py-2">
-              <CardTitle className="text-sm">历史记录</CardTitle>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid max-h-36 grid-cols-1 gap-1.5 overflow-y-auto md:grid-cols-2 xl:grid-cols-3">
-                {history.map((entry, index) => (
-                  <div
-                    key={entry.id ?? index}
-                    className="cursor-pointer rounded bg-muted p-2 transition-colors hover:bg-muted/70"
-                    onClick={() => setInput(entry.input.input)}
-                  >
-                    <div className="line-clamp-1 font-mono text-xs text-muted-foreground">
-                      {entry.input.input.slice(0, 100)}...
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <ToolHistoryList
+          entries={history}
+          onSelect={(entry) => {
+            // 快照存的是 { input, options }:恢复输入的同时恢复方向与选项
+            setInput(entry.input.input)
+            setOptions(entry.input.options)
+          }}
+          renderItem={(entry) => (
+            <div className="line-clamp-1 font-mono text-xs text-muted-foreground">
+              {entry.input.input.slice(0, 100)}...
+            </div>
+          )}
+        />
       </div>
     )
   }
