@@ -1,13 +1,14 @@
+import { ArrowLeft, ArrowRight, Code, FileCode, Key, Lock } from 'lucide-react'
 import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { CopyButton } from '@/components/tool/CopyButton'
+import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
-import { ArrowRight, ArrowLeft, Code, Lock, Key, FileCode } from 'lucide-react'
-import { md5 } from '@/lib/utils/md5'
 import { useToolHistory } from '@/hooks/useToolHistory'
 import { useToolState } from '@/hooks/useToolState'
-import { CopyButton } from '@/components/tool/CopyButton'
 import { decodeUtf8Base64, encodeUtf8Base64 } from '@/lib/base64'
+import { md5 } from '@/lib/utils/md5'
 
 type EncodeType =
   | 'htmlEscape'
@@ -102,7 +103,7 @@ export function ConvertTool() {
   }
   const { history, add, clear } = useToolHistory<ConvertHistorySnapshot>(
     'convert',
-    { max: 50 },
+    { max: 10 },
   )
 
   // 执行编解码并添加历史记录
@@ -320,45 +321,27 @@ export function ConvertTool() {
       </div>
 
       {/* 历史记录 */}
-      {history.length > 0 && (
-        <Card className="overflow-hidden">
-          <CardHeader className="border-b border-border/70">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm">历史记录</CardTitle>
-              <Button variant="outline" size="sm" onClick={() => void clear()}>
-                清除历史 ({history.length})
-              </Button>
+      <ToolHistoryList
+        entries={history}
+        onClear={() => void clear()}
+        onSelect={(entry) => restoreHistory(entry.input.source)}
+        renderItem={(entry) => (
+          <>
+            <div className="mb-1 flex items-center justify-between gap-2">
+              <span className="text-xs text-muted-foreground">
+                {new Date(entry.timestamp).toLocaleString()}
+              </span>
+              <span className="rounded-none bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
+                {(entry.metadata?.type as string) || '未知'}
+              </span>
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid max-h-48 grid-cols-1 gap-1.5 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3">
-              {history
-                .slice(-10)
-                .reverse()
-                .map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="cursor-pointer rounded-none border border-border/70 bg-muted/55 p-2 text-xs transition-colors hover:bg-muted/80"
-                    onClick={() => restoreHistory(entry.input.source)}
-                  >
-                    <div className="mb-1 flex items-center justify-between gap-2">
-                      <span className="text-muted-foreground">
-                        {new Date(entry.timestamp).toLocaleString()}
-                      </span>
-                      <span className="rounded-none bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">
-                        {(entry.metadata?.type as string) || '未知'}
-                      </span>
-                    </div>
-                    <div className="truncate font-mono">
-                      {entry.input.source.slice(0, 50)}
-                      {entry.input.source.length > 50 ? '...' : ''}
-                    </div>
-                  </div>
-                ))}
+            <div className="truncate font-mono text-xs">
+              {entry.input.source.slice(0, 50)}
+              {entry.input.source.length > 50 ? '...' : ''}
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </>
+        )}
+      />
     </div>
   )
 }

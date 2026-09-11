@@ -1,6 +1,7 @@
-import { useState, useCallback, useEffect } from 'react'
 import cronParser from 'cron-parser'
 import { Calendar, Copy, Download } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToolHistory } from '@/hooks/useToolHistory'
@@ -231,31 +232,15 @@ ${state.isValid ? `下次运行时间:\n${state.nextRuns.map((d) => `  ${d.toLoc
           </div>
         </div>
 
-        {history.length > 0 && (
-          <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
-            <h3 className="mb-1.5 font-semibold text-slate-700 dark:text-slate-300">
-              历史记录
-            </h3>
-            <div className="max-h-36 space-y-1 overflow-y-auto">
-              {history.map((entry, index) => {
-                const item = entry.input
-                return (
-                  <div
-                    key={index}
-                    className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
-                    onClick={() =>
-                      handleExpressionChange((item as CronState).expression)
-                    }
-                  >
-                    <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
-                      {(item as CronState).expression}
-                    </div>
-                  </div>
-                )
-              })}
+        <ToolHistoryList
+          entries={history}
+          onSelect={(entry) => handleExpressionChange(entry.input.expression)}
+          renderItem={(entry) => (
+            <div className="line-clamp-1 font-mono text-xs text-muted-foreground">
+              {entry.input.expression}
             </div>
-          </div>
-        )}
+          )}
+        />
       </div>
 
       {state.isValid && state.nextRuns.length > 0 && (

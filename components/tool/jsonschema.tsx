@@ -1,14 +1,15 @@
-import { useState, useCallback, useEffect } from 'react'
 import Ajv from 'ajv'
 import {
-  FileJson,
-  Shield,
+  AlertCircle,
+  CheckCircle2,
   Copy,
   Download,
+  FileJson,
+  Shield,
   X,
-  CheckCircle2,
-  AlertCircle,
 } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
+import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
 import { Button } from '@/components/ui/button'
 import { useToolHistory } from '@/hooks/useToolHistory'
 
@@ -319,35 +320,21 @@ export function JsonSchemaValidator() {
         <span>Schema 字符: {state.jsonSchema.length}</span>
       </div>
 
-      {history.length > 0 && (
-        <div className="rounded-none border border-slate-200/80 bg-white/92 p-2 shadow-sm dark:border-slate-800 dark:bg-slate-950/78">
-          <h3 className="mb-1.5 font-semibold text-slate-700 dark:text-slate-200">
-            历史记录
-          </h3>
-          <div className="max-h-36 space-y-1 overflow-y-auto">
-            {history.map((entry, index) => {
-              const historyState = entry.input
-              return (
-                <div
-                  key={index}
-                  className="cursor-pointer rounded-none bg-slate-50 p-2 transition-colors hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700"
-                  onClick={() => {
-                    setState((prev) => ({
-                      ...prev,
-                      jsonData: historyState.jsonData,
-                      jsonSchema: historyState.jsonSchema,
-                    }))
-                  }}
-                >
-                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 font-mono">
-                    {historyState.jsonData.slice(0, 100)}...
-                  </div>
-                </div>
-              )
-            })}
+      <ToolHistoryList
+        entries={history}
+        onSelect={(entry) => {
+          setState((prev) => ({
+            ...prev,
+            jsonData: entry.input.jsonData,
+            jsonSchema: entry.input.jsonSchema,
+          }))
+        }}
+        renderItem={(entry) => (
+          <div className="line-clamp-1 font-mono text-xs text-muted-foreground">
+            {entry.input.jsonData.slice(0, 100)}...
           </div>
-        </div>
-      )}
+        )}
+      />
     </div>
   )
 }
