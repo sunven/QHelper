@@ -1,34 +1,35 @@
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import {
+  AlertCircle,
+  ArrowRightLeft,
+  Check,
+  Clock,
+  Download,
+  FileJson,
+  FileWarning,
+  Minus,
+  Plus,
+  Save,
+  Sparkles,
+  Trash2,
+  X,
+} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactJsonView from 'react-json-view'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import {
-  FileJson,
-  Sparkles,
-  Trash2,
-  Minus,
-  Plus,
-  ArrowRightLeft,
-  Save,
-  Download,
-  X,
-  Check,
-  AlertCircle,
-  Clock,
-  FileWarning,
-} from 'lucide-react'
-import {
-  jsonDiff,
-  type DiffResult,
-  type DiffChange,
-} from '@/lib/utils/jsonDiff'
+  type KeyboardShortcut,
+  useKeyboardShortcuts,
+} from '@/hooks/useKeyboardShortcuts'
 import { useToolHistory } from '@/hooks/useToolHistory'
 import {
-  useKeyboardShortcuts,
-  type KeyboardShortcut,
-} from '@/hooks/useKeyboardShortcuts'
+  type DiffChange,
+  type DiffResult,
+  jsonDiff,
+} from '@/lib/utils/jsonDiff'
 
 // 文件大小阈值
 const SIZE_THRESHOLDS = {
@@ -62,11 +63,6 @@ function useDebounce<T>(value: T, delay: number): T {
   }, [value, delay])
 
   return debouncedValue
-}
-
-interface HistoryItem {
-  name: string
-  content: string
 }
 
 export function JsonTool() {
@@ -107,14 +103,6 @@ export function JsonTool() {
     add,
     remove: removeHistoryEntry,
   } = useToolHistory<string>('json', { max: 50 })
-
-  // 将历史记录转换为旧格式以保持兼容性
-  const historys: HistoryItem[] = history.map((entry) => ({
-    name:
-      (entry.metadata?.name as string) ||
-      `历史记录 ${new Date(entry.timestamp).toLocaleString()}`,
-    content: entry.input,
-  }))
 
   // 处理 JSON 输入变化
   useEffect(() => {
@@ -350,19 +338,6 @@ export function JsonTool() {
     }
   }
 
-  // 恢复历史记录
-  function restore(_his: HistoryItem) {
-    setJsoncon(_his.content)
-  }
-
-  // 删除历史记录
-  async function remove(_his: HistoryItem, index: number) {
-    // 从历史记录中找到对应的 entry 并删除
-    if (history[index]) {
-      await removeHistoryEntry(history[index].id)
-    }
-  }
-
   // 导出文本文件
   function exportTxt() {
     if (!exTxtName || !jsoncon) return
@@ -480,41 +455,6 @@ export function JsonTool() {
                 导出
               </Button>
               <div className="flex-1" />
-              <div className="relative">
-                <Button variant="outline" size="sm" className="gap-1.5">
-                  <Save className="w-4 h-4" />
-                  历史 ({historys.length})
-                </Button>
-                {historys.length > 0 && (
-                  <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-none border bg-popover p-1.5 shadow-md">
-                    {historys.map((his, index) => (
-                      <div
-                        key={`${his.name}-${index}`}
-                        className="flex items-center justify-between gap-2 px-2 py-1.5 hover:bg-muted rounded-none"
-                      >
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => restore(his)}
-                          className="flex-1 justify-start px-1 text-sm"
-                        >
-                          {his.name}
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => remove(his, index)}
-                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
-                        >
-                          <X className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -678,6 +618,18 @@ export function JsonTool() {
           )}
         </div>
       </div>
+
+      <ToolHistoryList
+        entries={history}
+        onRemove={(id) => void removeHistoryEntry(id)}
+        onSelect={(entry) => setJsoncon(entry.input)}
+        renderItem={(entry) => (
+          <div className="line-clamp-1 font-mono text-xs text-muted-foreground">
+            {(entry.metadata?.name as string) ||
+              `历史记录 ${new Date(entry.timestamp).toLocaleString()}`}
+          </div>
+        )}
+      />
 
       {/* 保存对话框 */}
       {isSaveShow && (
