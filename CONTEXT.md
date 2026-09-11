@@ -36,6 +36,10 @@ _Avoid_: Sync failure, offline mode, backup
 Device-local information that lets a QHelper tool resume or display prior work on the same browser profile. Persisted Tool Data includes tool state and tool history, but not a **Synced Setting**. Single-value persisted state binds to React through `useToolState` (tool state, derives the storage key) or `usePersistedValue` (other device-local data); there is one binding, not one per surface. Both delegate to the same load/subscribe/write-through module over device-local storage.
 _Avoid_: Synced data, cloud state, backup, per-surface storage hook
 
+**Tool History List**:
+The shared presentation of one tool's **Persisted Tool Data** history. It owns the card shell, the item grid, the scroll region, the clear and per-item delete controls, and the point at which selecting an entry is reported; entry content belongs to each caller, and ordering and the entry count belong to the history store. A **Tool History List** does not read or write storage, and does not persist anything.
+_Avoid_: History panel, history widget, per-tool history markup
+
 **Text Preview Workspace**:
 The **Persisted Tool Data** for the Text Preview tool. It contains open text tabs, the active tab, each tab's source, and local-file save status; it may reference recoverable local file handles, but it is not a **Tool Setting** or a **Synced Setting**.
 _Avoid_: Text preview cache, editor state, file backup
