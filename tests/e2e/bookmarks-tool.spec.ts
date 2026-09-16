@@ -508,4 +508,204 @@ test.describe('Bookmarks tool', () => {
       await page.close()
     }
   })
+
+  test('keeps permanent browser folders out of the batch selection', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    const probeTitle = `QHelper permanent folder probe ${Date.now()}`
+    let probeId = ''
+
+    await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
+
+    try {
+      probeId = await page.evaluate(async (title) => {
+        const root = await chrome.bookmarks.getTree()
+        const parentId = root[0]?.children?.[0]?.id
+
+        if (!parentId) {
+          throw new Error('No writable bookmarks parent found')
+        }
+
+        const bookmark = await chrome.bookmarks.create({
+          parentId,
+          title,
+          url: 'https://example.com/permanent-folder-probe',
+        })
+
+        return bookmark.id
+      }, probeTitle)
+
+      await page.reload()
+
+      // The top-level rows are the permanent folders the browser adds itself, and
+      // the browser refuses to remove them, so they must not be selectable at all.
+      const permanentCheckbox = page
+        .locator('tbody tr')
+        .first()
+        .getByRole('checkbox')
+
+      await expect(permanentCheckbox).toBeDisabled()
+
+      await page.getByRole('checkbox', { name: 'Select all rows' }).click()
+
+      await expect(permanentCheckbox).not.toBeChecked()
+      await expect(
+        page.getByRole('checkbox', { name: `Select ${probeTitle}` }),
+      ).toBeChecked()
+    } finally {
+      if (probeId) {
+        await page.evaluate(async (bookmarkId) => {
+          try {
+            await chrome.bookmarks.remove(bookmarkId)
+          } catch {
+            // The probe may already be gone.
+          }
+        }, probeId)
+      }
+
+      await page.close()
+    }
+  })
+
+  test('deletes checked bookmarks and folders in one batch', async ({ context, extensionId }) => {
+    const page = await context.newPage()
+    const stamp = Date.now()
+    const folderTitle = `QHelper batch folder ${stamp}`
+    const looseTitle = `QHelper batch loose ${stamp}`
+    const childTitles = [
+      `QHelper batch child one ${stamp}`,
+      `QHelper batch child two ${stamp}`,
+    ]
+    let testFolderId = ''
+    let looseId = ''
+
+    await page.goto(`chrome-extension://${extensionId}/bookmarks.html`)
+
+    try {
+      const created = await page.evaluate(
+        async ({ folderTitle, looseTitle, childTitles }) => {
+          const root = await chrome.bookmarks.getTree()
+          const parentId = root[0]?.children?.[0]?.id
+
+          if (!parentId) {
+            throw new Error('No writable bookmarks parent found')
+          }
+
+          const folder = await chrome.bookmarks.create({
+            parentId,
+            title: folderTitle,
+          })
+
+          for (const [index, title] of childTitles.entries()) {
+            await chrome.bookmarks.create({
+              parentId: folder.id,
+              title,
+              url: `https://example.com/batch-child-${index}`,
+            })
+          }
+
+          const loose = await chrome.bookmarks.create({
+            parentId,
+            title: looseTitle,
+            url: 'https://example.com/batch-loose',
+          })
+
+          return {
+            folderId: folder.id,
+            looseId: loose.id,
+          }
+        },
+        { childTitles, folderTitle, looseTitle },
+      )
+      testFolderId = created.folderId
+      looseId = created.looseId
+
+      await page.reload()
+      await expect(page.getByText(folderTitle)).toBeVisible()
+
+      await page
+        .getByRole('checkbox', { name: `Select ${folderTitle}` })
+        .click()
+      await page.getByRole('checkbox', { name: `Select ${looseTitle}` }).click()
+
+      // Checking the folder also checks the two bookmarks inside it. The bookmarks
+      // bar holds them, but it is permanent so it never joins the selection.
+      const status = page.locator('[aria-live="polite"]')
+      await expect(status).toContainText('4 selected')
+
+      const folderCheckbox = page.getByRole('checkbox', {
+        name: `Select ${folderTitle}`,
+      })
+      const childCheckbox = page.getByRole('checkbox', {
+        name: `Select ${childTitles[0]}`,
+      })
+
+      await expect(folderCheckbox).toBeChecked()
+      await expect(folderCheckbox).not.toHaveJSProperty('indeterminate', true)
+
+      // Unchecking one child leaves the folder partially checked and out of the
+      // selection, so deleting would keep the folder and drop only that child.
+      await childCheckbox.click()
+      await expect(folderCheckbox).toHaveJSProperty('indeterminate', true)
+      await expect(status).toContainText('2 selected')
+
+      // Checking the last missing child promotes the folder back to fully checked,
+      // so deleting takes the whole folder with it again.
+      await childCheckbox.click()
+      await expect(folderCheckbox).toBeChecked()
+      await expect(folderCheckbox).not.toHaveJSProperty('indeterminate', true)
+      await expect(status).toContainText('4 selected')
+
+      page.once('dialog', async (dialog) => {
+        expect(dialog.message()).toContain('Delete 2 selected items?')
+        expect(dialog.message()).toContain('1 folder will be removed')
+        expect(dialog.message()).toContain('This removes 4 bookmark entries')
+        await dialog.accept()
+      })
+
+      await page
+        .getByRole('button', { name: 'Delete 4 selected bookmarks' })
+        .click()
+
+      await expect(page.getByText(folderTitle)).toHaveCount(0)
+      await expect(page.getByText(looseTitle)).toHaveCount(0)
+      await expect(status).not.toContainText('selected')
+
+      for (const id of [testFolderId, looseId]) {
+        await expect
+          .poll(() =>
+            page.evaluate(async (bookmarkId) => {
+              try {
+                await chrome.bookmarks.get(bookmarkId)
+                return true
+              } catch {
+                return false
+              }
+            }, id),
+          )
+          .toBe(false)
+      }
+    } finally {
+      if (testFolderId) {
+        await page.evaluate(async (folderId) => {
+          try {
+            await chrome.bookmarks.removeTree(folderId)
+          } catch {
+            // The batch delete may already have removed the test tree.
+          }
+        }, testFolderId)
+      }
+
+      if (looseId) {
+        await page.evaluate(async (bookmarkId) => {
+          try {
+            await chrome.bookmarks.remove(bookmarkId)
+          } catch {
+            // The batch delete may already have removed the test bookmark.
+          }
+        }, looseId)
+      }
+
+      await page.close()
+    }
+  })
 })
