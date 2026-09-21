@@ -1,13 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import { tools } from '@/lib/registry/tools'
+import { SYNTAX_FORMATTER_ALIASES } from '@/lib/syntax-formatter'
 import {
-  DEFAULT_TOOL_ID,
-  ORDINARY_TOOL_IDS,
-  ORDINARY_TOOL_CATALOG_TOOLS,
-  TOOL_CATEGORIES,
-  TOOL_CATEGORY_LABELS,
   createOrdinaryToolRoutes,
+  DEFAULT_TOOL_ID,
   getCurrentToolIdFromLocation,
   getLaunchDirectory,
   getLaunchEntry,
@@ -21,7 +18,11 @@ import {
   getToolsSpaUrl,
   isOrdinaryToolId,
   isToolsSpaLocation,
+  ORDINARY_TOOL_CATALOG_TOOLS,
+  ORDINARY_TOOL_IDS,
   parseToolRouteParam,
+  TOOL_CATEGORIES,
+  TOOL_CATEGORY_LABELS,
 } from './tool-catalog'
 
 describe('tool-catalog', () => {
@@ -150,8 +151,38 @@ describe('tool-catalog', () => {
   it('derives tools SPA aliases from Launch Entries', () => {
     expect(getToolsSpaAliases()).toEqual([
       ...ORDINARY_TOOL_IDS.map((id) => ({ id, path: `tools/${id}.html` })),
+      ...SYNTAX_FORMATTER_ALIASES.map((alias) => ({
+        id: alias.id,
+        path: `tools/${alias.id}.html`,
+      })),
       { id: 'settings', path: 'tools/settings.html' },
     ])
+  })
+
+  it('keeps former HTML/XML/CSS tools as build aliases of the Syntax Formatter', () => {
+    expect(getToolCatalogTool('formatter')).toMatchObject({
+      key: 'formatter',
+      name: '格式化',
+      category: ToolCategory.WEB_FORMAT,
+      icon: 'Code',
+    })
+    expect(getToolCatalogTool('htmlformat')).toBeUndefined()
+    const popupIds = getLaunchDirectory('popup-main').entries.map(
+      (entry) => entry.id,
+    )
+    expect(popupIds).toContain('formatter')
+    expect(popupIds).not.toContain('htmlformat')
+    expect(popupIds).not.toContain('xmlformatter')
+    expect(popupIds).not.toContain('csstool')
+
+    expect(getLaunchEntry('htmlformat')).toMatchObject({
+      surfaces: ['build-alias'],
+      intent: {
+        kind: 'ordinary-tool-page',
+        toolId: 'formatter',
+        extensionPath: 'tools/htmlformat.html',
+      },
+    })
   })
 
   it('creates route lists in catalog order and fails when a tool is missing', () => {

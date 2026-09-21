@@ -3,6 +3,10 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
 import { SettingsPage } from '@/components/tool/settings'
 import { ToolWorkspaceShell } from '@/components/tool/ToolWorkspaceShell'
 import {
+  getSyntaxFormatterRedirectTo,
+  SYNTAX_FORMATTER_ALIASES,
+} from '@/lib/syntax-formatter'
+import {
   DEFAULT_TOOL_ID,
   getToolRoutePath,
   TOOLS_ROUTE_BASE,
@@ -31,6 +35,28 @@ export function ToolsRoutes() {
         path="/settings"
         element={<Navigate replace to="/settings.html" />}
       />
+      {SYNTAX_FORMATTER_ALIASES.flatMap((alias) => [
+        <Route
+          key={`${alias.id}-html`}
+          path={`/${alias.id}.html`}
+          element={
+            <Navigate
+              replace
+              to={getSyntaxFormatterRedirectTo(alias.language)}
+            />
+          }
+        />,
+        <Route
+          key={alias.id}
+          path={`/${alias.id}`}
+          element={
+            <Navigate
+              replace
+              to={getSyntaxFormatterRedirectTo(alias.language)}
+            />
+          }
+        />,
+      ])}
       <Route path="/:toolId" element={<ToolActivityOutlet />} />
       <Route
         path="*"

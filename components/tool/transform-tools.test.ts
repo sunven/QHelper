@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { transformCss } from '@/lib/syntax-formatter/css'
+import { transformHtml } from '@/lib/syntax-formatter/html'
+import { transformXml } from '@/lib/syntax-formatter/xml'
 import { transformToml } from './toml'
-import { transformXml } from './xmlformatter'
-import { transformHtml } from './htmlformat'
-import { transformCss } from './csstool'
 
 describe('transformToml', () => {
   it('converts TOML to JSON', () => {
@@ -33,10 +33,9 @@ describe('transformXml', () => {
   })
 
   it('minifies XML', () => {
-    const result = transformXml(
-      '<root>\n  <a>1</a>\n</root>',
-      { mode: 'minify' },
-    )
+    const result = transformXml('<root>\n  <a>1</a>\n</root>', {
+      mode: 'minify',
+    })
     expect(result).toBe('<root><a>1</a></root>')
   })
 

@@ -170,11 +170,11 @@ export const tools = [
   },
 
   {
-    id: 'htmlformat',
-    name: 'HTML 格式化器',
+    id: 'formatter',
+    name: '格式化',
     category: ToolCategory.WEB_FORMAT,
     icon: 'Code',
-    description: 'HTML 美化、压缩、格式化',
+    description: 'HTML、XML、CSS 美化与压缩',
   },
 
   {
@@ -191,14 +191,6 @@ export const tools = [
     category: ToolCategory.WEB_FORMAT,
     icon: 'FileCode',
     description: '合并多个远程 JavaScript 文件',
-  },
-
-  {
-    id: 'csstool',
-    name: 'CSS 工具',
-    category: ToolCategory.WEB_FORMAT,
-    icon: 'Palette',
-    description: 'CSS 美化、压缩、优化',
   },
 
   {
@@ -248,13 +240,5 @@ export const tools = [
     category: ToolCategory.DATA_FORMAT,
     icon: 'ShieldCheck',
     description: '使用 JSON Schema 验证 JSON 数据结构',
-  },
-
-  {
-    id: 'xmlformatter',
-    name: 'XML 格式化器',
-    category: ToolCategory.DATA_FORMAT,
-    icon: 'FileCode',
-    description: 'XML 美化、压缩、格式化、验证',
   },
 ] as const satisfies readonly ToolMetadata[]

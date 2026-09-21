@@ -11,6 +11,7 @@ const toolPages = [
   'csv2json',
   'yaml',
   'markdown',
+  'formatter',
   'htmlformat',
   'csstool',
   'svgoptimizer',

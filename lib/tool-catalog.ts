@@ -2,6 +2,10 @@ import type { ToolIconToken } from '@/components/tool-icons'
 import type { ToolMetadata } from './registry/ToolMetadata'
 import { ToolCategory } from './registry/ToolMetadata'
 import { tools as registeredTools } from './registry/tools'
+import {
+  SYNTAX_FORMATTER_ALIASES,
+  SYNTAX_FORMATTER_ID,
+} from './syntax-formatter/aliases'
 
 export const TOOLS_SPA_ENTRY = 'tools.html'
 export const TOOLS_ROUTE_BASE = 'tools'
@@ -13,10 +17,7 @@ export const CLEAR_COOKIE_LAUNCH_ID = 'clear-cookie'
 
 export type OrdinaryToolId = (typeof registeredTools)[number]['id']
 
-export type LaunchSurface =
-  | 'popup-main'
-  | 'popup-header'
-  | 'build-alias'
+export type LaunchSurface = 'popup-main' | 'popup-header' | 'build-alias'
 
 export type LaunchIntent =
   | {
@@ -174,6 +175,20 @@ const ORDINARY_TOOL_LAUNCH_ENTRIES = TOOL_CATEGORIES.flatMap(
   (category) => category.tools,
 ).map(toOrdinaryToolLaunchEntry)
 
+const SYNTAX_FORMATTER_ALIAS_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] =
+  SYNTAX_FORMATTER_ALIASES.map((alias) => ({
+    id: alias.id,
+    name: alias.id,
+    icon: 'Code',
+    surfaces: ['build-alias'],
+    intent: {
+      kind: 'ordinary-tool-page',
+      toolId: SYNTAX_FORMATTER_ID,
+      extensionPath: getToolEntryPath(alias.id),
+      preserveActivity: true,
+    },
+  }))
+
 const SYSTEM_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
   {
     id: TOOL_SETTINGS_ID,
@@ -233,6 +248,7 @@ const SYSTEM_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
 
 const LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
   ...ORDINARY_TOOL_LAUNCH_ENTRIES,
+  ...SYNTAX_FORMATTER_ALIAS_LAUNCH_ENTRIES,
   ...SYSTEM_LAUNCH_ENTRIES,
 ]
 

@@ -92,6 +92,14 @@ _Avoid_: Internal analytics page, embedded report
 The shared page module for ordinary tools that turn one input text into one derived output. The factory `createTransformToolPage(config)` in `components/tool/transform-tool-page.tsx` owns state shape (output and error are derived on each render, never stored), the history key derivation and the success-guarded snapshot-on-download policy, download and copy behavior, and the two-pane layout with inline error display. A **Transform Tool Page** does not own the transform function or the options panel; those belong to each tool's declaration. Persisted history entries store `{ input, options }` only; restoring re-derives the output. It is a page shape, not a tool identity: the tool stays an ordinary tool in the **Tool Catalog** and keeps its **Tool Page Shell**.
 _Avoid_: tool template, format-tool wrapper, tool page factory
 
+**Syntax Formatter**:
+An ordinary QHelper tool and a single **Launch Entry** that rewrites text of one chosen language into a pretty or minified form of the same language. Its current languages are HTML, XML, and CSS. It has one canonical tool path. Former HTML, XML, and CSS tool paths redirect to that path and carry a **Formatter Language**. Its **Tool History List** is one **Persisted Tool Data** store; each snapshot includes the **Formatter Language**. It is not the JSON tool, not a conversion between languages, and not a **Transform Tool Page**, which is only a page shape.
+_Avoid_: 格式化工具, JSON 格式化, format-tool wrapper
+
+**Formatter Language**:
+The language a **Syntax Formatter** rewrites. The user chooses it explicitly. Current values are HTML, XML, and CSS. The last chosen **Formatter Language** is **Persisted Tool Data**, not a **Synced Setting**.
+_Avoid_: format type, tool mode, detected kind
+
 **Inactive Repository Warning**:
 A **Repository Page Helper** for a **Repository Home Page** that recolors the repository's own last-commit timestamp when the current repository's default branch has received no new commits for a prolonged period. The recoloring is the warning: an active repository leaves the timestamp untouched. It is repository-specific public metadata, not captured content, request data, tool history, or a **Tool Setting**.
 _Avoid_: Stale repo alert, activity monitor, maintenance score
@@ -185,3 +193,39 @@ Domain expert: "No. Both are Open in Menus: Zread, DeepWiki, and github.dev at t
 Developer: "Should turning off Google Open in also hide the GitHub.com Open in Menu?"
 
 Domain expert: "No. That Synced Setting gates the Repository Result Helper only."
+
+Developer: "Should HTML, XML, and CSS formatting stay as separate Launch Entries?"
+
+Domain expert: "No. They are one Syntax Formatter. Language is a Formatter Language chosen on the page."
+
+Developer: "Should YAML to JSON conversion live in the Syntax Formatter?"
+
+Domain expert: "No. A Syntax Formatter rewrites one language. Conversion between languages stays in its own tool."
+
+Developer: "Should the JSON tool's tree view and structural Diff move into the Syntax Formatter?"
+
+Domain expert: "No. The JSON tool is a different Launch Entry. The Syntax Formatter does not claim JSON."
+
+Developer: "Should the last Formatter Language sync across devices?"
+
+Domain expert: "No. It is Persisted Tool Data on this device, not a Synced Setting."
+
+Developer: "Should HTML, XML, and CSS keep separate history stores after the merge?"
+
+Domain expert: "No. The Syntax Formatter has one history. Each snapshot includes the Formatter Language."
+
+Developer: "Should switching Formatter Language replace the input with that language's sample?"
+
+Domain expert: "No. The input stays. The sample is only for a first visit while the input is empty."
+
+Developer: "Should opening the old HTML formatter path keep that URL?"
+
+Domain expert: "No. Redirect to the Syntax Formatter's canonical path and select HTML."
+
+Developer: "Should the Syntax Formatter share Transform Tool Page's factory by adding a language dimension?"
+
+Domain expert: "No. Transform Tool Page is a page shape for one transform. The Syntax Formatter is a tool identity with its own page module."
+
+Developer: "Should Context Hub start recommending the Syntax Formatter in the same change?"
+
+Domain expert: "No. Merging Launch Entries and detecting pasted language are different jobs."
