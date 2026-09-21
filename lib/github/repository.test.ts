@@ -4,6 +4,7 @@ import {
   hasRepositoryMetadata,
   isRepositoryHomePath,
   parseRepoCoordinates,
+  parseRepositoryUrl,
 } from './repository';
 
 function renderRepositoryMeta(owner = 'Yeachan-Heo', repo = 'oh-my-codex'): void {
@@ -41,6 +42,39 @@ describe('parseRepoCoordinates', () => {
   it('rejects GitHub root paths', () => {
     expect(parseRepoCoordinates('/')).toBeNull();
     expect(parseRepoCoordinates('/Yeachan-Heo')).toBeNull();
+  });
+});
+
+describe('parseRepositoryUrl', () => {
+  it('parses repository root and subpath URLs', () => {
+    expect(parseRepositoryUrl('https://github.com/facebook/react')).toEqual({
+      owner: 'facebook',
+      repo: 'react',
+    });
+    expect(
+      parseRepositoryUrl(
+        'https://www.github.com/facebook/react/blob/main/packages/react/src/ReactHooks.js',
+      ),
+    ).toEqual({
+      owner: 'facebook',
+      repo: 'react',
+    });
+    expect(
+      parseRepositoryUrl('https://github.com/facebook/react/issues/123?tab=comments'),
+    ).toEqual({
+      owner: 'facebook',
+      repo: 'react',
+    });
+  });
+
+  it('rejects reserved GitHub paths, Gists, Pages, and non-GitHub hosts', () => {
+    expect(parseRepositoryUrl('https://github.com/topics/react')).toBeNull();
+    expect(parseRepositoryUrl('https://github.com/orgs/facebook')).toBeNull();
+    expect(parseRepositoryUrl('https://github.com/search?q=react')).toBeNull();
+    expect(parseRepositoryUrl('https://gist.github.com/octocat/abc')).toBeNull();
+    expect(parseRepositoryUrl('https://facebook.github.io/react')).toBeNull();
+    expect(parseRepositoryUrl('https://react.dev/')).toBeNull();
+    expect(parseRepositoryUrl('not a url')).toBeNull();
   });
 });
 

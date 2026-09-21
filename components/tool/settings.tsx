@@ -2,6 +2,7 @@ import {
   BracketsCurlyIcon,
   GearSixIcon,
   KeyIcon,
+  MagnifyingGlassIcon,
   TranslateIcon,
 } from '@phosphor-icons/react'
 import { useId } from 'react'
@@ -12,12 +13,13 @@ import { useAutosaveToolSetting } from '@/hooks/useAutosaveToolSetting'
 import { useToolSettingControl } from '@/hooks/useToolSettingControl'
 import { dictionarySettings } from '@/lib/dictionary/settings'
 import { jsonStringSettings } from '@/lib/fe-tools/json-string'
+import { googleSearchSettings } from '@/lib/google-search/settings'
+import { cn } from '@/lib/utils'
 import {
   normalizeV2exBase64Settings,
-  v2exBase64Settings,
   type V2exBase64Settings,
+  v2exBase64Settings,
 } from '@/lib/v2ex-base64/settings'
-import { cn } from '@/lib/utils'
 
 type V2exBase64StatusTone = 'saving' | 'error' | 'dirty' | 'saved' | 'muted'
 
@@ -77,9 +79,11 @@ function getV2exBase64StatusClass(tone: V2exBase64StatusTone): string {
 
 export function SettingsPage() {
   const selectionLookupId = useId()
+  const googleOpenInId = useId()
   const jsonStringId = useId()
   const v2exBase64EntriesId = useId()
   const dictionary = useToolSettingControl(dictionarySettings)
+  const googleSearch = useToolSettingControl(googleSearchSettings)
   const jsonString = useToolSettingControl(jsonStringSettings)
   const v2exBase64 = useAutosaveToolSetting(v2exBase64Settings, {
     serialize: serializeV2exBase64Draft,
@@ -88,13 +92,19 @@ export function SettingsPage() {
   const v2exBase64StatusText = getV2exBase64StatusText(v2exBase64)
   const v2exBase64StatusTone = getV2exBase64StatusTone(v2exBase64)
   const error =
-    [dictionary.error, jsonString.error, v2exBase64.error].find(
-      (message): message is string => message !== null,
-    ) ?? null
+    [
+      dictionary.error,
+      googleSearch.error,
+      jsonString.error,
+      v2exBase64.error,
+    ].find((message): message is string => message !== null) ?? null
   const syncNotice =
-    [dictionary.syncNotice, jsonString.syncNotice, v2exBase64.syncNotice].find(
-      (message): message is string => message !== null,
-    ) ?? null
+    [
+      dictionary.syncNotice,
+      googleSearch.syncNotice,
+      jsonString.syncNotice,
+      v2exBase64.syncNotice,
+    ].find((message): message is string => message !== null) ?? null
 
   return (
     <article className="min-h-full">
@@ -207,6 +217,63 @@ export function SettingsPage() {
           </div>
 
           {dictionary.saving ? (
+            <p
+              className="shrink-0 text-xs text-slate-500 dark:text-slate-400"
+              role="status"
+            >
+              正在保存...
+            </p>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="mt-3 border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950">
+        <div className="flex items-start gap-3 border-b border-slate-200 px-4 py-3 dark:border-slate-800 sm:px-5">
+          <span className="mt-0.5 grid size-8 shrink-0 place-items-center border border-slate-200 text-slate-700 dark:border-slate-800 dark:text-slate-200">
+            <MagnifyingGlassIcon aria-hidden className="size-4" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-mono text-sm font-semibold text-slate-950 dark:text-slate-50">
+              Google 搜索
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-slate-500 dark:text-slate-400">
+              在网页搜索结果里，为 GitHub 仓库显示 Open in。
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start justify-between gap-4 px-4 py-4 sm:px-5">
+          <div className="grid min-w-0 gap-2">
+            <div className="flex items-center gap-3">
+              <Checkbox
+                id={googleOpenInId}
+                aria-describedby={`${googleOpenInId}-status`}
+                checked={googleSearch.value.openInEnabled}
+                disabled={googleSearch.loading || googleSearch.saving}
+                onCheckedChange={(checked) => {
+                  void googleSearch.change({
+                    openInEnabled: checked === true,
+                  })
+                }}
+              />
+              <Label htmlFor={googleOpenInId}>
+                在 Google 搜索结果中显示 Open in
+              </Label>
+            </div>
+            <p
+              id={`${googleOpenInId}-status`}
+              className={cn(
+                'text-xs leading-5',
+                googleSearch.value.openInEnabled
+                  ? 'text-emerald-700 dark:text-emerald-400'
+                  : 'text-slate-500 dark:text-slate-400',
+              )}
+            >
+              {googleSearch.value.openInEnabled ? '已启用' : '已停用'}
+            </p>
+          </div>
+
+          {googleSearch.saving ? (
             <p
               className="shrink-0 text-xs text-slate-500 dark:text-slate-400"
               role="status"

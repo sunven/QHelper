@@ -1,9 +1,10 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { SettingsPage } from './settings'
 import { DICTIONARY_SETTINGS_STORAGE_KEY } from '@/lib/dictionary/settings'
 import { JSON_STRING_SETTINGS_STORAGE_KEY } from '@/lib/fe-tools/json-string'
+import { GOOGLE_SEARCH_SETTINGS_STORAGE_KEY } from '@/lib/google-search/settings'
 import { V2EX_BASE64_SETTINGS_STORAGE_KEY } from '@/lib/v2ex-base64/settings'
+import { SettingsPage } from './settings'
 
 function primeStoredSettings(key: string, value: unknown) {
   vi.mocked(chrome.storage.sync.get).mockImplementation(
@@ -29,12 +30,17 @@ describe('SettingsPage', () => {
     const dictionaryCheckbox = await screen.findByRole('checkbox', {
       name: '启用字典划词翻译',
     })
+    const googleOpenInCheckbox = screen.getByRole('checkbox', {
+      name: '在 Google 搜索结果中显示 Open in',
+    })
     const jsonStringCheckbox = screen.getByRole('checkbox', {
       name: '启用 Json String',
     })
 
     expect(dictionaryCheckbox).not.toBeChecked()
     expect(dictionaryCheckbox).toHaveAccessibleDescription('已停用')
+    expect(googleOpenInCheckbox).toBeChecked()
+    expect(googleOpenInCheckbox).toHaveAccessibleDescription('已启用')
     expect(jsonStringCheckbox).not.toBeChecked()
     expect(jsonStringCheckbox).toHaveAccessibleDescription('已停用')
     expect(
@@ -59,6 +65,22 @@ describe('SettingsPage', () => {
       })
     })
     expect(checkbox).toHaveAccessibleDescription('已启用')
+  })
+
+  it('persists Google search Open in changes', async () => {
+    render(<SettingsPage />)
+
+    const checkbox = await screen.findByRole('checkbox', {
+      name: '在 Google 搜索结果中显示 Open in',
+    })
+    fireEvent.click(checkbox)
+
+    await waitFor(() => {
+      expect(chrome.storage.sync.set).toHaveBeenCalledWith({
+        [GOOGLE_SEARCH_SETTINGS_STORAGE_KEY]: { openInEnabled: false },
+      })
+    })
+    expect(checkbox).toHaveAccessibleDescription('已停用')
   })
 
   it('persists Json String enabled changes', async () => {

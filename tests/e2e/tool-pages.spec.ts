@@ -165,6 +165,9 @@ test('tool settings button opens the settings page', async ({
   await expect(
     page.getByRole('checkbox', { name: '启用字典划词翻译' }),
   ).toBeVisible()
+  await expect(
+    page.getByRole('checkbox', { name: '在 Google 搜索结果中显示 Open in' }),
+  ).toBeChecked()
 
   await page.close()
 })

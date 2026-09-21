@@ -64,6 +64,14 @@ _Avoid_: Page template, tool container, App wrapper
 An optional QHelper aid that appears in the context of the currently viewed public code repository. A **Repository Page Helper** is not a standalone tool in the **Tool Catalog** and should use the current repository as its subject unless the user explicitly chooses another subject. Multiple **Repository Page Helpers** may coexist when each has a distinct purpose.
 _Avoid_: Global widget, fixed repo helper, tool page
 
+**Open in Menu**:
+The dropdown labeled Open in whose items are Zread, DeepWiki, and github.dev for one repository. Destinations always use that repository's root. It is a control, not a tool in the **Tool Catalog**.
+_Avoid_: Zread button, reader dropdown, vscode.dev button
+
+**Repository Result Helper**:
+An optional QHelper aid on a web search results page whose subject is the public repository identified by an organic result's primary URL. It presents an **Open in Menu** for that repository and is gated by a **Synced Setting**.
+_Avoid_: Google widget, SERP injector, search toolbar, Repository Page Helper
+
 **Page Helper Lifecycle**:
 The shared install loop for page helpers on SPA sites. It owns path-change detection, DOM-mutation recovery, retry timing with a per-chain budget, and disposal; each site declares its navigation events (such as turbo:load, pjax:end, or popstate) as a site profile at the install call, and each helper adapter declares only render and optional retry/recovery decisions. It does not render a helper or decide that helper's page-specific placement; those belong to each helper adapter.
 _Avoid_: GitHub observer, page watcher, helper scheduler, site-specific install loop
@@ -157,3 +165,23 @@ Domain expert: "No. Inactivity means the default branch has received no new comm
 Developer: "Should an archived repository show the Inactive Repository Warning?"
 
 Domain expert: "No. Archive status is the repository's own stronger signal; the warning is for repositories that are simply quiet."
+
+Developer: "Should the Google Open in helper use the currently viewed page as its repository?"
+
+Domain expert: "No. A Repository Result Helper's subject is the repository identified by that search result's URL."
+
+Developer: "Should sitelinks under a Google result each get an Open in Menu?"
+
+Domain expert: "No. Only the organic result's primary URL is the subject."
+
+Developer: "Is the Google Open in dropdown a Launch Entry?"
+
+Domain expert: "No. It is an Open in Menu. Launch Entries live in the Tool Catalog."
+
+Developer: "Should GitHub.com Open in and Google result Open in use different destination lists?"
+
+Domain expert: "No. Both are Open in Menus: Zread, DeepWiki, and github.dev at the repository root."
+
+Developer: "Should turning off Google Open in also hide the GitHub.com Open in Menu?"
+
+Domain expert: "No. That Synced Setting gates the Repository Result Helper only."
