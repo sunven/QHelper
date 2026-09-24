@@ -115,12 +115,104 @@ function isDeletableBookmarkNode(node: TreeData) {
   )
 }
 
+function bookmarkDeletionLabel(node: TreeData) {
+  return String(node.title || node.url || 'bookmark')
+}
+
+function BookmarkDeletionList({ nodes }: { nodes: TreeData[] }) {
+  return (
+    <ul className="space-y-2">
+      {nodes.map((node) => {
+        const folder = isBookmarkFolder(node)
+        const url = typeof node.url === 'string' ? node.url : ''
+        const label = bookmarkDeletionLabel(node)
+        const children = node.children ?? []
+
+        return (
+          <li key={node.id}>
+            <div className="break-words text-sm text-slate-900">{label}</div>
+            {folder ? (
+              <div className="text-xs text-slate-500">folder</div>
+            ) : (
+              url &&
+              url !== label && (
+                <div className="truncate text-xs text-slate-500">{url}</div>
+              )
+            )}
+            {folder && children.length > 0 && (
+              <div className="mt-2 border-l border-slate-200 pl-3">
+                <BookmarkDeletionList nodes={children} />
+              </div>
+            )}
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+function BookmarkDeletionConfirm({
+  plan,
+  onCancel,
+  onConfirm,
+}: {
+  plan: BookmarkDeletionPlan
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/45 p-4">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bookmark-deletion-title"
+        className="flex max-h-[min(32rem,calc(100vh-2rem))] w-full max-w-lg flex-col rounded-lg border border-slate-200 bg-white p-4 shadow-xl"
+      >
+        <h2
+          id="bookmark-deletion-title"
+          className="text-base font-semibold text-slate-950"
+        >
+          Delete {plan.removals.length} selected items?
+        </h2>
+        <div className="mt-3 min-h-0 flex-1 overflow-y-auto rounded-md border border-slate-200 p-3">
+          <BookmarkDeletionList nodes={plan.removals} />
+        </div>
+        <p className="mt-3 text-sm leading-6 text-slate-600">
+          This removes {plan.removedIds.size} bookmark entries in total.
+        </p>
+        {plan.blocked.length > 0 && (
+          <p className="mt-1 text-sm leading-6 text-slate-600">
+            {plan.blocked.length} permanent browser{' '}
+            {plan.blocked.length === 1 ? 'folder' : 'folders'} will be kept.
+          </p>
+        )}
+        <div className="mt-4 flex justify-end gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="inline-flex h-8 cursor-pointer items-center justify-center rounded-md border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="inline-flex h-8 cursor-pointer items-center justify-center rounded-md bg-red-600 px-3 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function describeBookmarkDeletion(plan: BookmarkDeletionPlan) {
   const parts: string[] = []
 
   if (plan.removals.length === 1) {
     const node = plan.removals[0]
-    const title = String(node.title || node.url || 'bookmark')
+    const title = bookmarkDeletionLabel(node)
 
     parts.push(
       isBookmarkFolder(node)
@@ -517,6 +609,8 @@ function BookmarksTool() {
   const [pendingDeleteIds, setPendingDeleteIds] = useState<ReadonlySet<string>>(
     new Set(),
   )
+  const [pendingDeletionPlan, setPendingDeletionPlan] =
+    useState<BookmarkDeletionPlan | null>(null)
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<
     ReadonlySet<string>
   >(new Set())
@@ -598,23 +692,13 @@ function BookmarksTool() {
     [folderTitle, selectedFolderParentId],
   )
 
-  const handleDeleteBookmarks = useCallback(
-    async (ids: ReadonlySet<string>) => {
-      if (ids.size === 0 || pendingDeleteIds.size > 0) {
+  const executeBookmarkDeletion = useCallback(
+    async (plan: BookmarkDeletionPlan) => {
+      if (pendingDeleteIds.size > 0 || plan.removals.length === 0) {
         return
       }
 
-      const plan = planBookmarkDeletion(bookmarks, ids, isDeletableBookmarkNode)
-
-      if (plan.removals.length === 0) {
-        setError('None of the selected bookmarks can be deleted')
-        return
-      }
-
-      if (!window.confirm(describeBookmarkDeletion(plan))) {
-        return
-      }
-
+      setPendingDeletionPlan(null)
       setPendingDeleteIds(new Set(plan.removals.map((node) => node.id)))
       setError('')
 
@@ -678,19 +762,58 @@ function BookmarksTool() {
 
       setPendingDeleteIds(new Set())
     },
-    [bookmarks, pendingDeleteIds],
+    [pendingDeleteIds],
   )
 
   const handleDeleteBookmark = useCallback(
     async (item: TreeData) => {
-      await handleDeleteBookmarks(new Set([item.id]))
+      if (pendingDeleteIds.size > 0) {
+        return
+      }
+
+      const plan = planBookmarkDeletion(
+        bookmarks,
+        new Set([item.id]),
+        isDeletableBookmarkNode,
+      )
+
+      if (plan.removals.length === 0) {
+        setError('None of the selected bookmarks can be deleted')
+        return
+      }
+
+      if (!window.confirm(describeBookmarkDeletion(plan))) {
+        return
+      }
+
+      await executeBookmarkDeletion(plan)
     },
-    [handleDeleteBookmarks],
+    [bookmarks, executeBookmarkDeletion, pendingDeleteIds],
   )
 
-  const handleDeleteSelectedBookmarks = useCallback(async () => {
-    await handleDeleteBookmarks(selectedBookmarkIds)
-  }, [handleDeleteBookmarks, selectedBookmarkIds])
+  const handleDeleteSelectedBookmarks = useCallback(() => {
+    if (
+      selectedBookmarkIds.size === 0 ||
+      pendingDeleteIds.size > 0 ||
+      pendingDeletionPlan
+    ) {
+      return
+    }
+
+    const plan = planBookmarkDeletion(
+      bookmarks,
+      selectedBookmarkIds,
+      isDeletableBookmarkNode,
+    )
+
+    if (plan.removals.length === 0) {
+      setError('None of the selected bookmarks can be deleted')
+      return
+    }
+
+    setError('')
+    setPendingDeletionPlan(plan)
+  }, [bookmarks, pendingDeleteIds, pendingDeletionPlan, selectedBookmarkIds])
 
   const handleSelectedBookmarkIdsChange = useCallback(
     (ids: Set<string>) => {
@@ -867,7 +990,9 @@ function BookmarksTool() {
               title="Delete selected"
               onClick={() => void handleDeleteSelectedBookmarks()}
               disabled={
-                selectedBookmarkIds.size === 0 || pendingDeleteIds.size > 0
+                selectedBookmarkIds.size === 0 ||
+                pendingDeleteIds.size > 0 ||
+                pendingDeletionPlan !== null
               }
               className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md border border-slate-200 text-slate-600 hover:bg-red-50 hover:text-red-600 disabled:pointer-events-none disabled:opacity-60"
             >
@@ -968,6 +1093,15 @@ function BookmarksTool() {
           />
         )}
       </section>
+      {pendingDeletionPlan && (
+        <BookmarkDeletionConfirm
+          plan={pendingDeletionPlan}
+          onCancel={() => setPendingDeletionPlan(null)}
+          onConfirm={() => {
+            void executeBookmarkDeletion(pendingDeletionPlan)
+          }}
+        />
+      )}
     </main>
   )
 }

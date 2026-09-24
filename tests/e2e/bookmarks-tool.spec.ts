@@ -655,16 +655,22 @@ test.describe('Bookmarks tool', () => {
       await expect(folderCheckbox).not.toHaveJSProperty('indeterminate', true)
       await expect(status).toContainText('4 selected')
 
-      page.once('dialog', async (dialog) => {
-        expect(dialog.message()).toContain('Delete 2 selected items?')
-        expect(dialog.message()).toContain('1 folder will be removed')
-        expect(dialog.message()).toContain('This removes 4 bookmark entries')
-        await dialog.accept()
-      })
-
       await page
         .getByRole('button', { name: 'Delete 4 selected bookmarks' })
         .click()
+
+      const dialog = page.getByRole('dialog')
+      await expect(dialog).toContainText('Delete 2 selected items?')
+      await expect(dialog).toContainText(folderTitle)
+      await expect(dialog.getByText('folder', { exact: true })).toBeVisible()
+      await expect(dialog).toContainText(childTitles[0])
+      await expect(dialog).toContainText('https://example.com/batch-child-0')
+      await expect(dialog).toContainText(childTitles[1])
+      await expect(dialog).toContainText('https://example.com/batch-child-1')
+      await expect(dialog).toContainText(looseTitle)
+      await expect(dialog).toContainText('https://example.com/batch-loose')
+      await expect(dialog).toContainText('This removes 4 bookmark entries')
+      await dialog.getByRole('button', { name: 'Delete', exact: true }).click()
 
       await expect(page.getByText(folderTitle)).toHaveCount(0)
       await expect(page.getByText(looseTitle)).toHaveCount(0)
