@@ -1,4 +1,3 @@
-import { useMemo, useState } from 'react'
 import {
   ArrowUpRight,
   ClipboardCheck,
@@ -6,6 +5,9 @@ import {
   Info,
   ShieldCheck,
 } from 'lucide-react'
+import { useContext, useMemo, useState } from 'react'
+import { ToolSessionActions } from '@/components/tool/ToolSessionContext'
+import { WorkspaceLink } from '@/components/tool/WorkspaceLink'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -90,6 +92,7 @@ function JwtPreview({ input }: { input: string }) {
 }
 
 export function ContextHub() {
+  const sessions = useContext(ToolSessionActions)
   const [input, setInput] = useState('')
   const trimmedInput = input.trim()
   const detection = useMemo(() => detectContextInput(input), [input])
@@ -194,7 +197,7 @@ export function ContextHub() {
           <CardHeader className="border-border/70 border-b">
             <CardTitle>推荐操作</CardTitle>
             <CardDescription>
-              优先跳转到现有工具；不会自动传递或保存输入。
+              JSON、URL、Base64 可携带原文进入临时处理；其他类型打开现有工具。
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-1.5">
@@ -221,9 +224,18 @@ export function ContextHub() {
               }
 
               return (
-                <a
+                <WorkspaceLink
                   key={recommendation.id}
                   href={getToolNavigationPath(recommendation.toolId)}
+                  onClick={(event) => {
+                    if (!sessions || !recommendation.toolId) return
+                    const slots: Record<string, string> = { json: 'jsoncon', url: 'input', base64: 'srcText' }
+                    const slot = slots[detection.kind]
+                    if (slot) {
+                      event.preventDefault()
+                      sessions.openTemporarySession(recommendation.toolId, { [slot]: input })
+                    }
+                  }}
                   aria-label={recommendation.label}
                   className="group rounded-none border border-border/70 px-2.5 py-2 transition-colors hover:bg-muted/50"
                 >
@@ -236,7 +248,7 @@ export function ContextHub() {
                   <p className="mt-1 text-muted-foreground text-xs">
                     {recommendation.description}
                   </p>
-                </a>
+                </WorkspaceLink>
               )
             })}
           </CardContent>

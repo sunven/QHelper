@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useCurrentToolSession } from '@/components/tool/ToolSessionContext'
 import {
   createToolHistoryStore,
   type HistoryEntry,
@@ -32,10 +33,11 @@ export function useToolHistory<T>(
   toolId: string,
   options: UseToolHistoryOptions = {},
 ): ToolHistory<T> {
+  const session = useCurrentToolSession()
   const { max, key } = options
   const store = useMemo(
-    () => createToolHistoryStore<T>(toolId, { max, key }),
-    [toolId, max, key],
+    () => createToolHistoryStore<T>(toolId, { max, key, storage: session?.storage }),
+    [toolId, max, key, session],
   )
   const [history, setHistory] = useState<HistoryEntry<T>[]>([])
   const [loading, setLoading] = useState(true)

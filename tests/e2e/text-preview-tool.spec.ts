@@ -82,6 +82,12 @@ test.describe('Text Preview Tool', () => {
       page.getByLabel('提取结果').getByText('10.10.0.1', { exact: true }),
     ).toBeVisible()
 
+    // Persistence is serialized with cross-tab cleanup; wait for the write before reloading.
+    await expect.poll(() => page.evaluate(() => {
+      const state = JSON.parse(localStorage.getItem('qhelper.text-preview.workspace.v1') ?? '{}')
+      return state.tabs?.find((tab: { id: string; input: string }) => tab.id === state.activeTabId)?.input
+    })).toBe('10.10.0.1')
+
     await page.reload()
     await expect(page.getByRole('tab', { name: /项目 A，1 个对象/ })).toBeVisible()
     await expect(page.getByRole('tab', { name: /项目 B，1 个对象/ })).toBeVisible()

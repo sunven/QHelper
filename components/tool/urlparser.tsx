@@ -1,11 +1,12 @@
-import { useState, useMemo } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
 import { Copy } from 'lucide-react'
+import { useMemo } from 'react'
+import { useSessionState } from '@/components/tool/ToolSessionContext'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
 
 export function URLParser() {
-  const [input, setInput] = useState('')
+  const [input, setInput] = useSessionState('input', '', true)
 
   const parsed = useMemo(() => {
     try {

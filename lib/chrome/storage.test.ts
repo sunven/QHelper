@@ -2,7 +2,7 @@
  * Chrome Storage API 封装测试
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import * as chromeStorage from './storage';
 
 describe('chrome/storage', () => {
@@ -75,7 +75,7 @@ describe('chrome/storage', () => {
         getItem: vi.fn().mockReturnValue('"fallbackValue"'),
       };
       mockChrome.storage.local.get.mockRejectedValue(new Error('Chrome storage failed'));
-      (global as any).localStorage = localStorage;
+      vi.stubGlobal('localStorage', localStorage);
 
       const result = await chromeStorage.get('testKey');
       expect(result).toBe('fallbackValue');
@@ -187,7 +187,7 @@ describe('chrome/storage', () => {
         setItem: vi.fn(),
       };
       mockChrome.storage.local.set.mockRejectedValue(new Error('Chrome storage failed'));
-      (global as any).localStorage = localStorage;
+      vi.stubGlobal('localStorage', localStorage);
 
       await chromeStorage.set('testKey', 'testValue');
       expect(localStorage.setItem).toHaveBeenCalledWith('testKey', JSON.stringify('testValue'));
@@ -221,7 +221,7 @@ describe('chrome/storage', () => {
         removeItem: vi.fn(),
       };
       mockChrome.storage.local.remove.mockRejectedValue(new Error('Chrome storage failed'));
-      (global as any).localStorage = localStorage;
+      vi.stubGlobal('localStorage', localStorage);
 
       await chromeStorage.remove('testKey');
       expect(localStorage.removeItem).toHaveBeenCalledWith('testKey');
@@ -255,7 +255,7 @@ describe('chrome/storage', () => {
         clear: vi.fn(),
       };
       mockChrome.storage.local.clear.mockRejectedValue(new Error('Chrome storage failed'));
-      (global as any).localStorage = localStorage;
+      vi.stubGlobal('localStorage', localStorage);
 
       await chromeStorage.clear();
       expect(localStorage.clear).toHaveBeenCalled();

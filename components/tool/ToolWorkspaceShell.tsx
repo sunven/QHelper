@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
 import { GearSixIcon } from '@phosphor-icons/react'
+import type { ReactNode } from 'react'
 import { AppSidebar } from '@/components/app-sidebar'
+import { WorkspaceLink } from '@/components/tool/WorkspaceLink'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,13 +10,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
 import {
   Tooltip,
   TooltipContent,
@@ -69,10 +70,10 @@ export function ToolWorkspaceShell({
                 <BreadcrumbList className="h-7 flex-nowrap items-center leading-none">
                   <BreadcrumbItem className="hidden h-7 items-center md:flex">
                     <BreadcrumbLink
+                      asChild
                       className="inline-flex h-7 items-center leading-none"
-                      href={`/${getToolsSpaPath(DEFAULT_TOOL_ID)}`}
                     >
-                      QHelper Tools
+                      <WorkspaceLink href={`/${getToolsSpaPath(DEFAULT_TOOL_ID)}`}>QHelper Tools</WorkspaceLink>
                     </BreadcrumbLink>
                   </BreadcrumbItem>
                   {activeCategory ? (
@@ -101,13 +102,13 @@ export function ToolWorkspaceShell({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button asChild variant="ghost" size="icon-sm">
-                    <a
+                    <WorkspaceLink
                       aria-label="打开设置"
                       data-testid="tool-settings-link"
                       href={`/${getToolsSpaPath('settings')}`}
                     >
                       <GearSixIcon aria-hidden />
-                    </a>
+                    </WorkspaceLink>
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">设置</TooltipContent>

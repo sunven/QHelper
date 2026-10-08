@@ -5,6 +5,7 @@ import {
   setLocalPersistedData,
   subscribeLocalPersistedDataKey,
 } from '@/lib/chrome/local-persisted-data'
+import type { DataStore } from '@/lib/tool-data/storage'
 
 export type HistoryEntry<T> = {
   id: string
@@ -36,8 +37,12 @@ const DEFAULT_MAX_HISTORY = 50
  */
 export function createToolHistoryStore<T>(
   toolId: string,
-  options: { max?: number; key?: string } = {},
+  options: { max?: number; key?: string; storage?: DataStore } = {},
 ): ToolHistoryStore<T> {
+  const storage = options.storage ?? {
+    get: getLocalPersistedData, set: setLocalPersistedData,
+    remove: removeLocalPersistedData, subscribe: subscribeLocalPersistedDataKey,
+  }
   const max = options.max ?? DEFAULT_MAX_HISTORY
   const storageKey = getToolStateStorageKey(toolId, options.key ?? 'history')
   const listeners = new Set<(entries: HistoryEntry<T>[]) => void>()
@@ -51,7 +56,7 @@ export function createToolHistoryStore<T>(
   }
 
   function persist() {
-    setLocalPersistedData(storageKey, entries).catch((error) => {
+    storage.set(storageKey, entries).catch((error) => {
       console.error(`Failed to save history for ${toolId}:`, error)
     })
   }
@@ -63,10 +68,7 @@ export function createToolHistoryStore<T>(
 
     loadPromise = (async () => {
       try {
-        const stored = await getLocalPersistedData<HistoryEntry<T>[]>(
-          storageKey,
-          [],
-        )
+        const stored = await storage.get<HistoryEntry<T>[]>(storageKey)
         entries = Array.isArray(stored) ? stored : []
       } catch (error) {
         console.error(`Failed to load history for ${toolId}:`, error)
@@ -106,7 +108,7 @@ export function createToolHistoryStore<T>(
   async function clear(): Promise<void> {
     entries = []
     loadPromise = null
-    await removeLocalPersistedData(storageKey)
+    await storage.remove(storageKey)
     notify()
   }
 
@@ -114,7 +116,7 @@ export function createToolHistoryStore<T>(
     listener: (entries: HistoryEntry<T>[]) => void,
   ): () => void {
     listeners.add(listener)
-    const unsubscribeStorage = subscribeLocalPersistedDataKey<HistoryEntry<T>[]>(
+    const unsubscribeStorage = storage.subscribe<HistoryEntry<T>[]>(
       storageKey,
       (value) => {
         entries = value || []

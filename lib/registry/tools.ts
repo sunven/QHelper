@@ -10,6 +10,7 @@ export const tools = [
   // ===== 常用工具 =====
   {
     id: 'json',
+    keywords: ['json format', 'json diff', '美化'],
     name: 'JSON 格式化',
     category: ToolCategory.COMMON,
     icon: 'Code',
@@ -26,6 +27,7 @@ export const tools = [
 
   {
     id: 'context-hub',
+    keywords: ['智能识别', '数据入口'],
     name: 'Context Hub',
     category: ToolCategory.COMMON,
     icon: 'Sparkle',
@@ -35,6 +37,7 @@ export const tools = [
 
   {
     id: 'text-preview',
+    keywords: ['日志', '提取', 'log'],
     name: '文本预览',
     category: ToolCategory.COMMON,
     icon: 'FileText',
@@ -44,6 +47,7 @@ export const tools = [
 
   {
     id: 'trans-radix',
+    keywords: ['binary', 'hex', '十六进制'],
     name: '进制转换',
     category: ToolCategory.COMMON,
     icon: 'Calculator',
@@ -53,6 +57,7 @@ export const tools = [
   // ===== 编码转换 =====
   {
     id: 'convert',
+    keywords: ['encode', 'decode', '编码', '解码'],
     name: '字符串编解码',
     category: ToolCategory.ENCODING,
     icon: 'ArrowsLeftRight',
@@ -78,6 +83,7 @@ export const tools = [
 
   {
     id: 'pictureSplicing',
+    keywords: ['拼图', '图片合并'],
     name: '图片拼接',
     category: ToolCategory.IMAGE,
     icon: 'ImageSquare',
@@ -95,6 +101,7 @@ export const tools = [
 
   {
     id: 'qrcode',
+    keywords: ['qr', '二维码扫描'],
     name: '二维码',
     category: ToolCategory.IMAGE,
     icon: 'QrCode',
@@ -105,6 +112,7 @@ export const tools = [
   // ===== 其他工具 =====
   {
     id: 'timestamp',
+    keywords: ['unix', '日期', 'date'],
     name: '时间戳转换',
     category: ToolCategory.OTHER,
     icon: 'Clock',
@@ -113,6 +121,7 @@ export const tools = [
 
   {
     id: 'colorTransform',
+    keywords: ['hex', 'rgb', 'hsl', '颜色'],
     name: '颜色转换',
     category: ToolCategory.OTHER,
     icon: 'Palette',
@@ -138,6 +147,7 @@ export const tools = [
 
   {
     id: 'password',
+    keywords: ['随机密码', 'random password'],
     name: '密码生成器',
     category: ToolCategory.SECURITY,
     icon: 'ShieldCheck',
@@ -163,6 +173,7 @@ export const tools = [
   // ===== Web 格式 =====
   {
     id: 'markdown',
+    keywords: ['md', '文档'],
     name: 'Markdown 编辑器',
     category: ToolCategory.WEB_FORMAT,
     icon: 'FileText',
@@ -171,6 +182,7 @@ export const tools = [
 
   {
     id: 'formatter',
+    keywords: ['htmlformat', 'xmlformatter', 'csstool', 'beautify', 'minify'],
     name: '格式化',
     category: ToolCategory.WEB_FORMAT,
     icon: 'Code',
@@ -179,6 +191,7 @@ export const tools = [
 
   {
     id: 'urlparser',
+    keywords: ['query', '网址', '参数'],
     name: 'URL 解析器',
     category: ToolCategory.WEB_FORMAT,
     icon: 'Link',

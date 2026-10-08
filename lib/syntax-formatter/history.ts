@@ -4,6 +4,7 @@ import {
   removeLocalPersistedData,
   setLocalPersistedData,
 } from '@/lib/chrome/local-persisted-data'
+import type { DataStore } from '@/lib/tool-data/storage'
 import type { HistoryEntry } from '@/lib/tool-history-store'
 import {
   type FormatterDirection,
@@ -105,9 +106,10 @@ function mergeByTimestamp(
     .slice(-FORMATTER_HISTORY_MAX)
 }
 
-export async function migrateLegacyFormatterHistory(): Promise<
+export async function migrateLegacyFormatterHistory(storage?: DataStore): Promise<
   HistoryEntry<FormatterHistorySnapshot>[] | null
 > {
+  if (storage?.run) return storage.run(() => migrateLegacyFormatterHistory())
   const alreadyMigrated = await getLocalPersistedData<boolean>(
     formatterHistoryMigratedKey,
   )

@@ -1,7 +1,9 @@
+import { useCurrentToolSession } from '@/components/tool/ToolSessionContext'
+import { usePersistedValue } from '@/hooks/usePersistedValue'
 import {
   getToolStateStorageKey,
 } from '@/lib/chrome/local-persisted-data'
-import { usePersistedValue } from '@/hooks/usePersistedValue'
+import { isContentKey } from '@/lib/tool-data/catalog'
 
 /**
  * 工具页状态管理 Hook：Persisted Tool Data 的工具入口。
@@ -30,8 +32,12 @@ export function useToolState<T>(
   state: T,
   setState: (value: T | ((prev: T) => T)) => void,
 ] {
+  const session = useCurrentToolSession()
   const storageKey = getToolStateStorageKey(toolId, key)
-  const { value, setValue } = usePersistedValue(storageKey, initialState)
+  const initial = session && key in session.values ? session.values[key] as T
+    : session?.temporary && isContentKey(storageKey) ? '' as T : initialState
+  const { value, setValue } = usePersistedValue(storageKey, initial, session?.storage)
+  if (session) session.values[key] = value
 
   return [value, setValue]
 }

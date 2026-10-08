@@ -1,8 +1,9 @@
 import hljs from 'highlight.js'
 import { Copy, Download } from 'lucide-react'
 import { marked, type Tokens } from 'marked'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
+import { useSessionState } from '@/components/tool/ToolSessionContext'
 import { Button } from '@/components/ui/button'
 import { useToolHistory } from '@/hooks/useToolHistory'
 import { sanitizeRenderedMarkdown } from '@/lib/web-summary/markdown'
@@ -34,7 +35,7 @@ interface MarkdownState {
 }
 
 export function MarkdownEditor() {
-  const [state, setState] = useState<MarkdownState>({
+  const [state, setState] = useSessionState<MarkdownState>('state', {
     input: `# 欢迎使用 Markdown 编辑器
 
 ## 功能特性
@@ -63,7 +64,7 @@ greet('QHelper');
 
 开始编写你的 Markdown 文档吧！`,
     html: '',
-  })
+  }, ['input'])
 
   const { add, history } = useToolHistory<MarkdownState>('markdown', {
     max: 10,
@@ -74,11 +75,11 @@ greet('QHelper');
   useEffect(() => {
     const html = sanitizeRenderedMarkdown(marked.parse(state.input) as string)
     setState((prev) => ({ ...prev, html }))
-  }, [state.input])
+  }, [state.input, setState])
 
   const handleInputChange = useCallback((value: string) => {
     setState((prev) => ({ ...prev, input: value }))
-  }, [])
+  }, [setState])
 
   const handleExportHtml = useCallback(() => {
     const fullHtml = `<!DOCTYPE html>

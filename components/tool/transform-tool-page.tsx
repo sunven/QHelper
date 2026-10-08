@@ -1,7 +1,8 @@
 import { ArrowLeftRight, Download, FileCode, Zap } from 'lucide-react'
-import { type ComponentType, useCallback, useMemo, useState } from 'react'
+import { type ComponentType, useCallback, useMemo } from 'react'
 import { CopyButton } from '@/components/tool/CopyButton'
 import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
+import { useSessionState } from '@/components/tool/ToolSessionContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -80,10 +81,10 @@ export function createTransformToolPage<
 
   function TransformToolPage() {
     // options 由 defaultOptions（工具特有字段）与 mode（方向）组成
-    const [input, setInput] = useState(defaultInput)
-    const [options, setOptions] = useState<
+    const [input, setInput] = useSessionState('input', defaultInput, true)
+    const [options, setOptions] = useSessionState<
       Omit<Options, 'mode'> & { mode: Mode }
-    >(() => ({
+    >('options', () => ({
       ...defaultOptions,
       mode: directions[0].mode,
     }))
@@ -114,7 +115,7 @@ export function createTransformToolPage<
 
     const handleDirectionChange = useCallback((mode: Mode) => {
       setOptions((prev) => ({ ...prev, mode }))
-    }, [])
+    }, [setOptions])
 
     const handleSwap = useCallback(() => {
       setOptions((prev) => {
@@ -123,18 +124,18 @@ export function createTransformToolPage<
         return { ...prev, mode: next.mode }
       })
       setInput(output)
-    }, [output])
+    }, [output, setInput, setOptions])
 
     const handleOptionsChange = useCallback(
       (patch: Partial<Omit<Options, 'mode'>>) => {
         setOptions((prev) => ({ ...prev, ...patch }))
       },
-      [],
+      [setOptions],
     )
 
     const handleClear = useCallback(() => {
       setInput('')
-    }, [])
+    }, [setInput])
 
     const handleDownload = useCallback(() => {
       if (!output || error) {

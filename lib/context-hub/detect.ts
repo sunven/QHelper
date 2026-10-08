@@ -1,6 +1,6 @@
-import cronParser from 'cron-parser'
-import type { ContextDetectionResult } from './types'
+import { CronExpressionParser } from 'cron-parser'
 import { parseJwt } from './jwt'
+import type { ContextDetectionResult } from './types'
 
 const UNKNOWN_RESULT: ContextDetectionResult = {
   kind: 'unknown',
@@ -120,7 +120,7 @@ function detectCron(input: string): ContextDetectionResult | null {
   }
 
   try {
-    cronParser.parse(input)
+    CronExpressionParser.parse(input)
     return {
       kind: 'cron',
       confidence: 'high',

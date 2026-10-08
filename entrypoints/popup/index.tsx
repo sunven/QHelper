@@ -1,3 +1,4 @@
+import type { Icon } from '@phosphor-icons/react'
 import {
   ArrowsLeftRightIcon,
   BracketsCurlyIcon,
@@ -8,18 +9,18 @@ import {
   SparkleIcon,
   WrenchIcon,
 } from '@phosphor-icons/react'
-import type { Icon } from '@phosphor-icons/react'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
-import { Button } from '@/components/ui/button'
+import { ToolDiscovery } from '@/components/ToolDiscovery'
 import { getToolIcon } from '@/components/tool-icons'
+import { Button } from '@/components/ui/button'
 import { removeAll } from '@/lib/chrome/cookies'
 import { create } from '@/lib/chrome/tabs'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import {
-  TOOL_SETTINGS_ID,
   getLaunchDirectory,
   getLaunchEntry,
+  TOOL_SETTINGS_ID,
   type ToolCatalogLaunchEntry,
 } from '@/lib/tool-catalog'
 import { cn } from '@/lib/utils'
@@ -134,6 +135,7 @@ async function handleLaunchEntryClick(entry: ToolCatalogLaunchEntry) {
 }
 
 function App() {
+  const [searching, setSearching] = useState(false)
   useEffect(() => {
     const bodyStyle = document.body.style
     const previousBodyMargin = bodyStyle.margin
@@ -188,7 +190,9 @@ function App() {
             </Button>
           </header>
 
-          {popupDirectory.groups.map((group) => {
+          <ToolDiscovery entries={popupDirectory.entries} onLaunch={(entry) => { void handleLaunchEntryClick(entry) }} onSearchingChange={setSearching} />
+
+          {!searching && popupDirectory.groups.map((group) => {
             const Icon = categoryIconMap[group.category]
             const accent = categoryAccentMap[group.category]
             return (

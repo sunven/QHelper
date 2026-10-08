@@ -4,6 +4,7 @@ import {
   setLocalPersistedData,
   subscribeLocalPersistedDataKey,
 } from '@/lib/chrome/local-persisted-data'
+import type { DataStore } from '@/lib/tool-data/storage'
 
 /**
  * 单值 Persisted Tool Data 的 React 绑定：加载、跨标签页订阅、写穿
@@ -16,12 +17,14 @@ import {
 export function usePersistedValue<T>(
   key: string,
   initialValue: T,
+  storage?: DataStore,
 ): {
   value: T
   setValue: (value: T | ((prev: T) => T)) => Promise<void>
   loading: boolean
 } {
   const [value, setValueState] = useState<T>(initialValue)
+  const edits = useRef(0)
   const [loading, setLoading] = useState(true)
   // initialValue 存 ref：订阅回调引用它而不必反复重连监听
   const initialValueRef = useRef(initialValue)
@@ -29,11 +32,12 @@ export function usePersistedValue<T>(
 
   useEffect(() => {
     let active = true
+    const initialEdits = edits.current
 
     const loadValue = async () => {
       try {
-        const storedValue = await getLocalPersistedData<T>(key)
-        if (active && storedValue !== undefined) {
+        const storedValue = await (storage ? storage.get<T>(key) : getLocalPersistedData<T>(key))
+        if (active && edits.current === initialEdits && storedValue !== undefined) {
           setValueState(storedValue)
         }
       } catch (error) {
@@ -47,7 +51,7 @@ export function usePersistedValue<T>(
 
     void loadValue()
 
-    const unsubscribe = subscribeLocalPersistedDataKey<T>(key, (nextValue) => {
+    const unsubscribe = (storage?.subscribe ?? subscribeLocalPersistedDataKey)<T>(key, (nextValue) => {
       if (active) {
         setValueState((nextValue ?? initialValueRef.current) as T)
       }
@@ -57,22 +61,23 @@ export function usePersistedValue<T>(
       active = false
       unsubscribe()
     }
-  }, [key])
+  }, [key, storage])
 
   const setValue = useCallback(
     async (next: T | ((prev: T) => T)) => {
       const newValue =
         typeof next === 'function' ? (next as (prev: T) => T)(value) : next
 
+      edits.current += 1
       setValueState(newValue)
 
       try {
-        await setLocalPersistedData(key, newValue)
+        await (storage ? storage.set(key, newValue) : setLocalPersistedData(key, newValue))
       } catch (error) {
         console.error(`Failed to save persisted value for ${key}:`, error)
       }
     },
-    [key, value],
+    [key, value, storage],
   )
 
   return { value, setValue, loading }

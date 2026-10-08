@@ -8,8 +8,9 @@ import {
   Shield,
   X,
 } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
+import { useSessionState } from '@/components/tool/ToolSessionContext'
 import { Button } from '@/components/ui/button'
 import { useToolHistory } from '@/hooks/useToolHistory'
 
@@ -25,7 +26,7 @@ interface JsonSchemaState {
 }
 
 export function JsonSchemaValidator() {
-  const [state, setState] = useState<JsonSchemaState>({
+  const [state, setState] = useSessionState<JsonSchemaState>('state', {
     jsonData: `{
   "name": "John Doe",
   "age": 30,
@@ -54,7 +55,7 @@ export function JsonSchemaValidator() {
     isValid: false,
     errors: [],
     validationResults: [],
-  })
+  }, ['jsonData', 'jsonSchema'])
 
   const { add, history } = useToolHistory<JsonSchemaState>('jsonschema', {
     max: 10,
@@ -115,15 +116,15 @@ export function JsonSchemaValidator() {
         validationResults: [],
       }))
     }
-  }, [state.jsonData, state.jsonSchema])
+  }, [state.jsonData, state.jsonSchema, setState])
 
   const handleJsonDataChange = useCallback((value: string) => {
     setState((prev) => ({ ...prev, jsonData: value }))
-  }, [])
+  }, [setState])
 
   const handleJsonSchemaChange = useCallback((value: string) => {
     setState((prev) => ({ ...prev, jsonSchema: value }))
-  }, [])
+  }, [setState])
 
   const handleCopy = useCallback(async () => {
     try {
@@ -155,7 +156,7 @@ export function JsonSchemaValidator() {
       errors: [],
       validationResults: [],
     }))
-  }, [])
+  }, [setState])
 
   const handleFormatJson = useCallback(() => {
     try {
@@ -176,7 +177,7 @@ export function JsonSchemaValidator() {
     } catch {
       // 忽略格式化错误
     }
-  }, [state.jsonData, state.jsonSchema])
+  }, [state.jsonData, state.jsonSchema, setState])
 
   return (
     <div className="mx-auto max-w-[1440px] space-y-2">

@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { CopyButton } from '@/components/tool/CopyButton'
 import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
+import { useCurrentToolSession, useSessionState } from '@/components/tool/ToolSessionContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -49,6 +50,7 @@ function directionOutputLabel(mode: FormatterDirection): string {
 }
 
 export function SyntaxFormatter() {
+  const session = useCurrentToolSession()
   const [searchParams, setSearchParams] = useSearchParams()
   const queryLanguage = parseFormatterLanguage(
     searchParams.get(FORMATTER_LANGUAGE_QUERY),
@@ -57,16 +59,17 @@ export function SyntaxFormatter() {
     value: storedLanguage,
     setValue: setStoredLanguage,
     loading: languageLoading,
-  } = usePersistedValue<FormatterLanguage>(languageStorageKey, 'html')
+  } = usePersistedValue<FormatterLanguage>(languageStorageKey, (session?.values.language as FormatterLanguage | undefined) ?? 'html', session?.storage)
 
   const language = queryLanguage ?? storedLanguage
+  if (session) session.values.language = language
   const languageReady = queryLanguage !== null || !languageLoading
 
-  const [input, setInput] = useState('')
-  const [sampleApplied, setSampleApplied] = useState(false)
-  const [mode, setMode] = useState<FormatterDirection>('beautify')
+  const [input, setInput] = useSessionState('input', '', true)
+  const [sampleApplied, setSampleApplied] = useState(Boolean(session?.temporary))
+  const [mode, setMode] = useSessionState<FormatterDirection>('mode', 'beautify')
   const [htmlOptions, setHtmlOptions] =
-    useState<HtmlFormatterOptions>(DEFAULT_HTML_OPTIONS)
+    useSessionState<HtmlFormatterOptions>('htmlOptions', DEFAULT_HTML_OPTIONS)
 
   const { add, history } = useToolHistory<FormatterHistorySnapshot>(
     SYNTAX_FORMATTER_ID,
@@ -77,8 +80,8 @@ export function SyntaxFormatter() {
   )
 
   useEffect(() => {
-    void migrateLegacyFormatterHistory()
-  }, [])
+    if (!session?.temporary) void migrateLegacyFormatterHistory(session?.storage).catch(() => undefined)
+  }, [session])
 
   useEffect(() => {
     if (!languageReady || sampleApplied) {
@@ -86,7 +89,7 @@ export function SyntaxFormatter() {
     }
     setInput(FORMATTER_LANGUAGE_META[language].defaultInput)
     setSampleApplied(true)
-  }, [language, languageReady, sampleApplied])
+  }, [language, languageReady, sampleApplied, setInput])
 
   useEffect(() => {
     if (!languageReady) {
@@ -132,11 +135,11 @@ export function SyntaxFormatter() {
   const handleSwap = useCallback(() => {
     setMode((current) => (current === 'beautify' ? 'minify' : 'beautify'))
     setInput(output)
-  }, [output])
+  }, [output, setInput, setMode])
 
   const handleClear = useCallback(() => {
     setInput('')
-  }, [])
+  }, [setInput])
 
   const handleDownload = useCallback(() => {
     if (!output || error) {

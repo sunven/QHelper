@@ -14,8 +14,9 @@ import {
   X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import ReactJsonView from 'react-json-view'
+import ReactJsonViewModule from 'react-json-view'
 import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
+import { useCurrentToolSession, useSessionState } from '@/components/tool/ToolSessionContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -30,6 +31,9 @@ import {
   type DiffResult,
   jsonDiff,
 } from '@/lib/utils/jsonDiff'
+
+// The UMD package can retain its default wrapper in production builds.
+const ReactJsonView = (ReactJsonViewModule as unknown as { default?: typeof ReactJsonViewModule }).default ?? ReactJsonViewModule
 
 // 文件大小阈值
 const SIZE_THRESHOLDS = {
@@ -66,9 +70,10 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 export function JsonTool() {
-  const [jsoncon, setJsoncon] = useState('')
-  const [newjsoncon, setNewjsoncon] = useState('')
-  const [baseview, setBaseview] = useState<'formatter' | 'diff'>('formatter')
+  const session = useCurrentToolSession()
+  const [jsoncon, setJsoncon] = useSessionState('jsoncon', '')
+  const [newjsoncon, setNewjsoncon] = useSessionState('newjsoncon', '')
+  const [baseview, setBaseview] = useSessionState<'formatter' | 'diff'>('baseview', 'formatter')
   const [view, setView] = useState<'code' | 'error' | 'empty' | 'compress'>(
     'empty',
   )
@@ -178,17 +183,17 @@ export function JsonTool() {
     setCompressStr('')
     setError('')
     setView('empty')
-  }, [])
+  }, [setJsoncon, setNewjsoncon])
 
   // 切换到 Diff 视图
   const baseViewToDiff = useCallback(() => {
     setBaseview('diff')
-  }, [])
+  }, [setBaseview])
 
   // 切换到格式化视图
   const baseViewToFormatter = useCallback(() => {
     setBaseview('formatter')
-  }, [])
+  }, [setBaseview])
 
   // 注册键盘快捷键
   const shortcuts: KeyboardShortcut[] = useMemo(
@@ -327,6 +332,11 @@ export function JsonTool() {
 
   // 保存历史记录
   function saveHistory() {
+    if (session?.temporary) {
+      void session.saveSnapshot?.()
+      setIsSaveShow(false)
+      return
+    }
     if (!historyName || !jsoncon) return
     try {
       JSON.parse(jsoncon)

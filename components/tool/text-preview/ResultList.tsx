@@ -1,4 +1,5 @@
 import { FileText } from 'lucide-react'
+import { useCurrentToolSession } from '@/components/tool/ToolSessionContext'
 import {
   Empty,
   EmptyDescription,
@@ -7,10 +8,10 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import {
-  GROUP_LABELS,
-  GROUP_ORDER,
   type ExtractedItem,
   type ExtractedItemType,
+  GROUP_LABELS,
+  GROUP_ORDER,
   type PipelineResult,
 } from '@/lib/text-preview/parser/types'
 import type { CopyButtonState } from './CopyButton'
@@ -32,6 +33,7 @@ export function ResultList({
   hasInput,
   tabId,
 }: ResultListProps) {
+  const session = useCurrentToolSession()
   if (!hasInput) {
     return (
       <Empty className="m-3 min-h-52 flex-none border border-dashed border-[var(--border-strong)] bg-[var(--surface-muted)] p-4 text-[var(--text)]">
@@ -41,7 +43,7 @@ export function ResultList({
           </EmptyMedia>
           <EmptyTitle>粘贴文本后会在本地提取可复制对象。</EmptyTitle>
           <EmptyDescription>
-            支持 IP、URL、Unix 路径、shell 命令；内容会保存在本机浏览器。
+            支持 IP、URL、Unix 路径、shell 命令；{session?.temporary ? '临时内容仅在当前标签页保留。' : '内容会保存在本机浏览器。'}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

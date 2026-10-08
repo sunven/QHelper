@@ -142,3 +142,14 @@ function getRecord(database: IDBDatabase, fileId: string) {
 function getTextPreviewWindow() {
   return window as TextPreviewWindow
 }
+
+export async function countStoredFileHandles(): Promise<number> {
+  const database = await openDatabase()
+  try {
+    return await new Promise<number>((resolve, reject) => {
+      const request = database.transaction(STORE_NAME, 'readonly').objectStore(STORE_NAME).count()
+      request.onsuccess = () => resolve(request.result)
+      request.onerror = () => reject(request.error)
+    })
+  } finally { database.close() }
+}

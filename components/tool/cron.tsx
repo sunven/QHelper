@@ -1,7 +1,8 @@
-import cronParser from 'cron-parser'
+import { CronExpressionParser } from 'cron-parser'
 import { Calendar, Copy, Download } from 'lucide-react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
+import { useSessionState } from '@/components/tool/ToolSessionContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useToolHistory } from '@/hooks/useToolHistory'
@@ -17,13 +18,13 @@ interface CronState {
 export function CronParser() {
   const expressionInputId = 'cron-expression-input'
   const expressionErrorId = 'cron-expression-error'
-  const [state, setState] = useState<CronState>({
+  const [state, setState] = useSessionState<CronState>('state', {
     expression: '0 0 * * *',
     isValid: true,
     error: null,
     nextRuns: [],
     interval: '0 */1 * * * *',
-  })
+  }, ['expression'])
 
   const { add, history } = useToolHistory<CronState>('cron', {
     max: 10,
@@ -43,7 +44,7 @@ export function CronParser() {
     }
 
     try {
-      const interval = cronParser.parse(state.expression)
+      const interval = CronExpressionParser.parse(state.expression)
       const now = Date.now()
       const nextRuns: Date[] = []
 
@@ -61,7 +62,7 @@ export function CronParser() {
         nextRuns: [],
       }))
     }
-  }, [state.expression])
+  }, [state.expression, setState])
 
   // 常用预设
   const presets = [
@@ -76,7 +77,7 @@ export function CronParser() {
 
   const handleExpressionChange = useCallback((value: string) => {
     setState((prev) => ({ ...prev, expression: value }))
-  }, [])
+  }, [setState])
 
   const handleCopy = useCallback(async () => {
     try {

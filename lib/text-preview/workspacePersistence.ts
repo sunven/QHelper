@@ -1,5 +1,5 @@
-import type { FileHandleStore } from "./fileSystemAccessTypes";
 import { getDefaultFileHandleStore } from "./fileHandleStore";
+import type { FileHandleStore } from "./fileSystemAccessTypes";
 import {
   markWorkspaceTabHandleMissing,
   type WorkspaceState,
@@ -15,7 +15,7 @@ import {
 export type WorkspacePersistence = {
   clearWorkspaceData: () => Promise<WorkspaceClearResult>;
   loadWorkspaceData: () => Promise<WorkspaceLoadResult>;
-  saveWorkspaceData: (state: WorkspaceState) => WorkspaceSaveResult;
+  saveWorkspaceData: (state: WorkspaceState) => WorkspaceSaveResult | Promise<WorkspaceSaveResult>;
 };
 
 export type WorkspaceClearResult = {

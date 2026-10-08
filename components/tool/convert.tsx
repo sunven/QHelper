@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight, Code, FileCode, Key, Lock } from 'lucide-react'
-import { useState } from 'react'
 import { CopyButton } from '@/components/tool/CopyButton'
 import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
+import { useSessionState } from '@/components/tool/ToolSessionContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
@@ -94,7 +94,7 @@ const encodeItems: EncodeItem[] = [
 
 export function ConvertTool() {
   const [srcText, setSrcText] = useToolState('convert', 'srcText', '')
-  const [result, setResult] = useState('')
+  const [result, setResult] = useSessionState('result', '')
 
   // 历史记录
   type ConvertHistorySnapshot = {

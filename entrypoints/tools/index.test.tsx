@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { MemoryRouter, useLocation } from 'react-router'
+import { MemoryRouter, useLocation, useParams } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import { ToolsRoutes } from './index'
 
@@ -24,7 +24,12 @@ vi.mock('@/components/tool/ToolWorkspaceShell', () => ({
 }))
 
 vi.mock('./ToolActivityOutlet', () => ({
-  ToolActivityOutlet: () => <div>Tool route content</div>,
+  ToolActivityOutlet: () => {
+    const { toolId } = useParams()
+    return toolId === 'settings.html'
+      ? <section><h1>设置</h1><div>Settings route content</div></section>
+      : <div>Tool route content</div>
+  },
 }))
 
 function CurrentPath() {

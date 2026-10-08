@@ -52,6 +52,7 @@ test.describe('Text Preview privacy', () => {
     await page.reload()
 
     await fillSourceText(page, `password=${sentinel}`)
+    await expect.poll(() => page.evaluate((key) => localStorage.getItem(key), WORKSPACE_KEY)).toContain(sentinel)
 
     const storageDump = await page.evaluate((allowedKey) => {
       const dumpStorage = (storage: Storage) =>
@@ -84,6 +85,7 @@ test.describe('Text Preview privacy', () => {
     expect(JSON.stringify(chromeStorageDump)).not.toContain(sentinel)
 
     await page.getByRole('button', { name: '清空全部' }).click()
+    await expect(page.getByText('已清空本机保存内容和文件授权。', { exact: true })).toBeVisible()
 
     const clearedStorageDump = await page.evaluate(() =>
       JSON.stringify({

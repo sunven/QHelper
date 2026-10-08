@@ -1,5 +1,17 @@
 # Spec: QHelper Context Hub
 
+## P1: Tool Discovery and Temporary Handoff (implemented)
+
+The P1 extension supersedes the MVP's navigation-only handoff below. The original MVP decisions remain recorded for context.
+
+- Popup and tools sidebar support name, description, keyword and tool-ID search, keyboard navigation, shared favorites and the latest eight ordinary tools. Favorites use the existing synced-setting fallback; recent entries contain only local tool IDs. The existing catalog remains available when search is empty.
+- JSON, URL and Base64 recommendations pass the exact raw input into a temporary session in the same SPA tab. Input never enters a URL, browser history state, local storage or session storage automatically. Other recommendations keep ordinary navigation.
+- Temporary mode covers JSON, string conversion, timestamp, QR code, Markdown, formatter, Cron, TOML, SVG optimizer, JSON Schema, text preview and URL parser. Temporary sessions survive navigation among tools and settings. Ending, reloading or closing discards unsaved temporary content; the ordinary draft stays separate.
+- “保存一份” saves a separate versioned local snapshot, up to 50 per tool, without changing edit mode or overwriting the ordinary draft. Snapshots can be restored into a temporary session or deleted. Text preview snapshots contain text tabs without file authorization.
+- Settings data management reports approximate content size, record counts and file-handle counts. Confirmed per-tool cleanup removes only registered content keys in both local backends and text preview file handles. It preserves credentials, preferences, favorites, captured requests, browser bookmarks, downloads and disk files. Recent tools can be cleared separately.
+- Per-tool generation guards and Web Locks coordinate cleanup and pending writes across tabs. Cleanup resets ordinary drafts even in hidden tool activities; active temporary sessions remain in memory until ended.
+- Focused verification lives in `lib/tool-data/manager.test.ts`, `lib/tool-discovery.test.ts`, `components/ToolDiscovery.test.tsx`, `test/p1-sessions.test.tsx` and `tests/e2e/p1-workspace.spec.ts`. Run `pnpm type-check`, `pnpm lint`, `pnpm test:run` and `pnpm test:e2e` before handoff.
+
 ## Objective
 
 QHelper Context Hub turns QHelper from a list of standalone tools into a context-aware developer input hub. The first version helps general developers paste or route structured development data into QHelper, lets QHelper detect what the data likely is, and recommends the next useful action.

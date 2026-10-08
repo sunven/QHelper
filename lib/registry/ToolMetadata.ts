@@ -26,6 +26,7 @@ export interface ToolMetadata {
 
   // 描述
   description: string
+  keywords?: readonly string[]
 
   // 路由行为：默认保留隐藏工具状态，内存较重的工具可选择关闭
   preserveActivity?: boolean

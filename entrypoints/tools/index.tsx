@@ -1,7 +1,5 @@
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router'
-import { SettingsPage } from '@/components/tool/settings'
-import { ToolWorkspaceShell } from '@/components/tool/ToolWorkspaceShell'
 import {
   getSyntaxFormatterRedirectTo,
   SYNTAX_FORMATTER_ALIASES,
@@ -22,14 +20,6 @@ export function ToolsRoutes() {
       <Route
         path="/"
         element={<Navigate replace to={getToolRoutePath(DEFAULT_TOOL_ID)} />}
-      />
-      <Route
-        path="/settings.html"
-        element={
-          <ToolWorkspaceShell pageTitle="设置">
-            <SettingsPage />
-          </ToolWorkspaceShell>
-        }
       />
       <Route
         path="/settings"

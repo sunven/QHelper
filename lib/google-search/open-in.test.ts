@@ -230,7 +230,7 @@ describe('syncGoogleSearchOpenIn', () => {
     expect(trigger).toHaveAttribute('aria-expanded', 'true')
 
     closeOpenInMenus(document)
-    expect(menu.hidden).toBe(true)
+    expect(menu?.hidden).toBe(true)
   })
 
   it('does not inject on image search even when GitHub titles exist', () => {

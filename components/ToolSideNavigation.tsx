@@ -12,6 +12,7 @@ import {
 } from '@phosphor-icons/react'
 import * as React from 'react'
 import { useInRouterContext, useLocation, useNavigate } from 'react-router'
+import { ToolDiscovery } from '@/components/ToolDiscovery'
 import {
   Collapsible,
   CollapsibleContent,
@@ -29,13 +30,14 @@ import {
 } from '@/components/ui/sidebar'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import {
-  TOOL_CATEGORIES,
   getCurrentToolIdFromLocation,
+  getLaunchDirectory,
   getToolCatalogCategoryForTool,
   getToolRoutePath,
   getToolsSpaUrl,
-  parseToolRouteParam,
   type OrdinaryToolId,
+  parseToolRouteParam,
+  TOOL_CATEGORIES,
   type ToolCatalogTool as Tool,
 } from '@/lib/tool-catalog'
 import { cn } from '@/lib/utils'
@@ -130,6 +132,8 @@ function ToolSideNavigationContent({
   currentToolKey: OrdinaryToolId | null
   onToolSelect: (tool: Tool) => void
 }) {
+  const [searching, setSearching] = React.useState(false)
+  const discoveryEntries = React.useMemo(() => getLaunchDirectory('popup-main').entries.filter((entry) => entry.intent.kind === 'ordinary-tool-page'), [])
   const currentCategoryKey =
     getToolCatalogCategoryForTool(currentToolKey)?.key ?? null
   const [openKeys, setOpenKeys] = React.useState<string[]>(() =>
@@ -167,7 +171,11 @@ function ToolSideNavigationContent({
       data-testid="tool-side-navigation"
       className={cn('tool-side-navigation', className)}
     >
-      <SidebarGroup>
+      <ToolDiscovery entries={discoveryEntries} onSearchingChange={setSearching} onLaunch={(entry) => {
+        const tool = TOOL_CATEGORIES.flatMap((category) => category.tools).find((item) => item.key === entry.id)
+        if (tool) onToolSelect(tool)
+      }} />
+      {!searching && <SidebarGroup>
         <SidebarGroupLabel>Tools</SidebarGroupLabel>
         <SidebarMenu data-testid="tool-side-navigation-scroll">
           {TOOL_CATEGORIES.map((category) => (
@@ -218,7 +226,7 @@ function ToolSideNavigationContent({
             </Collapsible>
           ))}
         </SidebarMenu>
-      </SidebarGroup>
+      </SidebarGroup>}
     </nav>
   )
 }

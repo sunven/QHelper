@@ -54,6 +54,7 @@ export type ToolCatalogLaunchEntry = {
   id: string
   name: string
   description?: string
+  keywords?: readonly string[]
   category?: ToolCategory
   icon: ToolIconToken
   surfaces: readonly LaunchSurface[]
@@ -85,6 +86,7 @@ export type ToolCatalogTool = {
   category: ToolCategory
   icon: ToolIconToken
   description?: string
+  keywords?: readonly string[]
   preserveActivity: boolean
 }
 
@@ -138,6 +140,7 @@ function toCatalogTool(tool: ToolMetadata): ToolCatalogTool {
     category: tool.category,
     icon: tool.icon,
     description: tool.description,
+    keywords: tool.keywords,
     preserveActivity: tool.preserveActivity ?? true,
   }
 }
@@ -159,6 +162,7 @@ function toOrdinaryToolLaunchEntry(
     id: tool.key,
     name: tool.name,
     description: tool.description,
+    keywords: tool.keywords,
     category: tool.category,
     icon: tool.icon,
     surfaces: ['popup-main', 'build-alias'],

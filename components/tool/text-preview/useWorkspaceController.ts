@@ -1,9 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCurrentToolSession,
+  useSessionState,
+} from '@/components/tool/ToolSessionContext'
+import {
+  createMemoryFileHandleStore,
+  getDefaultFileHandleStore,
+} from '@/lib/text-preview/fileHandleStore'
 import type {
   FileHandleStore,
   LocalFileAccess,
 } from '@/lib/text-preview/fileSystemAccessTypes'
-import { getDefaultFileHandleStore } from '@/lib/text-preview/fileHandleStore'
 import { getDefaultLocalFileAccess } from '@/lib/text-preview/localFile'
 import {
   addWorkspaceTab,
@@ -15,14 +22,14 @@ import {
   updateWorkspaceTabInput,
 } from '@/lib/text-preview/workspace'
 import {
+  createWorkspacePersistence,
+  type WorkspacePersistence,
+} from '@/lib/text-preview/workspacePersistence'
+import {
   createWorkspaceSession,
   type SaveAllWorkspaceFilesSummary,
   type WorkspaceSessionStateStore,
 } from '@/lib/text-preview/workspaceSession'
-import {
-  createWorkspacePersistence,
-  type WorkspacePersistence,
-} from '@/lib/text-preview/workspacePersistence'
 
 type WorkspaceControllerServices = {
   fileAccess: LocalFileAccess
@@ -33,18 +40,66 @@ type WorkspaceControllerServices = {
 export function useWorkspaceController(
   servicesOverride?: Partial<WorkspaceControllerServices>,
 ) {
+  const toolSession = useCurrentToolSession()
   const [services] = useState<WorkspaceControllerServices>(() => {
-    const handleStore =
-      servicesOverride?.handleStore ?? getDefaultFileHandleStore()
+    const baseHandles =
+      servicesOverride?.handleStore ??
+      (toolSession?.temporary
+        ? createMemoryFileHandleStore()
+        : getDefaultFileHandleStore())
+    const run = toolSession?.storage.run
+    const handleStore = run
+      ? {
+          ...baseHandles,
+          put: (
+            fileId: string,
+            handle: Parameters<FileHandleStore['put']>[1],
+          ) =>
+            run(() => baseHandles.put(fileId, handle)).catch(() => ({
+              ok: false,
+              warning: '本机数据已清理，文件授权未保存。',
+            })),
+        }
+      : baseHandles
+    const basePersistence =
+      servicesOverride?.persistence ??
+      createWorkspacePersistence({ handleStore })
+    const persistence: WorkspacePersistence = toolSession?.temporary
+      ? {
+          loadWorkspaceData: async () => ({
+            state:
+              (toolSession.values.workspace as ReturnType<
+                typeof createInitialWorkspace
+              >) ?? createInitialWorkspace(),
+          }),
+          saveWorkspaceData: (state) => {
+            toolSession.values.workspace = state
+            return { ok: true }
+          },
+          clearWorkspaceData: async () => {
+            delete toolSession.values.workspace
+            return handleStore.clear()
+          },
+        }
+      : run
+        ? {
+            loadWorkspaceData: () =>
+              run(() => basePersistence.loadWorkspaceData()),
+            saveWorkspaceData: (state) =>
+              run(async () => basePersistence.saveWorkspaceData(state)),
+            clearWorkspaceData: () =>
+              run(() => basePersistence.clearWorkspaceData()),
+          }
+        : basePersistence
     return {
       handleStore,
+      persistence,
       fileAccess: servicesOverride?.fileAccess ?? getDefaultLocalFileAccess(),
-      persistence:
-        servicesOverride?.persistence ??
-        createWorkspacePersistence({ handleStore }),
     }
   })
-  const [workspace, setWorkspaceState] = useState(() => createInitialWorkspace())
+  const [workspace, setWorkspaceState] = useSessionState('workspace', () =>
+    createInitialWorkspace(),
+  )
   const workspaceRef = useRef(workspace)
   workspaceRef.current = workspace
   const stateStore = useMemo<WorkspaceSessionStateStore>(
@@ -60,7 +115,7 @@ export function useWorkspaceController(
         })
       },
     }),
-    [],
+    [setWorkspaceState],
   )
   const [session] = useState(() =>
     createWorkspaceSession({
@@ -79,9 +134,14 @@ export function useWorkspaceController(
     let cancelled = false
 
     async function loadInitialWorkspace() {
-      const result = await session.loadInitialWorkspace({
-        shouldApply: () => !cancelled,
-      })
+      const result = await session
+        .loadInitialWorkspace({
+          shouldApply: () => !cancelled,
+        })
+        .catch(() => ({
+          state: createInitialWorkspace(),
+          warning: '工作区读取失败，请重新打开工具。',
+        }))
       if (cancelled) {
         return
       }
@@ -101,9 +161,17 @@ export function useWorkspaceController(
       return
     }
 
-    const result = session.saveWorkspaceData(workspace)
-    if (!result.ok) {
-      window.setTimeout(() => setWorkspaceWarning(result.warning ?? ''), 0)
+    let active = true
+    void Promise.resolve(session.saveWorkspaceData(workspace))
+      .then((result) => {
+        if (active && !result.ok) setWorkspaceWarning(result.warning ?? '')
+      })
+      .catch(() => {
+        if (active)
+          setWorkspaceWarning('本机保存失败，数据可能已被其他页面清理。')
+      })
+    return () => {
+      active = false
     }
   }, [hasLoaded, session, workspace])
 
@@ -135,13 +203,19 @@ export function useWorkspaceController(
     },
 
     async clearWorkspace() {
-      const result = await session.clearWorkspace()
-      setWorkspaceWarning(result.warning ?? '')
-      setLiveMessage(
-        result.ok
-          ? '已清空本机保存内容和文件授权。'
-          : '已清空本机保存内容，但文件授权清理失败。',
-      )
+      try {
+        const result = await session.clearWorkspace()
+        setWorkspaceWarning(result.warning ?? '')
+        setLiveMessage(
+          result.ok
+            ? toolSession?.temporary
+              ? '已清空临时内容和临时文件授权。'
+              : '已清空本机保存内容和文件授权。'
+            : '已清空本机保存内容，但文件授权清理失败。',
+        )
+      } catch {
+        setWorkspaceWarning('本机清理失败，请重试。')
+      }
     },
 
     async openFiles() {

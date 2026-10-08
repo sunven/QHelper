@@ -2,7 +2,7 @@
  * Vitest 测试环境设置文件
  */
 
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
@@ -11,6 +11,7 @@ Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
 // 每个测试后清理
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
 });
 
 // 模拟 Chrome API

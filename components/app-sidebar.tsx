@@ -1,7 +1,9 @@
 'use client'
 
+import { ToolboxIcon } from '@phosphor-icons/react'
 import type * as React from 'react'
 import { ToolSideNavigation } from '@/components/ToolSideNavigation'
+import { WorkspaceLink } from '@/components/tool/WorkspaceLink'
 import {
   Sidebar,
   SidebarContent,
@@ -12,7 +14,6 @@ import {
   SidebarRail,
 } from '@/components/ui/sidebar'
 import { DEFAULT_TOOL_ID, getToolsSpaPath } from '@/lib/tool-catalog'
-import { ToolboxIcon } from '@phosphor-icons/react'
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -21,7 +22,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href={`/${getToolsSpaPath(DEFAULT_TOOL_ID)}`}>
+              <WorkspaceLink href={`/${getToolsSpaPath(DEFAULT_TOOL_ID)}`}>
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <ToolboxIcon />
                 </div>
@@ -29,7 +30,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span className="truncate font-medium">QHelper</span>
                   <span className="truncate text-xs">Developer Tools</span>
                 </div>
-              </a>
+              </WorkspaceLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

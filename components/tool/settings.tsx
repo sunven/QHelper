@@ -6,6 +6,7 @@ import {
   TranslateIcon,
 } from '@phosphor-icons/react'
 import { useId } from 'react'
+import { LocalDataManager } from '@/components/tool/LocalDataManager'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -354,6 +355,7 @@ export function SettingsPage() {
           {syncNotice}
         </p>
       ) : null}
+      <LocalDataManager />
     </article>
   )
 }
