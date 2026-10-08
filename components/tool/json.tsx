@@ -1,22 +1,21 @@
 import {
-  AlertCircle,
   ArrowRightLeft,
-  Check,
   Clock,
   Download,
   FileJson,
   FileWarning,
   Minus,
-  Plus,
   Save,
   Sparkles,
   Trash2,
-  X,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import ReactJsonViewModule from 'react-json-view'
 import { ToolHistoryList } from '@/components/tool/ToolHistoryList'
-import { useCurrentToolSession, useSessionState } from '@/components/tool/ToolSessionContext'
+import {
+  useCurrentToolSession,
+  useSessionState,
+} from '@/components/tool/ToolSessionContext'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -26,14 +25,12 @@ import {
   useKeyboardShortcuts,
 } from '@/hooks/useKeyboardShortcuts'
 import { useToolHistory } from '@/hooks/useToolHistory'
-import {
-  type DiffChange,
-  type DiffResult,
-  jsonDiff,
-} from '@/lib/utils/jsonDiff'
+import { JsonDiffPanel } from './JsonDiffPanel'
 
 // The UMD package can retain its default wrapper in production builds.
-const ReactJsonView = (ReactJsonViewModule as unknown as { default?: typeof ReactJsonViewModule }).default ?? ReactJsonViewModule
+const ReactJsonView =
+  (ReactJsonViewModule as unknown as { default?: typeof ReactJsonViewModule })
+    .default ?? ReactJsonViewModule
 
 // 文件大小阈值
 const SIZE_THRESHOLDS = {
@@ -73,7 +70,10 @@ export function JsonTool() {
   const session = useCurrentToolSession()
   const [jsoncon, setJsoncon] = useSessionState('jsoncon', '')
   const [newjsoncon, setNewjsoncon] = useSessionState('newjsoncon', '')
-  const [baseview, setBaseview] = useSessionState<'formatter' | 'diff'>('baseview', 'formatter')
+  const [baseview, setBaseview] = useSessionState<'formatter' | 'diff'>(
+    'baseview',
+    'formatter',
+  )
   const [view, setView] = useState<'code' | 'error' | 'empty' | 'compress'>(
     'empty',
   )
@@ -84,10 +84,6 @@ export function JsonTool() {
   const [historyName, setHistoryName] = useState('')
   const [isExportTxtShow, setIsExportTxtShow] = useState(false)
   const [exTxtName, setExTxtName] = useState('')
-
-  // Diff 相关状态
-  const [diffResult, setDiffResult] = useState<DiffResult | null>(null)
-  const [diffError, setDiffError] = useState('')
 
   // 性能优化相关状态
   const [processingTime, setProcessingTime] = useState<number>(0)
@@ -210,7 +206,9 @@ export function JsonTool() {
         ctrlKey: true,
         metaKey: true,
         description: '执行格式化',
-        action: beauty,
+        action: () => {
+          if (baseview === 'formatter') beauty()
+        },
       },
       {
         key: 's',
@@ -236,99 +234,11 @@ export function JsonTool() {
         action: baseViewToFormatter,
       },
     ],
-    [jsoncon, clearAll, beauty, baseViewToDiff, baseViewToFormatter],
+    [jsoncon, baseview, clearAll, beauty, baseViewToDiff, baseViewToFormatter],
   )
 
   // 使用键盘快捷键 Hook
   useKeyboardShortcuts({ shortcuts, isEnabled: true })
-
-  // Diff 功能
-  function diffTwo() {
-    setDiffError('')
-    setDiffResult(null)
-
-    if (!jsoncon.trim() || !newjsoncon.trim()) {
-      setDiffError('请输入两个 JSON 内容进行对比')
-      return
-    }
-
-    try {
-      const result = jsonDiff(jsoncon, newjsoncon)
-      setDiffResult(result)
-    } catch (e) {
-      setDiffError(`Diff 失败：${e instanceof Error ? e.message : String(e)}`)
-    }
-  }
-
-  // 渲染差异变更项
-  function renderDiffChange(change: DiffChange) {
-    const typeConfig = {
-      added: {
-        icon: Plus,
-        className:
-          'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20',
-        label: '添加',
-      },
-      removed: {
-        icon: Minus,
-        className:
-          'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20',
-        label: '删除',
-      },
-      modified: {
-        icon: AlertCircle,
-        className:
-          'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20',
-        label: '修改',
-      },
-      unchanged: {
-        icon: Check,
-        className:
-          'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/20',
-        label: '未变化',
-      },
-    }
-
-    const config = typeConfig[change.type]
-    const Icon = config.icon
-
-    return (
-      <div
-        key={change.path}
-        className={`p-3 rounded-none ${config.className} mb-2`}
-      >
-        <div className="flex items-start gap-2">
-          <Icon className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium text-sm">{config.label}</span>
-              <code className="text-xs bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded-none">
-                {change.path || '(根)'}
-              </code>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-              {change.oldValue !== undefined && (
-                <div>
-                  <span className="opacity-70">旧值:</span>
-                  <pre className="mt-1 whitespace-pre-wrap break-all">
-                    {JSON.stringify(change.oldValue, null, 2)}
-                  </pre>
-                </div>
-              )}
-              {change.newValue !== undefined && (
-                <div>
-                  <span className="opacity-70">新值:</span>
-                  <pre className="mt-1 whitespace-pre-wrap break-all">
-                    {JSON.stringify(change.newValue, null, 2)}
-                  </pre>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   // 保存历史记录
   function saveHistory() {
@@ -476,157 +386,82 @@ export function JsonTool() {
               </Button>
             </>
           )}
-
-          {baseview === 'diff' && (
-            <>
-              <div className="w-px h-6 bg-border mx-2" />
-              <Button
-                variant="default"
-                size="sm"
-                onClick={diffTwo}
-                className="gap-1.5"
-              >
-                <ArrowRightLeft className="w-4 h-4" />
-                执行 Diff
-              </Button>
-            </>
-          )}
         </div>
 
         {/* 主内容区 */}
-        <div className="flex-1 flex overflow-hidden">
-          {/* 左侧输入 */}
-          <div
-            className={`flex-1 ${
-              baseview === 'diff' ? (diffResult ? 'w-1/3' : 'w-1/2') : 'w-full'
-            } border-r`}
-          >
-            <Textarea
-              value={jsoncon}
-              onChange={(e) => setJsoncon(e.target.value)}
-              placeholder="请输入 JSON 字符串"
-              data-testid="json-input"
-              className="w-full h-full border-0 rounded-none resize-none font-mono text-sm"
-            />
-          </div>
+        {baseview === 'diff' ? (
+          <JsonDiffPanel
+            original={jsoncon}
+            modified={newjsoncon}
+            onOriginalChange={setJsoncon}
+            onModifiedChange={setNewjsoncon}
+          />
+        ) : (
+          <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 border-r">
+              <Textarea
+                value={jsoncon}
+                onChange={(e) => setJsoncon(e.target.value)}
+                placeholder="请输入 JSON 字符串"
+                data-testid="json-input"
+                className="w-full h-full border-0 rounded-none resize-none font-mono text-sm"
+              />
+            </div>
 
-          {/* Diff 模式的第二个输入或结果展示 */}
-          {baseview === 'diff' &&
-            (diffResult ? (
-              /* Diff 结果展示 */
-              <div className="flex-1 overflow-auto">
-                <div className="p-2.5">
-                  <div className="mb-2 flex items-center justify-between">
-                    <h3 className="text-sm font-semibold">
-                      Diff 结果
-                      {diffResult.isModified && (
-                        <span className="ml-2 text-xs font-normal text-muted-foreground">
-                          ({diffResult.changes.length} 处变更)
-                        </span>
-                      )}
-                    </h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setDiffResult(null)}
-                      className="gap-1.5"
-                    >
-                      <X className="w-4 h-4" />
-                      清除
-                    </Button>
-                  </div>
-
-                  {diffError && (
-                    <div className="mb-2 rounded-none bg-destructive/10 p-2.5 text-sm text-destructive">
-                      {diffError}
-                    </div>
-                  )}
-
-                  {!diffResult.isModified ? (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      <Check className="mx-auto mb-1 h-8 w-8 opacity-50" />
-                      <p>两个 JSON 完全相同，没有发现差异</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {diffResult.changes.map(renderDiffChange)}
-                    </div>
+            {/* 右侧结果 */}
+            <div className="flex-1 overflow-auto">
+              {isProcessing && (
+                <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+                  <div className="animate-spin rounded-none h-8 w-8 border-b-2 border-current mb-4" />
+                  <p className="text-sm">处理中...</p>
+                  {inputSize > SIZE_THRESHOLDS.MEDIUM && (
+                    <p className="text-xs mt-2">大文件处理可能需要较长时间</p>
                   )}
                 </div>
-              </div>
-            ) : (
-              /* 第二个 JSON 输入 */
-              <div className="w-1/2">
+              )}
+
+              {!isProcessing && view === 'code' && jsonhtml && (
+                <div className="p-2.5">
+                  <ReactJsonView
+                    src={jsonhtml}
+                    theme="monokai"
+                    enableClipboard
+                    shouldCollapse={(field) => {
+                      // 对于大型对象，默认折叠以提高性能
+                      if (inputSize > SIZE_THRESHOLDS.MEDIUM) {
+                        return typeof field !== 'string'
+                      }
+                      return false
+                    }}
+                    displayObjectSize={inputSize <= SIZE_THRESHOLDS.LARGE}
+                    displayDataTypes={inputSize <= SIZE_THRESHOLDS.LARGE}
+                  />
+                </div>
+              )}
+
+              {view === 'empty' && (
+                <div className="p-4 text-center text-sm text-muted-foreground">
+                  <FileJson className="mx-auto mb-1 h-8 w-8 opacity-50" />
+                  <p>请输入 JSON 字符串</p>
+                </div>
+              )}
+
+              {view === 'compress' && (
                 <Textarea
-                  value={newjsoncon}
-                  onChange={(e) => setNewjsoncon(e.target.value)}
-                  placeholder="请输入新的 JSON 字符串用于对比"
-                  className="w-full h-full border-0 rounded-none resize-none font-mono text-sm"
+                  value={compressStr}
+                  readOnly
+                  className="w-full h-full border-0 rounded-none resize-none font-mono text-sm bg-muted/30"
                 />
-              </div>
-            ))}
+              )}
 
-          {/* 右侧结果 */}
-          {baseview !== 'diff' && (
-            <div className="flex-1 overflow-auto">
-              {baseview === 'formatter' && (
-                <>
-                  {isProcessing && (
-                    <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
-                      <div className="animate-spin rounded-none h-8 w-8 border-b-2 border-current mb-4" />
-                      <p className="text-sm">处理中...</p>
-                      {inputSize > SIZE_THRESHOLDS.MEDIUM && (
-                        <p className="text-xs mt-2">
-                          大文件处理可能需要较长时间
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {!isProcessing && view === 'code' && jsonhtml && (
-                    <div className="p-2.5">
-                      <ReactJsonView
-                        src={jsonhtml}
-                        theme="monokai"
-                        enableClipboard
-                        shouldCollapse={(field) => {
-                          // 对于大型对象，默认折叠以提高性能
-                          if (inputSize > SIZE_THRESHOLDS.MEDIUM) {
-                            return typeof field !== 'string'
-                          }
-                          return false
-                        }}
-                        displayObjectSize={inputSize <= SIZE_THRESHOLDS.LARGE}
-                        displayDataTypes={inputSize <= SIZE_THRESHOLDS.LARGE}
-                      />
-                    </div>
-                  )}
-
-                  {view === 'empty' && (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      <FileJson className="mx-auto mb-1 h-8 w-8 opacity-50" />
-                      <p>请输入 JSON 字符串</p>
-                    </div>
-                  )}
-
-                  {view === 'compress' && (
-                    <Textarea
-                      value={compressStr}
-                      readOnly
-                      className="w-full h-full border-0 rounded-none resize-none font-mono text-sm bg-muted/30"
-                    />
-                  )}
-
-                  {view === 'error' && (
-                    <div className="whitespace-pre-wrap p-2.5 font-mono text-sm text-destructive">
-                      {error}
-                    </div>
-                  )}
-                </>
+              {view === 'error' && (
+                <div className="whitespace-pre-wrap p-2.5 font-mono text-sm text-destructive">
+                  {error}
+                </div>
               )}
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       <ToolHistoryList
