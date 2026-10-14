@@ -1,22 +1,24 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Copy, Check } from 'lucide-react';
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Copy, Check } from 'lucide-react'
 
 interface CopyButtonProps {
   /** 要复制的内容 */
-  content: string;
+  content: string
   /** 按钮标签 */
-  label?: string;
+  label?: string
   /** 复制成功后显示的时长（毫秒） */
-  successDuration?: number;
+  successDuration?: number
   /** 按钮变体 */
-  variant?: 'default' | 'outline' | 'ghost' | 'destructive';
+  variant?: 'default' | 'outline' | 'ghost' | 'destructive'
   /** 按钮大小 */
-  size?: 'default' | 'sm' | 'lg' | 'icon';
+  size?: 'default' | 'sm' | 'lg' | 'icon'
   /** 额外的类名 */
-  className?: string;
+  className?: string
   /** 复制成功回调 */
-  onCopy?: () => void;
+  onCopy?: () => void
+  /** 复制失败时在按钮下方显示错误提示 */
+  showFailureHint?: boolean
 }
 
 /**
@@ -38,26 +40,30 @@ export function CopyButton({
   size = 'default',
   className = '',
   onCopy,
+  showFailureHint = false,
 }: CopyButtonProps) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false)
+  const [failed, setFailed] = useState(false)
 
   async function handleCopy() {
-    if (!content) return;
+    if (!content) return
 
     try {
-      await navigator.clipboard.writeText(content);
-      setCopied(true);
-      onCopy?.();
+      await navigator.clipboard.writeText(content)
+      setCopied(true)
+      setFailed(false)
+      onCopy?.()
 
       setTimeout(() => {
-        setCopied(false);
-      }, successDuration);
+        setCopied(false)
+      }, successDuration)
     } catch (error) {
-      console.error('复制失败:', error);
+      console.error('复制失败:', error)
+      if (showFailureHint) setFailed(true)
     }
   }
 
-  return (
+  const button = (
     <Button
       variant={variant}
       size={size}
@@ -77,5 +83,18 @@ export function CopyButton({
         </>
       )}
     </Button>
-  );
+  )
+
+  if (!showFailureHint) return button
+
+  return (
+    <div className="shrink-0">
+      {button}
+      {failed && (
+        <p role="alert" className="mt-1 text-xs text-destructive">
+          复制失败，请重试
+        </p>
+      )}
+    </div>
+  )
 }

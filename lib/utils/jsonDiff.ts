@@ -139,6 +139,16 @@ function compare(
   return changes
 }
 
+// 字符串解析失败时按普通文本参与比较（历史契约，调用方应自行校验）
+function parse(value: unknown): unknown {
+  if (typeof value !== 'string') return value
+  try {
+    return JSON.parse(value)
+  } catch {
+    return value
+  }
+}
+
 /**
  * 比较两个 JSON 对象的差异
  *
@@ -159,30 +169,16 @@ function compare(
  * ```
  */
 export function jsonDiff(oldJson: unknown, newJson: unknown): DiffResult {
-  let oldValue: unknown
-  let newValue: unknown
+  return diffValues(parse(oldJson), parse(newJson))
+}
 
-  // 如果是字符串，尝试解析为 JSON
-  if (typeof oldJson === 'string') {
-    try {
-      oldValue = JSON.parse(oldJson)
-    } catch {
-      oldValue = oldJson
-    }
-  } else {
-    oldValue = oldJson
-  }
-
-  if (typeof newJson === 'string') {
-    try {
-      newValue = JSON.parse(newJson)
-    } catch {
-      newValue = newJson
-    }
-  } else {
-    newValue = newJson
-  }
-
+/**
+ * 比较两个已解析 JSON 值的差异
+ *
+ * @param oldValue - 解析后的旧值
+ * @param newValue - 解析后的新值
+ */
+export function diffValues(oldValue: unknown, newValue: unknown): DiffResult {
   const changes: DiffChange[] = []
   compare(oldValue, newValue, '', changes)
 
@@ -209,13 +205,21 @@ export function formatDiffChange(change: DiffChange): string {
   return `[${DIFF_LABELS[change.type]}] ${pathStr}${types}: ${before} → ${after}`
 }
 
+/** 报告头，标识差异的方向。 */
+export const DIFF_REPORT_HEADER = '基准响应 → 待比较响应'
+
+/** 将单条差异转为报告行（含报告头，便于单独复制）。 */
+export function formatChangeReport(change: DiffChange): string {
+  return `${DIFF_REPORT_HEADER}\n${formatDiffChange(change)}`
+}
+
 /** 将差异结果转换为可复制的文本报告。 */
 export function generateDiffReport(diff: DiffResult): string {
   const summary = diff.isModified
     ? `发现 ${diff.changes.length} 处差异`
     : '没有发现差异'
   return [
-    '基准响应 → 待比较响应（数组按位置比较）',
+    `${DIFF_REPORT_HEADER}（数组按位置比较）`,
     summary,
     ...diff.changes.map(formatDiffChange),
   ].join('\n')
