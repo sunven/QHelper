@@ -17,6 +17,7 @@ const GLOBAL_HEADER_TARGET_SELECTORS = [
   '.AppHeader-actions',
   '.AppHeader-globalBar-end',
   'header [data-testid="app-header-actions"]',
+  'header [data-testid="top-nav-right"]',
   'header .Header-item:last-child',
 ];
 const LOGGED_OUT_HEADER_LINK_SELECTORS = [
@@ -24,8 +25,11 @@ const LOGGED_OUT_HEADER_LINK_SELECTORS = [
   'header .HeaderMenu-link--sign-up',
 ];
 const HEADER_SEARCH_SELECTORS = [
+  'header [data-testid="top-nav-center"] [class*="searchButtonGroup"]',
   'header [data-testid="top-nav-center"] button[aria-label^="Search or jump"]',
+  'header [data-testid="top-nav-center"] button[aria-label^="Open quick search"]',
   'header [data-testid="top-nav-center"] [class*="Search-module__searchButtonGroup"]',
+  'header button[aria-label^="Search or jump"]',
   'header .AppHeader-search',
   'header .AppHeader-search qbsearch-input',
   'header qbsearch-input.search-input',
@@ -34,6 +38,7 @@ const HEADER_SEARCH_SELECTORS = [
   'header .search-input-container',
 ];
 const PREFERRED_ACTION_LIST_SELECTORS = [
+  '[data-testid="repo-header-actions"]',
   '#repository-details-container .pagehead-actions',
   '#repository-container-header .pagehead-actions',
   '.pagehead-actions',
@@ -41,7 +46,7 @@ const PREFERRED_ACTION_LIST_SELECTORS = [
 const HEADER_FALLBACK_SELECTORS = [
   '#repository-details-container',
   '#repository-container-header',
-  'main [itemprop="name"]',
+  '#repo-title-component',
 ];
 const PREVIOUS_VSCODE_HEADER_SELECTORS = [
   '#repository-details-container',
@@ -97,7 +102,11 @@ export function removePreviousVscodeButtons(doc: Document): void {
       }
 
       const parentListItem = anchor.closest('li');
-      if (parentListItem?.parentElement?.matches('.pagehead-actions')) {
+      if (
+        parentListItem?.parentElement?.matches(
+          '.pagehead-actions, [data-testid="repo-header-actions"]',
+        )
+      ) {
         parentListItem.remove();
         return;
       }

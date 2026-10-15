@@ -33,6 +33,70 @@ function renderGitHubHeader(hasActionList = true): void {
   `;
 }
 
+function renderGitHubNewRepositoryHeader(hasActionList = true): void {
+  document.head.innerHTML = `
+    <meta
+      name="octolytics-dimension-repository_nwo"
+      content="Yeachan-Heo/oh-my-codex"
+    />
+  `;
+  document.body.innerHTML = `
+    <div class="tmp-pt-3 tmp-pb-3 border-bottom color-border-muted">
+      <div class="d-flex flex-wrap flex-items-center gapx-3 gapy-1">
+        <div class="TitleWrapper__4f5JPQ">
+          <div id="repo-title-component">
+            <div class="d-flex flex-items-center f3 text-normal min-width-0">
+              <img alt="Yeachan-Heo" width="24" height="24" />
+              <div itemProp="name" data-testid="repo-name-wrapper" class="mr-2 prc-Truncate-Truncate-2G1eo">
+                <strong><a href="/Yeachan-Heo/oh-my-codex">oh-my-codex</a></strong>
+              </div>
+              <span data-testid="repo-visibility-label">Public</span>
+            </div>
+          </div>
+        </div>
+        ${
+          hasActionList
+            ? `
+          <div>
+            <ul data-testid="repo-header-actions" class="list-style-none d-flex flex-shrink-0 flex-wrap flex-items-center gap-2 py-1">
+              <li><a data-testid="notifications-sign-in-button">Notifications</a></li>
+              <li><a data-testid="fork-button">Fork</a></li>
+              <li><a data-testid="star-button">Star</a></li>
+            </ul>
+          </div>
+        `
+            : ''
+        }
+      </div>
+    </div>
+  `;
+}
+
+function renderGitHubNewGlobalNav({ withSearch = true } = {}): void {
+  document.body.insertAdjacentHTML(
+    'afterbegin',
+    `
+    <header class="GlobalNav appHeader__6OmbvL">
+      <div data-testid="top-nav-center" class="center__f1ujjY">
+        <nav aria-label="Breadcrumbs">anomalyco / opencode</nav>
+        ${
+          withSearch
+            ? `
+          <div class="searchButtonGroup__lia0l0">
+            <button type="button" aria-label="Open quick search dialog, type / to search">Type / to search</button>
+          </div>
+        `
+            : ''
+        }
+      </div>
+      <div data-testid="top-nav-right" class="right__5m36ST">
+        <button type="button" id="create-menu">Create</button>
+      </div>
+    </header>
+  `,
+  );
+}
+
 function renderGitHubGlobalHeader(pathname = '/Yeachan-Heo/oh-my-codex/blob/main/README.md'): void {
   const [, owner, repo] = pathname.split('/');
   document.head.innerHTML = `
@@ -356,6 +420,43 @@ describe('syncZreadButton', () => {
     expect(document.querySelector('.pagehead-actions > [data-qhelper-zread-wrapper="true"]')).toBeNull();
   });
 
+  it('renders the Zread button before the quick search group in the new global navigation', () => {
+    renderGitHubNewRepositoryHeader();
+    renderGitHubNewGlobalNav();
+
+    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
+
+    const wrapper = document.querySelector('[data-qhelper-zread-wrapper="true"]');
+    expect(wrapper?.parentElement).toBe(document.querySelector('[data-testid="top-nav-center"]'));
+    expect(wrapper?.nextElementSibling).toBe(document.querySelector('.searchButtonGroup__lia0l0'));
+    expect(document.querySelector('[data-testid="repo-header-actions"] > [data-qhelper-zread-wrapper="true"]')).toBeNull();
+  });
+
+  it('renders the Zread button in the new repository action list without a global search', () => {
+    renderGitHubNewRepositoryHeader();
+
+    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
+
+    const actionList = document.querySelector('[data-testid="repo-header-actions"]');
+    const wrapper = document.querySelector('[data-testid="repo-header-actions"] > li[data-qhelper-zread-wrapper="true"]');
+    expect(wrapper).not.toBeNull();
+    expect(actionList?.firstElementChild).toBe(wrapper);
+    expect(document.querySelector('#repo-title-component [data-qhelper-zread-wrapper="true"]')).toBeNull();
+  });
+
+  it('renders the Zread button in the new global navigation right cluster before search mounts', () => {
+    renderGitHubNewRepositoryHeader();
+    renderGitHubNewGlobalNav({ withSearch: false });
+
+    expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
+
+    const rightCluster = document.querySelector('[data-testid="top-nav-right"]');
+    expect(rightCluster?.firstElementChild).toBe(
+      document.querySelector('[data-qhelper-zread-wrapper="true"]'),
+    );
+    expect(document.querySelector('[data-testid="repo-header-actions"] > [data-qhelper-zread-wrapper="true"]')).toBeNull();
+  });
+
   it('does not render on non-repository two-segment paths', () => {
     renderGitHubHeader();
     document.head.innerHTML = '';
@@ -462,17 +563,24 @@ describe('syncZreadButton', () => {
     expect(document.querySelector('.pagehead-actions > li[data-qhelper-zread-wrapper="true"]')).not.toBeNull();
   });
 
-  it('falls back to repository name headers when action lists and repository containers are unavailable', () => {
+  it('falls back to the repository title component when action lists and repository containers are unavailable', () => {
     renderRepositoryMeta();
     document.body.innerHTML = `
       <main>
-        <strong itemprop="name">oh-my-codex</strong>
+        <div id="repo-title-component">
+          <div class="d-flex flex-items-center">
+            <div itemprop="name"><strong><a href="/Yeachan-Heo/oh-my-codex">oh-my-codex</a></strong></div>
+          </div>
+        </div>
       </main>
     `;
 
     expect(syncZreadButton(document, '/Yeachan-Heo/oh-my-codex')).toBe(true);
 
-    expect(document.querySelector('[itemprop="name"] > div[data-qhelper-zread-wrapper="true"]')).not.toBeNull();
+    expect(
+      document.querySelector('#repo-title-component > div[data-qhelper-zread-wrapper="true"]'),
+    ).not.toBeNull();
+    expect(document.querySelector('[itemprop="name"] [data-qhelper-zread-wrapper="true"]')).toBeNull();
   });
 
   it('returns false when no supported GitHub insertion target exists', () => {
@@ -638,6 +746,27 @@ describe('installGitHubZreadButton', () => {
     const wrapper = document.querySelector('[data-qhelper-zread-wrapper="true"]');
     expect(wrapper?.closest('header')).not.toBeNull();
     expect(document.querySelector('.pagehead-actions > [data-qhelper-zread-wrapper="true"]')).toBeNull();
+    expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
+  });
+
+  it('moves the injected Zread button into the new global navigation when the quick search mounts late', () => {
+    renderGitHubNewRepositoryHeader();
+    const mutationObserver = stubMutationObserver();
+    const fakeWindow = createFakeWindow();
+
+    installGitHubZreadButton(fakeWindow, document);
+    expect(
+      document.querySelector('[data-testid="repo-header-actions"] > [data-qhelper-zread-wrapper="true"]'),
+    ).not.toBeNull();
+
+    renderGitHubNewGlobalNav();
+    mutationObserver.notify();
+
+    const wrapper = document.querySelector('[data-qhelper-zread-wrapper="true"]');
+    expect(wrapper?.nextElementSibling).toBe(document.querySelector('.searchButtonGroup__lia0l0'));
+    expect(
+      document.querySelector('[data-testid="repo-header-actions"] > [data-qhelper-zread-wrapper="true"]'),
+    ).toBeNull();
     expect(document.querySelectorAll(`#${ZREAD_BUTTON_ID}`)).toHaveLength(1);
   });
 
