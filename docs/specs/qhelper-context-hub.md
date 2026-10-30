@@ -6,7 +6,7 @@ The P1 extension supersedes the MVP's navigation-only handoff below. The origina
 
 - Popup and tools sidebar support name, description, keyword and tool-ID search, keyboard navigation and shared favorites. Favorites use the existing synced-setting fallback. The existing catalog remains available when search is empty.
 - JSON and Base64 recommendations pass the exact raw input into a temporary session in the same SPA tab. Input never enters a URL, browser history state, local storage or session storage automatically. Other recommendations keep ordinary navigation.
-- Temporary mode covers JSON, string conversion, timestamp, QR code, Cron, TOML and JSON Schema. Temporary sessions survive navigation among tools and settings. Ending, reloading or closing discards unsaved temporary content; the ordinary draft stays separate.
+- Temporary mode covers JSON, string conversion, timestamp and QR code. Temporary sessions survive navigation among tools and settings. Ending, reloading or closing discards unsaved temporary content; the ordinary draft stays separate.
 - “保存一份” saves a separate versioned local snapshot, up to 50 per tool, without changing edit mode or overwriting the ordinary draft. Snapshots can be restored into a temporary session or deleted.
 - Settings data management reports approximate content size and record counts. Confirmed per-tool cleanup removes only registered content keys in both local backends. It preserves credentials, preferences, favorites, captured requests, browser bookmarks, downloads and disk files.
 - Per-tool generation guards and Web Locks coordinate cleanup and pending writes across tabs. Cleanup resets ordinary drafts even in hidden tool activities; active temporary sessions remain in memory until ended.
@@ -16,7 +16,7 @@ The P1 extension supersedes the MVP's navigation-only handoff below. The origina
 
 QHelper Context Hub turns QHelper from a list of standalone tools into a context-aware developer input hub. The first version helps general developers paste or route structured development data into QHelper, lets QHelper detect what the data likely is, and recommends the next useful action.
 
-The primary user is a developer working inside the browser who frequently handles JSON, URLs, encoded strings, timestamps, JWTs, Cron expressions, and similar structured snippets. The product goal is high-frequency use: the user should remember "send it to QHelper" instead of remembering which exact tool to open.
+The primary user is a developer working inside the browser who frequently handles JSON, URLs, encoded strings, timestamps, JWTs, and similar structured snippets. The product goal is high-frequency use: the user should remember "send it to QHelper" instead of remembering which exact tool to open.
 
 The MVP should:
 
@@ -71,7 +71,6 @@ export type ContextInputKind =
   | 'base64'
   | 'timestamp'
   | 'jwt'
-  | 'cron'
   | 'unknown'
 
 export type ContextRecommendation = {
@@ -131,7 +130,7 @@ Minimum pre-handoff verification for implementation:
 ## Success Criteria
 
 - A developer can open Context Hub from the tools SPA and paste structured data into one primary input.
-- The MVP detects at least these input kinds locally: JSON, URL, Base64, Unix timestamp, JWT, and Cron.
+- The MVP detects these input kinds locally: JSON, URL, Base64, Unix timestamp, and JWT. Cron expressions use the unknown-input fallback.
 - Each detected kind shows one or more useful next actions that open or map to existing QHelper tools.
 - Unknown input gives a clear fallback instead of a false confident recommendation.
 - Context Hub does not save pasted content by default.
@@ -166,15 +165,13 @@ Detection order should prefer more specific formats before generic ones:
 2. JSON: valid JSON object or array.
 3. URL: `http:`, `https:`, or URL-like input accepted by `new URL`.
 4. Unix timestamp: 10-digit seconds or 13-digit milliseconds with a plausible date range.
-5. Cron: five-field expression accepted by `cron-parser`.
-6. Base64: decodes to UTF-8 text and is not already classified as JWT.
-7. Unknown: no confident match.
+5. Base64: decodes to UTF-8 text and is not already classified as JWT.
+6. Unknown: no confident match, including Cron expressions after the Cron tool was removed.
 
 Risks:
 
 - Base64 and JWT overlap. Mitigation: detect JWT first.
 - Numeric strings can be IDs, not timestamps. Mitigation: require 10 or 13 digits and plausible date range.
-- Cron expressions can look like arbitrary short text. Mitigation: require exactly five fields for MVP and use `cron-parser` validation.
 
 Verification checkpoint:
 
@@ -191,7 +188,6 @@ Recommendation examples:
 - URL -> show detected facts with a neutral fallback; there is no dedicated URL tool.
 - Base64 -> open string encode/decode.
 - Unix timestamp -> open timestamp converter.
-- Cron -> open Cron parser.
 - JWT -> show local header/payload preview in Context Hub and offer string decode/JSON tool actions.
 - Unknown -> show a neutral fallback and suggest manual tool search/navigation.
 
@@ -296,7 +292,7 @@ Parallelizable after Phase 1:
   - Files: `lib/context-hub/types.ts`, `lib/context-hub/jwt.ts`, `lib/context-hub/jwt.test.ts`
 
 - [x] Task 2: Implement structured input detection
-  - Acceptance: `detectContextInput` classifies JWT, JSON, URL, Unix timestamp, Cron, Base64, and unknown according to the confirmed detection order.
+  - Acceptance: `detectContextInput` classifies JWT, JSON, URL, Unix timestamp, Base64, and unknown according to the confirmed detection order; Cron expressions remain unknown.
   - Verify: `pnpm test:run -- lib/context-hub/detect.test.ts`
   - Files: `lib/context-hub/detect.ts`, `lib/context-hub/detect.test.ts`, `lib/context-hub/types.ts`
 

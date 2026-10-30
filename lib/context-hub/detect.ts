@@ -1,4 +1,3 @@
-import { CronExpressionParser } from 'cron-parser'
 import { parseJwt } from './jwt'
 import type { ContextDetectionResult } from './types'
 
@@ -114,26 +113,6 @@ function detectTimestamp(input: string): ContextDetectionResult | null {
   }
 }
 
-function detectCron(input: string): ContextDetectionResult | null {
-  if (input.trim().split(/\s+/).length !== 5) {
-    return null
-  }
-
-  try {
-    CronExpressionParser.parse(input)
-    return {
-      kind: 'cron',
-      confidence: 'high',
-      summary: 'Five-field Cron expression.',
-      facts: [
-        { label: 'Fields', value: '5' },
-      ],
-    }
-  } catch {
-    return null
-  }
-}
-
 function detectBase64(input: string): ContextDetectionResult | null {
   if (
     input.length < 8 ||
@@ -176,7 +155,6 @@ export function detectContextInput(value: string): ContextDetectionResult {
     detectJson(input) ??
     detectUrl(input) ??
     detectTimestamp(input) ??
-    detectCron(input) ??
     detectBase64(input) ??
     UNKNOWN_RESULT
   )

@@ -6,8 +6,8 @@ import { getToolStateStorageKey } from '@/lib/chrome/local-persisted-data'
 type Snapshot = { value: string }
 
 describe('useToolHistory', () => {
-  const toolId = 'cron'
-  const storageKey = getToolStateStorageKey(toolId, 'cron-state')
+  const toolId = 'convert'
+  const storageKey = getToolStateStorageKey(toolId, 'history')
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -24,7 +24,7 @@ describe('useToolHistory', () => {
     )
 
     const { result } = renderHook(() =>
-      useToolHistory<Snapshot>(toolId, { max: 10, key: 'cron-state' }),
+      useToolHistory<Snapshot>(toolId, { max: 10, key: 'history' }),
     )
 
     expect(result.current.loading).toBe(true)
@@ -40,7 +40,7 @@ describe('useToolHistory', () => {
     )
 
     const { result } = renderHook(() =>
-      useToolHistory<Snapshot>(toolId, { key: 'cron-state' }),
+      useToolHistory<Snapshot>(toolId, { key: 'history' }),
     )
 
     await waitFor(() => expect(result.current.loading).toBe(false))

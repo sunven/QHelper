@@ -53,7 +53,6 @@ describe('tool-catalog', () => {
       expect(parseToolRouteParam(`${id}.html`)).toBeNull()
       expect(getToolsSpaAliases().map((alias) => alias.id)).not.toContain(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(22)
     expect(
       TOOL_CATEGORIES.map((category) => String(category.key)),
     ).not.toContain('web_format')
@@ -65,6 +64,29 @@ describe('tool-catalog', () => {
     )
     expect(isOrdinaryToolId(DEFAULT_TOOL_ID)).toBe(true)
     expect(isOrdinaryToolId('settings')).toBe(false)
+  })
+
+  it('excludes 数据格式 tools and category from tools, launches and generated aliases', () => {
+    const directory = getLaunchDirectory('popup-main')
+    const aliases = getToolsSpaAliases().map((alias) => alias.id)
+
+    for (const id of ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']) {
+      expect(isOrdinaryToolId(id)).toBe(false)
+      expect(getToolCatalogTool(id)).toBeUndefined()
+      expect(getLaunchEntry(id)).toBeUndefined()
+      expect(parseToolRouteParam(`${id}.html`)).toBeNull()
+      expect(getToolIdFromPathname(`/tools/${id}.html`)).toBeNull()
+      expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
+      expect(aliases).not.toContain(id)
+    }
+    expect(ORDINARY_TOOL_IDS).toHaveLength(17)
+    expect(Object.values(ToolCategory)).not.toContain('data_format')
+    expect(TOOL_CATEGORIES.map((category) => category.name)).not.toContain(
+      '数据格式',
+    )
+    expect(directory.groups.map((group) => group.name)).not.toContain(
+      '数据格式',
+    )
   })
 
   it('exposes catalog lookup for UI callers without using the registry directly', () => {
@@ -116,8 +138,8 @@ describe('tool-catalog', () => {
   })
 
   it('derives paths from tool ids', () => {
-    expect(getToolsSpaPath('jsonschema')).toBe('tools/jsonschema.html')
-    expect(getToolNavigationPath('jsonschema')).toBe('/tools/jsonschema.html')
+    expect(getToolsSpaPath('convert')).toBe('tools/convert.html')
+    expect(getToolNavigationPath('convert')).toBe('/tools/convert.html')
   })
 
   it('builds the popup main Launch Entry directory from the Tool Catalog', () => {
@@ -208,7 +230,7 @@ describe('tool catalog routing helpers', () => {
     expect(DEFAULT_TOOL_ID).toBe('json')
     expect(getToolsSpaPath('json')).toBe('tools/json.html')
     expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html')
-    expect(getToolRoutePath('jsonschema')).toBe('/jsonschema.html')
+    expect(getToolRoutePath('convert')).toBe('/convert.html')
     expect(getToolRoutePath('settings')).toBe('/settings.html')
   })
 

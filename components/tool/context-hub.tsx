@@ -31,7 +31,6 @@ const kindLabels: Record<ContextDetectionResult['kind'], string> = {
   base64: 'Base64',
   timestamp: '时间戳',
   jwt: 'JWT',
-  cron: 'Cron',
   unknown: '未知格式',
 }
 
@@ -132,7 +131,7 @@ export function ContextHub() {
             aria-label="Context input"
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="粘贴 JSON、URL、Base64、时间戳、JWT 或 Cron 表达式"
+            placeholder="粘贴 JSON、URL、Base64、时间戳或 JWT"
             className="min-h-[320px] resize-y font-mono text-sm xl:min-h-[calc(100vh-15rem)]"
           />
           <Alert>

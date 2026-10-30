@@ -159,45 +159,4 @@ export const tools = [
     icon: 'Hash',
     description: '生成并校验 Bcrypt 密码 Hash',
   },
-
-  {
-    id: 'cron',
-    name: 'Cron 解析器',
-    category: ToolCategory.DATA_FORMAT,
-    icon: 'Clock',
-    description: 'Cron 表达式解析、验证、计算运行时间',
-  },
-
-  // ===== 数据格式 =====
-  {
-    id: 'csv2json',
-    name: 'CSV 转 JSON',
-    category: ToolCategory.DATA_FORMAT,
-    icon: 'BracketsCurly',
-    description: 'CSV 格式转换为 JSON 格式',
-  },
-
-  {
-    id: 'yaml',
-    name: 'YAML 转换器',
-    category: ToolCategory.DATA_FORMAT,
-    icon: 'FileCode',
-    description: 'YAML 与 JSON 格式互转',
-  },
-
-  {
-    id: 'toml',
-    name: 'TOML 解析器',
-    category: ToolCategory.DATA_FORMAT,
-    icon: 'BracketsCurly',
-    description: 'TOML ↔ JSON 转换、验证',
-  },
-
-  {
-    id: 'jsonschema',
-    name: 'JSON Schema 验证器',
-    category: ToolCategory.DATA_FORMAT,
-    icon: 'ShieldCheck',
-    description: '使用 JSON Schema 验证 JSON 数据结构',
-  },
 ] as const satisfies readonly ToolMetadata[]

@@ -139,6 +139,24 @@ describe('ToolActivityOutlet', () => {
     expect(await screen.findByText('JSON Mock')).toBeVisible()
   })
 
+  it.each([
+    '/cron.html',
+    '/csv2json.html',
+    '/yaml.html',
+    '/toml.html',
+    '/jsonschema.html',
+  ])('redirects the removed 数据格式 route %s to JSON', async (path) => {
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/:toolId" element={<ToolActivityOutlet />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('JSON Mock')).toBeVisible()
+  })
+
   it('keeps React and DOM state when switching visited tools', async () => {
     render(
       <MemoryRouter initialEntries={['/json.html']}>

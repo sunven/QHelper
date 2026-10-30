@@ -8,7 +8,6 @@ export enum ToolCategory {
   ENCODING = 'encoding', // 编码转换
   IMAGE = 'image', // 图片工具
   SECURITY = 'security', // 安全与加密
-  DATA_FORMAT = 'data_format', // 数据格式
   AI = 'ai', // AI 工具
   OTHER = 'other', // 其他
 }

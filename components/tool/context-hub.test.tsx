@@ -99,4 +99,18 @@ describe('context-hub/ContextHub', () => {
     expect(chrome.storage.local.set).not.toHaveBeenCalled()
     expect(chrome.storage.sync.set).not.toHaveBeenCalled()
   })
+
+  it('shows the unknown fallback for Cron input without a removed tool link', () => {
+    render(<ContextHub />)
+
+    fireEvent.change(screen.getByRole('textbox', { name: 'Context input' }), {
+      target: { value: '*/5 * * * *' },
+    })
+
+    expect(screen.getAllByText('未知格式')[0]).toBeVisible()
+    expect(screen.getByText('浏览工具目录')).toBeVisible()
+    expect(
+      screen.queryByRole('link', { name: '打开 Cron 解析器' }),
+    ).not.toBeInTheDocument()
+  })
 })

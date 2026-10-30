@@ -17,7 +17,7 @@ function primeStoredHistory(
 }
 
 describe('createToolHistoryStore', () => {
-  const toolId = 'toml'
+  const toolId = 'convert'
   const storageKey = getToolStateStorageKey(toolId, 'history')
 
   beforeEach(() => {

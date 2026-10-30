@@ -45,16 +45,6 @@ const recommendationByKind: Record<
       kind: 'tool',
     },
   ],
-  cron: [
-    {
-      id: 'open-cron',
-      label: '打开 Cron 解析器',
-      description: '验证表达式并查看接下来的运行时间。',
-      toolId: 'cron',
-      confidence: 'high',
-      kind: 'tool',
-    },
-  ],
 }
 
 const jwtRecommendations: ContextRecommendation[] = [

@@ -103,7 +103,6 @@ export const TOOL_CATEGORY_LABELS: Record<ToolCategory, string> = {
   [ToolCategory.ENCODING]: '编码转换',
   [ToolCategory.IMAGE]: '图片工具',
   [ToolCategory.SECURITY]: '安全与加密',
-  [ToolCategory.DATA_FORMAT]: '数据格式',
   [ToolCategory.AI]: 'AI 工具',
   [ToolCategory.OTHER]: '其他',
 }
@@ -113,7 +112,6 @@ export const TOOL_CATEGORY_ORDER: ToolCategory[] = [
   ToolCategory.ENCODING,
   ToolCategory.IMAGE,
   ToolCategory.SECURITY,
-  ToolCategory.DATA_FORMAT,
   ToolCategory.AI,
   ToolCategory.OTHER,
 ]

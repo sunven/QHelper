@@ -4,7 +4,6 @@ export type ContextInputKind =
   | 'base64'
   | 'timestamp'
   | 'jwt'
-  | 'cron'
   | 'unknown'
 
 export type ContextDetectionConfidence = 'high' | 'medium' | 'low'

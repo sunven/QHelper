@@ -30,16 +30,40 @@ test('popup search and favorites are shared with the sidebar', async ({
   await expect(
     result.locator('..').getByRole('button', { name: /^取消收藏/ }),
   ).toHaveAttribute('aria-pressed', 'true')
-  await search.fill('toml')
+  await search.fill('convert')
   const newPage = context.waitForEvent('page')
   await search.press('Enter')
   const page = await newPage
-  await expect(page).toHaveURL(/\/tools\/toml\.html$/)
+  await expect(page).toHaveURL(/\/tools\/convert\.html$/)
   await expect(page.getByTestId('discovery-favorites-json')).toBeVisible()
   await popupPage.reload()
   await expect(popupPage.getByTestId('discovery-favorites-json')).toBeVisible()
   await page.getByRole('textbox', { name: '搜索工具' }).fill('no-such-tool')
   await expect(page.getByText('没有找到匹配的工具。')).toBeVisible()
+})
+
+test('removed 数据格式 tools are absent from discovery and Cron uses the Context Hub fallback', async ({
+  context,
+  extensionId,
+  popupPage,
+}) => {
+  const page = await openToolPage(context, extensionId, 'context-hub')
+  for (const view of [popupPage, page]) {
+    await expect(view.getByText('数据格式', { exact: true })).toHaveCount(0)
+    const search = view.getByRole('textbox', { name: '搜索工具' })
+    for (const id of ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']) {
+      await search.fill(id)
+      await expect(view.getByText('没有找到匹配的工具。')).toBeVisible()
+      await expect(view.getByTestId(`discovery-search-${id}`)).toHaveCount(0)
+    }
+    await search.press('Escape')
+  }
+
+  await page.getByRole('textbox', { name: 'Context input' }).fill('*/5 * * * *')
+  await expect(page.getByText('未知格式', { exact: true }).first()).toBeVisible()
+  await expect(page.getByText('浏览工具目录', { exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: '打开 Cron 解析器' })).toHaveCount(0)
+  await page.close()
 })
 
 for (const handoff of [
@@ -101,7 +125,7 @@ test('temporary edits survive navigation and snapshots leave the ordinary draft 
   await page.getByRole('button', { name: '开始临时处理' }).click()
   await expect(input).toHaveValue('')
   await input.fill('{"temporary":2}')
-  await selectTool(page, 'toml')
+  await selectTool(page, 'convert')
   await page.getByTestId('tool-settings-link').click()
   await expect(
     page.getByRole('region', { name: '本地数据', exact: true }),

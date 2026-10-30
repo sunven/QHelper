@@ -5,12 +5,9 @@ import { BcryptHashTool } from '@/components/tool/bcrypt-hash'
 import { ColorTransformTool } from '@/components/tool/colorTransform'
 import { ContextHub } from '@/components/tool/context-hub'
 import { ConvertTool } from '@/components/tool/convert'
-import { CronParser } from '@/components/tool/cron'
-import { CSVToJSON } from '@/components/tool/csv2json'
 import { DownloadsTool } from '@/components/tool/downloads'
 import { ImageBase64Tool } from '@/components/tool/imagebase64'
 import { JsonTool } from '@/components/tool/json'
-import { JsonSchemaValidator } from '@/components/tool/jsonschema'
 import { OcrTool } from '@/components/tool/ocr'
 import { PasswordGenerator } from '@/components/tool/password'
 import { PictureSplicingTool } from '@/components/tool/pictureSplicing'
@@ -18,11 +15,9 @@ import { QrCodeTool } from '@/components/tool/qrcode'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { TextDiffTool } from '@/components/tool/text-diff'
 import { TimestampTool } from '@/components/tool/timestamp'
-import { TomlParser } from '@/components/tool/toml'
 import { TransRadixTool } from '@/components/tool/trans-radix'
 import { UglifyTool } from '@/components/tool/uglify'
 import { UUIDGenerator } from '@/components/tool/uuid'
-import { YAMLConverter } from '@/components/tool/yaml'
 import {
   createOrdinaryToolRoutes,
   getToolCatalogTool,
@@ -44,11 +39,6 @@ const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   password: PasswordGenerator,
   'aes-gcm': AesGcmTool,
   'bcrypt-hash': BcryptHashTool,
-  cron: CronParser,
-  csv2json: CSVToJSON,
-  yaml: YAMLConverter,
-  toml: TomlParser,
-  jsonschema: JsonSchemaValidator,
   timestamp: TimestampTool,
   colorTransform: ColorTransformTool,
   downloads: DownloadsTool,

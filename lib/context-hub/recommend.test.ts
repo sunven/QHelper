@@ -17,7 +17,6 @@ describe('getContextRecommendations', () => {
     ['json', 'json'],
     ['base64', 'convert'],
     ['timestamp', 'timestamp'],
-    ['cron', 'cron'],
   ] as const)('routes %s input to the %s tool', (kind, toolId) => {
     expect(getContextRecommendations(result(kind))).toEqual(
       expect.arrayContaining([
@@ -75,7 +74,6 @@ describe('getContextRecommendations', () => {
       'base64',
       'timestamp',
       'jwt',
-      'cron',
       'unknown',
     ]
 

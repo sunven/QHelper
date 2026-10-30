@@ -28,4 +28,17 @@ describe('tool discovery', () => {
     expect(result.storageArea).toBe('local')
     expect(await favoriteTools.get()).toEqual({ ids: ['json', 'convert'] })
   })
+
+  it('excludes removed 数据格式 tools from search and existing favorites', () => {
+    const removedIds = ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']
+    const entries = getLaunchDirectory('popup-main').entries
+
+    for (const id of removedIds) {
+      expect(searchTools(entries, id)).toEqual([])
+    }
+    expect(normalizeToolIds(['json', ...removedIds, 'convert'])).toEqual([
+      'json',
+      'convert',
+    ])
+  })
 })

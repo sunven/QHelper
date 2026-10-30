@@ -14,13 +14,6 @@ const cases: [string, Record<string, unknown>, string][] = [
   ['convert', { srcText: 'cHJpdmF0ZQ==' }, 'cHJpdmF0ZQ=='],
   ['timestamp', { srcStamp: '1700000017' }, '1700000017'],
   ['qrcode', { text: 'private-qr-17' }, 'private-qr-17'],
-  ['cron', { state: { expression: '17 * * * *' } }, '17 * * * *'],
-  ['toml', { input: 'private = 17' }, 'private = 17'],
-  [
-    'jsonschema',
-    { state: { jsonData: '{"private":17}', jsonSchema: '{}' } },
-    '{"private":17}',
-  ],
 ]
 
 describe('temporary tool inputs', () => {

@@ -135,6 +135,37 @@ describe('tool content management', () => {
     ])
   })
 
+  it('leaves removed 数据格式 content untouched and excludes it from management', async () => {
+    const removedIds = ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']
+    const previousContent = {
+      'tool_cron_cron-state': [{ expression: '*/5 * * * *' }],
+      'tool_toml_toml-state': [{ input: 'private = 17' }],
+      'tool_jsonschema_jsonschema-state': [{ jsonData: '{"private":17}' }],
+    }
+    Object.assign(values.local, previousContent)
+    for (const id of removedIds) {
+      values.local[`tool_${id}_snapshots`] = [{ id: 'existing' }]
+      localStorage.setItem(`tool_${id}_snapshots`, '[{"id":"fallback"}]')
+    }
+
+    const managedIds = (await getToolDataSummary()).map((row) => row.toolId)
+    for (const id of removedIds) {
+      expect(managedIds).not.toContain(id)
+      await expect(clearToolData(id)).rejects.toThrow('不支持清理')
+    }
+    await clearToolData('convert')
+
+    for (const [key, content] of Object.entries(previousContent)) {
+      expect(values.local[key]).toEqual(content)
+    }
+    for (const id of removedIds) {
+      expect(values.local[`tool_${id}_snapshots`]).toEqual([{ id: 'existing' }])
+      expect(localStorage.getItem(`tool_${id}_snapshots`)).toBe(
+        '[{"id":"fallback"}]',
+      )
+    }
+  })
+
   it('reports partial removal failure', async () => {
     vi.mocked(chrome.storage.local.remove).mockRejectedValueOnce(
       new Error('unavailable'),

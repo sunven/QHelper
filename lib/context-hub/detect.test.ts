@@ -70,11 +70,11 @@ describe('detectContextInput', () => {
     })
   })
 
-  it('detects five-field Cron expressions', () => {
+  it('treats Cron expressions as unknown input after removing the parser', () => {
     expect(detectContextInput('*/5 * * * *')).toMatchObject({
-      kind: 'cron',
-      confidence: 'high',
-      summary: 'Five-field Cron expression.',
+      kind: 'unknown',
+      confidence: 'low',
+      facts: [],
     })
   })
 

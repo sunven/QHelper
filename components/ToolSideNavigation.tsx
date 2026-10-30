@@ -3,7 +3,6 @@ import {
   BracketsCurlyIcon,
   CaretRightIcon,
   ClockIcon,
-  DatabaseIcon,
   ImageIcon,
   LockKeyIcon,
   RobotIcon,
@@ -55,7 +54,6 @@ const categoryIcons: Record<ToolCategory, React.ReactNode> = {
   [ToolCategory.ENCODING]: <BinaryIcon />,
   [ToolCategory.IMAGE]: <ImageIcon />,
   [ToolCategory.SECURITY]: <LockKeyIcon />,
-  [ToolCategory.DATA_FORMAT]: <DatabaseIcon />,
   [ToolCategory.AI]: <RobotIcon />,
   [ToolCategory.OTHER]: <ClockIcon />,
 }

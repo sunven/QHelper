@@ -3,9 +3,6 @@ export const CONTENT_KEYS: Record<string, readonly string[]> = {
   convert: ['tool_convert_srcText', 'tool_convert_history'],
   timestamp: ['tool_timestamp_srcStamp', 'tool_timestamp_srcLocale'],
   qrcode: ['tool_qrcode_text'],
-  cron: ['tool_cron_cron-state'],
-  toml: ['tool_toml_toml-state'],
-  jsonschema: ['tool_jsonschema_jsonschema-state'],
 }
 
 export const SESSION_TOOL_IDS = Object.keys(CONTENT_KEYS)

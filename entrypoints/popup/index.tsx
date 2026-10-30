@@ -1,7 +1,6 @@
 import type { Icon } from '@phosphor-icons/react'
 import {
   ArrowsLeftRightIcon,
-  BracketsCurlyIcon,
   GearSixIcon,
   ImageIcon,
   ShieldCheckIcon,
@@ -31,7 +30,6 @@ const categoryIconMap: Record<ToolCategory, Icon> = {
   [ToolCategory.ENCODING]: ArrowsLeftRightIcon,
   [ToolCategory.IMAGE]: ImageIcon,
   [ToolCategory.SECURITY]: ShieldCheckIcon,
-  [ToolCategory.DATA_FORMAT]: BracketsCurlyIcon,
   [ToolCategory.AI]: SparkleIcon,
   [ToolCategory.OTHER]: WrenchIcon,
 }
@@ -73,13 +71,6 @@ const categoryAccentMap: Record<
     count: 'text-rose-700',
     tool: 'hover:bg-rose-500/10 hover:text-rose-900',
     toolIcon: 'text-rose-600',
-  },
-  [ToolCategory.DATA_FORMAT]: {
-    section: 'border-amber-500',
-    headerIcon: 'bg-amber-500/10 text-amber-700',
-    count: 'text-amber-700',
-    tool: 'hover:bg-amber-500/10 hover:text-amber-900',
-    toolIcon: 'text-amber-600',
   },
   [ToolCategory.AI]: {
     section: 'border-violet-500',
