@@ -26,6 +26,16 @@ import {
 } from './tool-catalog'
 
 describe('tool-catalog', () => {
+  it('excludes text preview from tools, launches and generated aliases', () => {
+    expect(isOrdinaryToolId('text-preview')).toBe(false)
+    expect(getToolCatalogTool('text-preview')).toBeUndefined()
+    expect(getLaunchEntry('text-preview')).toBeUndefined()
+    expect(parseToolRouteParam('text-preview.html')).toBeNull()
+    expect(getToolsSpaAliases().map((alias) => alias.id)).not.toContain(
+      'text-preview',
+    )
+  })
+
   it('derives ordinary tool ids from registered tools', () => {
     expect(new Set(ORDINARY_TOOL_IDS)).toEqual(
       new Set(tools.map((tool) => tool.id)),

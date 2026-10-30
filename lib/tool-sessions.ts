@@ -38,16 +38,5 @@ export function serializeSession(
     values.state = { expression: state.expression, interval: state.interval }
   if (state && session.toolId === 'jsonschema')
     values.state = { jsonData: state.jsonData, jsonSchema: state.jsonSchema }
-  if (session.toolId === 'text-preview' && values.workspace) {
-    const workspace = values.workspace as { tabs: Record<string, unknown>[] }
-    values.workspace = {
-      ...workspace,
-      tabs: workspace.tabs.map((tab) => ({
-        ...tab,
-        source: { kind: 'manual' },
-        fileStatus: { kind: 'manual' },
-      })),
-    }
-  }
   return JSON.parse(JSON.stringify(values)) as Record<string, unknown>
 }

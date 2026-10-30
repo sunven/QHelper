@@ -36,16 +36,6 @@ export const tools = [
   },
 
   {
-    id: 'text-preview',
-    keywords: ['日志', '提取', 'log'],
-    name: '文本预览',
-    category: ToolCategory.COMMON,
-    icon: 'FileText',
-    description: '本地提取文本中的 IP、URL、命令和路径',
-    preserveActivity: false,
-  },
-
-  {
     id: 'trans-radix',
     keywords: ['binary', 'hex', '十六进制'],
     name: '进制转换',

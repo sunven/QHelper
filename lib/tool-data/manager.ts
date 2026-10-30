@@ -1,7 +1,3 @@
-import {
-  browserFileHandleStore,
-  countStoredFileHandles,
-} from '@/lib/text-preview/fileHandleStore'
 import { contentKeys, SESSION_TOOL_IDS, snapshotsKey } from './catalog'
 import {
   deleteData,
@@ -15,7 +11,6 @@ export type ToolDataSummary = {
   toolId: string
   records: number
   bytes: number
-  handles: number
   categories: string[]
 }
 
@@ -46,17 +41,13 @@ export async function getToolDataSummary(): Promise<ToolDataSummary[]> {
           categories.add(
             key === snapshotsKey(toolId)
               ? '快照'
-              : toolId === 'text-preview'
-                ? '工作区'
-                : Array.isArray(value)
-                  ? '历史'
-                  : '输入',
+              : Array.isArray(value)
+                ? '历史'
+                : '输入',
           )
         }
       }
-      const handles =
-        toolId === 'text-preview' ? await countStoredFileHandles() : 0
-      return { toolId, records, bytes, handles, categories: [...categories] }
+      return { toolId, records, bytes, categories: [...categories] }
     }),
   )
 }
@@ -70,10 +61,6 @@ export async function clearToolData(toolId: string) {
     )
     if (toolId === 'formatter')
       await writeData('tool_formatter_history-migrated', true)
-    if (toolId === 'text-preview') {
-      const result = await browserFileHandleStore.clear()
-      if (!result.ok) throw new Error(result.warning || '文件授权清理失败')
-    }
     if (results.some((result) => result.status === 'rejected'))
       throw new Error('部分数据清理失败，请重试。')
   })

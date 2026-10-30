@@ -40,13 +40,9 @@ _Avoid_: Synced data, cloud state, backup, per-surface storage hook
 The shared presentation of one tool's **Persisted Tool Data** history. It owns the card shell, the item grid, the scroll region, the clear and per-item delete controls, and the point at which selecting an entry is reported; entry content belongs to each caller, and ordering and the entry count belong to the history store. A **Tool History List** does not read or write storage, and does not persist anything.
 _Avoid_: History panel, history widget, per-tool history markup
 
-**Text Preview Workspace**:
-The **Persisted Tool Data** for the Text Preview tool. It contains open text tabs, the active tab, each tab's source, and local-file save status; it may reference recoverable local file handles, but it is not a **Tool Setting** or a **Synced Setting**.
-_Avoid_: Text preview cache, editor state, file backup
-
 **Text Diff Tool**:
 An ordinary QHelper tool for interactively comparing two revisions of plain text without interpreting them as structured data. It is intended for ordinary pasted text rather than very large files, treats line-ending conventions as equivalent, is not a byte-level file comparison, and is distinct from the structural Diff provided by the JSON tool.
-_Avoid_: JSON Diff, Text Preview
+_Avoid_: JSON Diff
 
 **Tool Catalog**:
 The source-of-truth collection of QHelper tools and their user-facing identity. It defines tool names, categories, category order, category labels, descriptions, stable icon tokens, and paths for navigation, popup entry points, and tool routes. Ordinary tool paths are derived by the **Tool Catalog** from the tool id unless an entry is explicitly not an ordinary tool page. The **Tool Catalog** does not own React icon modules or visual accent styles; those belong to the shared surface-icons adapter (`components/tool-icons.tsx`, the single resolver of icon tokens) and each surface's accent styles.
@@ -125,10 +121,6 @@ Domain expert: "No. Use the Local Setting Fallback so the current device keeps w
 Developer: "Should tool history use the Synced Setting path?"
 
 Domain expert: "No. Tool history is Persisted Tool Data, so it stays device-local."
-
-Developer: "Should the Text Preview Workspace sync across devices?"
-
-Domain expert: "No. It is Persisted Tool Data. The text tabs and local-file handles stay device-local."
 
 Developer: "Where should a new tool's name and path be declared?"
 

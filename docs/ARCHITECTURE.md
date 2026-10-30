@@ -26,8 +26,7 @@ lib/
 ├── settings.ts                   # Tool Setting source of truth
 ├── chrome/                       # reusable Chrome API wrappers
 ├── web-summary/                  # side panel config、AI stream、page extraction
-├── fe-tools/                     # DevTools Json String logic
-└── text-preview/                 # local text workspace and parser
+└── fe-tools/                     # DevTools Json String logic
 
 components/tool/
 ├── tool-routes.tsx               # tool id -> React component map
@@ -54,8 +53,7 @@ lib/registry/tools.ts
 ### Current Storage Boundaries
 
 - **Tool Setting:** 使用 `defineSetting(key, defaults)` in `lib/settings.ts`。适合低敏、小体积、可同步的用户偏好。
-- **Persisted Tool Data:** 使用 `lib/chrome/local-persisted-data.ts` 或功能自己的本地存储模块。适合捕获内容、历史、凭据、大文本 workspace。
-- **Text Preview Workspace:** 使用 `window.localStorage`，避免把大块粘贴文本放进 `chrome.storage.local` 或 sync。
+- **Persisted Tool Data:** 使用 `lib/chrome/local-persisted-data.ts` 或功能自己的本地存储模块。适合捕获内容、历史和凭据。
 
 ### Current Page Access
 

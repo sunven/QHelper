@@ -1,1 +1,0 @@
-export { TextPreviewTool } from './App'

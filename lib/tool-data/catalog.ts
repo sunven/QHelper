@@ -14,7 +14,6 @@ export const CONTENT_KEYS: Record<string, readonly string[]> = {
   toml: ['tool_toml_toml-state'],
   svgoptimizer: ['tool_svgoptimizer_svgoptimizer-state'],
   jsonschema: ['tool_jsonschema_jsonschema-state'],
-  'text-preview': ['qhelper.text-preview.workspace.v1'],
   urlparser: [],
 }
 

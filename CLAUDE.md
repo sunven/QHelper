@@ -90,7 +90,6 @@ Use local persisted data for captured content, tool history, API credentials, an
 
 - `lib/chrome/local-persisted-data.ts` for device-local extension storage.
 - `hooks/useToolState.ts` and `hooks/useToolHistory.ts` for tool state/history.
-- `lib/text-preview/workspaceStore.ts` for large pasted text in `window.localStorage`.
 
 ### Path Aliases
 

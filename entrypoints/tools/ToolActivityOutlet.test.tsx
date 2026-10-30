@@ -35,21 +35,21 @@ vi.mock('@/components/tool/tool-routes', () => ({
       ),
     },
     {
-      id: 'text-preview',
+      id: 'ocr',
       preserveActivity: false,
       Component: () => {
         useEffect(() => {
-          window.dispatchEvent(new CustomEvent('text-preview-mounted'))
+          window.dispatchEvent(new CustomEvent('ocr-mounted'))
 
           return () => {
-            window.dispatchEvent(new CustomEvent('text-preview-unmounted'))
+            window.dispatchEvent(new CustomEvent('ocr-unmounted'))
           }
         }, [])
 
         return (
           <section>
-            <h1>Text Preview Mock</h1>
-            <p>Large editor</p>
+            <h1>OCR Mock</h1>
+            <p>OCR results</p>
           </section>
         )
       },
@@ -72,8 +72,8 @@ function RouteControls() {
       <button type="button" onClick={() => void navigate('/json.html')}>
         Go json
       </button>
-      <button type="button" onClick={() => void navigate('/text-preview.html')}>
-        Go text preview
+      <button type="button" onClick={() => void navigate('/ocr.html')}>
+        Go OCR
       </button>
     </div>
   )
@@ -91,6 +91,18 @@ describe('ToolActivityOutlet', () => {
       removeEventListener: vi.fn(),
       removeListener: vi.fn(),
     }))
+  })
+
+  it('redirects the removed text preview route to JSON', async () => {
+    render(
+      <MemoryRouter initialEntries={['/text-preview.html']}>
+        <Routes>
+          <Route path="/:toolId" element={<ToolActivityOutlet />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('JSON Mock')).toBeVisible()
   })
 
   it('keeps React and DOM state when switching visited tools', async () => {
@@ -125,11 +137,11 @@ describe('ToolActivityOutlet', () => {
   it('unmounts tools that opt out of hidden activity preservation', async () => {
     const mounted = vi.fn()
     const unmounted = vi.fn()
-    window.addEventListener('text-preview-mounted', mounted)
-    window.addEventListener('text-preview-unmounted', unmounted)
+    window.addEventListener('ocr-mounted', mounted)
+    window.addEventListener('ocr-unmounted', unmounted)
 
     render(
-      <MemoryRouter initialEntries={['/text-preview.html']}>
+      <MemoryRouter initialEntries={['/ocr.html']}>
         <RouteControls />
         <Routes>
           <Route path="/:toolId" element={<ToolActivityOutlet />} />
@@ -138,7 +150,7 @@ describe('ToolActivityOutlet', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('Text Preview Mock')).toBeVisible()
+      expect(screen.getByText('OCR Mock')).toBeVisible()
     })
     expect(mounted).toHaveBeenCalledTimes(1)
 
@@ -150,9 +162,9 @@ describe('ToolActivityOutlet', () => {
     await waitFor(() => {
       expect(unmounted).toHaveBeenCalledTimes(1)
     })
-    expect(screen.queryByText('Text Preview Mock')).toBeNull()
+    expect(screen.queryByText('OCR Mock')).toBeNull()
 
-    window.removeEventListener('text-preview-mounted', mounted)
-    window.removeEventListener('text-preview-unmounted', unmounted)
+    window.removeEventListener('ocr-mounted', mounted)
+    window.removeEventListener('ocr-unmounted', unmounted)
   })
 })

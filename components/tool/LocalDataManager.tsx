@@ -29,7 +29,7 @@ export function LocalDataManager() {
     const name = getToolCatalogTool(row.toolId)?.name ?? row.toolId
     if (
       !window.confirm(
-        `清理 ${name} 的输入、历史、快照和工作区（约 ${row.records} 条，文件授权 ${row.handles} 个）？已打开页面的普通草稿也会重置，磁盘文件、偏好和凭证会保留。`,
+        `清理 ${name} 的输入、历史和快照（约 ${row.records} 条）？已打开页面的普通草稿也会重置，磁盘文件、偏好和凭证会保留。`,
       )
     )
       return
@@ -81,7 +81,7 @@ export function LocalDataManager() {
       </div>
       <p className="text-xs text-muted-foreground">
         管理本机工具内容；保留 API
-        凭证、偏好、收藏、请求捕获记录和浏览器书签、下载记录。体积为内容估算值，不含文件句柄占用。
+        凭证、偏好、收藏、请求捕获记录和浏览器书签、下载记录。体积为内容估算值。
       </p>
       {error && (
         <p role="alert" className="text-sm text-destructive">
@@ -105,9 +105,6 @@ export function LocalDataManager() {
               <p className="text-xs text-muted-foreground">
                 {row.categories.join(' / ') || '暂无保存内容'} · {row.records}{' '}
                 条 · {(row.bytes / 1024).toFixed(1)} KB
-                {row.toolId === 'text-preview'
-                  ? ` · 文件授权 ${row.handles} 个`
-                  : ''}
               </p>
             </div>
             <Button

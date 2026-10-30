@@ -8,16 +8,30 @@ import {
 } from './manager'
 import { createToolDataStore, readData, writeData } from './storage'
 
-vi.mock('@/lib/text-preview/fileHandleStore', () => ({
-  browserFileHandleStore: { clear: vi.fn(async () => ({ ok: true })) },
-  countStoredFileHandles: vi.fn(async () => 0),
-}))
-
 describe('tool content management', () => {
   let values: ReturnType<typeof installToolDataStorage>
   beforeEach(() => {
     vi.clearAllMocks()
     values = installToolDataStorage()
+  })
+
+  it('leaves removed text preview data untouched and excludes it from management', async () => {
+    const workspace = '{"tabs":[]}'
+    localStorage.setItem('qhelper.text-preview.workspace.v1', workspace)
+    values.local['tool_text-preview_snapshots'] = [{ id: 'existing' }]
+
+    expect((await getToolDataSummary()).map((row) => row.toolId)).not.toContain(
+      'text-preview',
+    )
+    await expect(clearToolData('text-preview')).rejects.toThrow('不支持清理')
+    await clearToolData('convert')
+
+    expect(localStorage.getItem('qhelper.text-preview.workspace.v1')).toBe(
+      workspace,
+    )
+    expect(values.local['tool_text-preview_snapshots']).toEqual([
+      { id: 'existing' },
+    ])
   })
 
   it('removes both content copies while preserving preferences, credentials and other tools', async () => {

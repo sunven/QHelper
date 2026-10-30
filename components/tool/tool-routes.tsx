@@ -21,7 +21,6 @@ import { QrCodeTool } from '@/components/tool/qrcode'
 import { SvgOptimizer } from '@/components/tool/svgoptimizer'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { TextDiffTool } from '@/components/tool/text-diff'
-import { TextPreviewTool } from '@/components/tool/text-preview'
 import { TimestampTool } from '@/components/tool/timestamp'
 import { TomlParser } from '@/components/tool/toml'
 import { TransRadixTool } from '@/components/tool/trans-radix'
@@ -63,14 +62,12 @@ const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   timestamp: TimestampTool,
   colorTransform: ColorTransformTool,
   downloads: DownloadsTool,
-  'text-preview': TextPreviewTool,
   'text-diff': TextDiffTool,
 }
 
 // 工具特有的 Tool Page Shell 布局变体在路由映射处声明，不进 Tool Catalog
 const shellClassNameByToolId: Partial<Record<OrdinaryToolId, string>> = {
   'text-diff': 'h-full',
-  'text-preview': 'flex h-full min-h-0 flex-col overflow-hidden',
 }
 
 function createToolPage(
