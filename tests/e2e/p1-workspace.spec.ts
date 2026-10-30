@@ -18,7 +18,7 @@ async function stored(page: Page, key: string) {
   )
 }
 
-test('popup search, favorites and recent tools are shared with the sidebar', async ({
+test('popup search and favorites are shared with the sidebar', async ({
   context,
   popupPage,
 }) => {
@@ -30,18 +30,14 @@ test('popup search, favorites and recent tools are shared with the sidebar', asy
   await expect(
     result.locator('..').getByRole('button', { name: /^取消收藏/ }),
   ).toHaveAttribute('aria-pressed', 'true')
-  await search.fill('urlparser')
+  await search.fill('toml')
   const newPage = context.waitForEvent('page')
   await search.press('Enter')
   const page = await newPage
-  await expect(page).toHaveURL(/\/tools\/urlparser\.html$/)
+  await expect(page).toHaveURL(/\/tools\/toml\.html$/)
   await expect(page.getByTestId('discovery-favorites-json')).toBeVisible()
-  await expect(page.getByTestId('discovery-recent-urlparser')).toBeVisible()
   await popupPage.reload()
   await expect(popupPage.getByTestId('discovery-favorites-json')).toBeVisible()
-  await expect(
-    popupPage.getByTestId('discovery-recent-urlparser'),
-  ).toBeVisible()
   await page.getByRole('textbox', { name: '搜索工具' }).fill('no-such-tool')
   await expect(page.getByText('没有找到匹配的工具。')).toBeVisible()
 })
@@ -52,12 +48,6 @@ for (const handoff of [
     raw: '  {"private":"json-handoff"}  ',
     link: '打开 JSON 格式化',
     selector: '[data-testid="json-input"]',
-  },
-  {
-    id: 'urlparser',
-    raw: '  https://example.invalid/path?token=url-handoff  ',
-    link: '打开 URL 解析器',
-    selector: 'textarea[placeholder^="请输入 URL"]',
   },
   {
     id: 'convert',
@@ -111,7 +101,7 @@ test('temporary edits survive navigation and snapshots leave the ordinary draft 
   await page.getByRole('button', { name: '开始临时处理' }).click()
   await expect(input).toHaveValue('')
   await input.fill('{"temporary":2}')
-  await selectTool(page, 'urlparser')
+  await selectTool(page, 'toml')
   await page.getByTestId('tool-settings-link').click()
   await expect(
     page.getByRole('region', { name: '本地数据', exact: true }),

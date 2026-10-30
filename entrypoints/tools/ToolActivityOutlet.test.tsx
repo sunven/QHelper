@@ -105,6 +105,40 @@ describe('ToolActivityOutlet', () => {
     expect(await screen.findByText('JSON Mock')).toBeVisible()
   })
 
+  it.each([
+    '/formatter.html',
+    '/htmlformat.html',
+    '/xmlformatter.html',
+    '/csstool.html',
+  ])('redirects the removed formatter route %s to JSON', async (path) => {
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/:toolId" element={<ToolActivityOutlet />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('JSON Mock')).toBeVisible()
+  })
+
+  it.each([
+    '/markdown.html',
+    '/urlparser.html',
+    '/filemerge.html',
+    '/svgoptimizer.html',
+  ])('redirects the removed Web 格式 route %s to JSON', async (path) => {
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/:toolId" element={<ToolActivityOutlet />} />
+        </Routes>
+      </MemoryRouter>,
+    )
+
+    expect(await screen.findByText('JSON Mock')).toBeVisible()
+  })
+
   it('keeps React and DOM state when switching visited tools', async () => {
     render(
       <MemoryRouter initialEntries={['/json.html']}>

@@ -8,24 +8,19 @@ import { ConvertTool } from '@/components/tool/convert'
 import { CronParser } from '@/components/tool/cron'
 import { CSVToJSON } from '@/components/tool/csv2json'
 import { DownloadsTool } from '@/components/tool/downloads'
-import { FileMergeTool } from '@/components/tool/filemerge'
-import { SyntaxFormatter } from '@/components/tool/formatter'
 import { ImageBase64Tool } from '@/components/tool/imagebase64'
 import { JsonTool } from '@/components/tool/json'
 import { JsonSchemaValidator } from '@/components/tool/jsonschema'
-import { MarkdownEditor } from '@/components/tool/markdown'
 import { OcrTool } from '@/components/tool/ocr'
 import { PasswordGenerator } from '@/components/tool/password'
 import { PictureSplicingTool } from '@/components/tool/pictureSplicing'
 import { QrCodeTool } from '@/components/tool/qrcode'
-import { SvgOptimizer } from '@/components/tool/svgoptimizer'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { TextDiffTool } from '@/components/tool/text-diff'
 import { TimestampTool } from '@/components/tool/timestamp'
 import { TomlParser } from '@/components/tool/toml'
 import { TransRadixTool } from '@/components/tool/trans-radix'
 import { UglifyTool } from '@/components/tool/uglify'
-import { URLParser } from '@/components/tool/urlparser'
 import { UUIDGenerator } from '@/components/tool/uuid'
 import { YAMLConverter } from '@/components/tool/yaml'
 import {
@@ -49,11 +44,6 @@ const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   password: PasswordGenerator,
   'aes-gcm': AesGcmTool,
   'bcrypt-hash': BcryptHashTool,
-  markdown: MarkdownEditor,
-  formatter: SyntaxFormatter,
-  urlparser: URLParser,
-  filemerge: FileMergeTool,
-  svgoptimizer: SvgOptimizer,
   cron: CronParser,
   csv2json: CSVToJSON,
   yaml: YAMLConverter,

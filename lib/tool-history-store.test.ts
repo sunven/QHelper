@@ -17,7 +17,7 @@ function primeStoredHistory(
 }
 
 describe('createToolHistoryStore', () => {
-  const toolId = 'svgoptimizer'
+  const toolId = 'toml'
   const storageKey = getToolStateStorageKey(toolId, 'history')
 
   beforeEach(() => {

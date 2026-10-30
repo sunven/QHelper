@@ -15,7 +15,6 @@ import {
 } from '@/lib/tool-catalog'
 import { SESSION_TOOL_IDS, supportsToolSession } from '@/lib/tool-data/catalog'
 import { generationKey, subscribeData } from '@/lib/tool-data/storage'
-import { recordRecentTool } from '@/lib/tool-discovery'
 import { createToolSession, type ToolSession } from '@/lib/tool-sessions'
 
 export function ToolActivityOutlet() {
@@ -35,7 +34,6 @@ export function ToolActivityOutlet() {
         ? current
         : { ...current, [activeToolId]: createToolSession(activeToolId) },
     )
-    void recordRecentTool(activeToolId).catch(() => undefined)
   }, [activeToolId])
 
   // Keep listening when tool Activities suspend their effects.

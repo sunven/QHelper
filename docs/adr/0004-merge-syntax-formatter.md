@@ -1,8 +1,10 @@
 ---
-status: accepted
+status: superseded
 ---
 
 # Merge HTML, XML, and CSS formatting into one Syntax Formatter
+
+> 2026-10: The Syntax Formatter tool and the `htmlformat` / `xmlformatter` / `csstool` alias routes were removed. This ADR is kept as history.
 
 HTML, XML, and CSS formatting were three **Launch Entries** that already shared the **Transform Tool Page** shape (one input, pretty or minified output). Keep them as one **Syntax Formatter** in the **Tool Catalog** (`formatter`, 「格式化」, Web 格式) with an explicit **Formatter Language**. JSON, language conversion, Markdown, SVG optimize, and JS uglify stay separate tools.
 

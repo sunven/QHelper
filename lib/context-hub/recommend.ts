@@ -1,5 +1,15 @@
 import type { ContextDetectionResult, ContextRecommendation } from './types'
 
+const urlFallbackRecommendations: ContextRecommendation[] = [
+  {
+    id: 'url-facts-only',
+    label: '浏览工具目录',
+    description: '已识别 URL 结构，可在识别结果中查看协议、主机和查询参数。',
+    confidence: 'low',
+    kind: 'fallback',
+  },
+]
+
 const recommendationByKind: Record<
   Exclude<ContextDetectionResult['kind'], 'unknown' | 'jwt'>,
   ContextRecommendation[]
@@ -14,16 +24,7 @@ const recommendationByKind: Record<
       kind: 'tool',
     },
   ],
-  url: [
-    {
-      id: 'open-urlparser',
-      label: '打开 URL 解析器',
-      description: '拆解协议、主机、路径、查询参数和 hash。',
-      toolId: 'urlparser',
-      confidence: 'high',
-      kind: 'tool',
-    },
-  ],
+  url: urlFallbackRecommendations,
   base64: [
     {
       id: 'open-convert',

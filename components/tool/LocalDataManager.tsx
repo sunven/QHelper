@@ -6,8 +6,6 @@ import {
   getToolDataSummary,
   type ToolDataSummary,
 } from '@/lib/tool-data/manager'
-import { deleteData, withDataLock } from '@/lib/tool-data/storage'
-import { RECENT_TOOLS_KEY } from '@/lib/tool-discovery'
 
 export function LocalDataManager() {
   const [rows, setRows] = useState<ToolDataSummary[]>([])
@@ -60,23 +58,6 @@ export function LocalDataManager() {
           onClick={() => void refresh()}
         >
           刷新数据
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={busy}
-          onClick={() => {
-            setBusy(true)
-            setError('')
-            void withDataLock(RECENT_TOOLS_KEY, () =>
-              deleteData(RECENT_TOOLS_KEY),
-            )
-              .then(() => setMessage('最近使用已清空。'))
-              .catch(() => setError('清空失败，请重试。'))
-              .finally(() => setBusy(false))
-          }}
-        >
-          清空最近使用
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">

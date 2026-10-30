@@ -44,9 +44,10 @@ describe('context-hub/ContextHub', () => {
     expect(screen.getAllByText('URL')[0]).toBeVisible()
     expect(screen.getByText('Host')).toBeVisible()
     expect(screen.getByText('example.com')).toBeVisible()
+    expect(screen.getByText('浏览工具目录')).toBeVisible()
     expect(
-      screen.getByRole('link', { name: '打开 URL 解析器' }),
-    ).toHaveAttribute('href', '/tools/urlparser.html')
+      screen.queryByRole('link', { name: '打开 URL 解析器' }),
+    ).not.toBeInTheDocument()
   })
 
   it('detects JWT input and renders a local preview action', async () => {

@@ -68,23 +68,4 @@ describe('ToolsRoutes', () => {
     })
     expect(screen.getByText('Settings route content')).toBeVisible()
   })
-
-  it.each([
-    ['/htmlformat.html', '/formatter.html?language=html'],
-    ['/xmlformatter.html', '/formatter.html?language=xml'],
-    ['/csstool.html', '/formatter.html?language=css'],
-    ['/htmlformat', '/formatter.html?language=html'],
-  ] as const)('redirects %s to the Syntax Formatter', async (from, to) => {
-    render(
-      <MemoryRouter initialEntries={[from]}>
-        <CurrentPath />
-        <ToolsRoutes />
-      </MemoryRouter>,
-    )
-
-    await waitFor(() => {
-      expect(screen.getByTestId('current-path')).toHaveTextContent(to)
-    })
-    expect(screen.getByText('Tool route content')).toBeVisible()
-  })
 })

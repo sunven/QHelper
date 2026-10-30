@@ -160,50 +160,6 @@ export const tools = [
     description: '生成并校验 Bcrypt 密码 Hash',
   },
 
-  // ===== Web 格式 =====
-  {
-    id: 'markdown',
-    keywords: ['md', '文档'],
-    name: 'Markdown 编辑器',
-    category: ToolCategory.WEB_FORMAT,
-    icon: 'FileText',
-    description: 'Markdown 实时预览、导出 HTML',
-  },
-
-  {
-    id: 'formatter',
-    keywords: ['htmlformat', 'xmlformatter', 'csstool', 'beautify', 'minify'],
-    name: '格式化',
-    category: ToolCategory.WEB_FORMAT,
-    icon: 'Code',
-    description: 'HTML、XML、CSS 美化与压缩',
-  },
-
-  {
-    id: 'urlparser',
-    keywords: ['query', '网址', '参数'],
-    name: 'URL 解析器',
-    category: ToolCategory.WEB_FORMAT,
-    icon: 'Link',
-    description: '解析 URL 各个组成部分',
-  },
-
-  {
-    id: 'filemerge',
-    name: 'JS 文件合并',
-    category: ToolCategory.WEB_FORMAT,
-    icon: 'FileCode',
-    description: '合并多个远程 JavaScript 文件',
-  },
-
-  {
-    id: 'svgoptimizer',
-    name: 'SVG 优化器',
-    category: ToolCategory.WEB_FORMAT,
-    icon: 'ImageSquare',
-    description: 'SVG 优化、压缩、减小文件大小',
-  },
-
   {
     id: 'cron',
     name: 'Cron 解析器',

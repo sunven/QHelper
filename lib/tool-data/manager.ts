@@ -59,8 +59,6 @@ export async function clearToolData(toolId: string) {
     const results = await Promise.allSettled(
       contentKeys(toolId).map(deleteData),
     )
-    if (toolId === 'formatter')
-      await writeData('tool_formatter_history-migrated', true)
     if (results.some((result) => result.status === 'rejected'))
       throw new Error('部分数据清理失败，请重试。')
   })

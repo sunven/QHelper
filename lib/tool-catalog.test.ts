@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { ToolCategory } from '@/lib/registry/ToolMetadata'
 import { tools } from '@/lib/registry/tools'
-import { SYNTAX_FORMATTER_ALIASES } from '@/lib/syntax-formatter'
 import {
   createOrdinaryToolRoutes,
   DEFAULT_TOOL_ID,
@@ -34,6 +33,30 @@ describe('tool-catalog', () => {
     expect(getToolsSpaAliases().map((alias) => alias.id)).not.toContain(
       'text-preview',
     )
+  })
+
+  it('excludes the formatter and its legacy aliases from tools, launches and generated aliases', () => {
+    for (const id of ['formatter', 'htmlformat', 'xmlformatter', 'csstool']) {
+      expect(isOrdinaryToolId(id)).toBe(false)
+      expect(getToolCatalogTool(id)).toBeUndefined()
+      expect(getLaunchEntry(id)).toBeUndefined()
+      expect(parseToolRouteParam(`${id}.html`)).toBeNull()
+      expect(getToolsSpaAliases().map((alias) => alias.id)).not.toContain(id)
+    }
+  })
+
+  it('excludes Web 格式 tools and category from the catalog', () => {
+    for (const id of ['markdown', 'urlparser', 'filemerge', 'svgoptimizer']) {
+      expect(isOrdinaryToolId(id)).toBe(false)
+      expect(getToolCatalogTool(id)).toBeUndefined()
+      expect(getLaunchEntry(id)).toBeUndefined()
+      expect(parseToolRouteParam(`${id}.html`)).toBeNull()
+      expect(getToolsSpaAliases().map((alias) => alias.id)).not.toContain(id)
+    }
+    expect(ORDINARY_TOOL_IDS).toHaveLength(22)
+    expect(
+      TOOL_CATEGORIES.map((category) => String(category.key)),
+    ).not.toContain('web_format')
   })
 
   it('derives ordinary tool ids from registered tools', () => {
@@ -161,38 +184,8 @@ describe('tool-catalog', () => {
   it('derives tools SPA aliases from Launch Entries', () => {
     expect(getToolsSpaAliases()).toEqual([
       ...ORDINARY_TOOL_IDS.map((id) => ({ id, path: `tools/${id}.html` })),
-      ...SYNTAX_FORMATTER_ALIASES.map((alias) => ({
-        id: alias.id,
-        path: `tools/${alias.id}.html`,
-      })),
       { id: 'settings', path: 'tools/settings.html' },
     ])
-  })
-
-  it('keeps former HTML/XML/CSS tools as build aliases of the Syntax Formatter', () => {
-    expect(getToolCatalogTool('formatter')).toMatchObject({
-      key: 'formatter',
-      name: '格式化',
-      category: ToolCategory.WEB_FORMAT,
-      icon: 'Code',
-    })
-    expect(getToolCatalogTool('htmlformat')).toBeUndefined()
-    const popupIds = getLaunchDirectory('popup-main').entries.map(
-      (entry) => entry.id,
-    )
-    expect(popupIds).toContain('formatter')
-    expect(popupIds).not.toContain('htmlformat')
-    expect(popupIds).not.toContain('xmlformatter')
-    expect(popupIds).not.toContain('csstool')
-
-    expect(getLaunchEntry('htmlformat')).toMatchObject({
-      surfaces: ['build-alias'],
-      intent: {
-        kind: 'ordinary-tool-page',
-        toolId: 'formatter',
-        extensionPath: 'tools/htmlformat.html',
-      },
-    })
   })
 
   it('creates route lists in catalog order and fails when a tool is missing', () => {

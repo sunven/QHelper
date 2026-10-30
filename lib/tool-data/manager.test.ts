@@ -88,13 +88,51 @@ describe('tool content management', () => {
     expect(await readData('tool_convert_srcText')).toBeUndefined()
   })
 
-  it('clears legacy formatter content without allowing it to migrate again', async () => {
+  it('leaves removed formatter data untouched and excludes it from management', async () => {
     values.local['tool_htmlformat_htmlformat-state'] = [
       { input: '<private />' },
     ]
-    await clearToolData('formatter')
-    expect(values.local['tool_htmlformat_htmlformat-state']).toBeUndefined()
-    expect(values.local['tool_formatter_history-migrated']).toBe(true)
+    values.local['tool_formatter_formatter-state'] = [{ input: '<private />' }]
+
+    expect((await getToolDataSummary()).map((row) => row.toolId)).not.toContain(
+      'formatter',
+    )
+    await expect(clearToolData('formatter')).rejects.toThrow('不支持清理')
+    await clearToolData('convert')
+
+    expect(values.local['tool_htmlformat_htmlformat-state']).toEqual([
+      { input: '<private />' },
+    ])
+    expect(values.local['tool_formatter_formatter-state']).toEqual([
+      { input: '<private />' },
+    ])
+    expect(values.local['tool_formatter_history-migrated']).toBeUndefined()
+  })
+
+  it('leaves removed Web 格式 tool data untouched and excludes it from management', async () => {
+    values.local['tool_markdown_markdown-state'] = [{ input: '# private' }]
+    values.local['tool_svgoptimizer_svgoptimizer-state'] = [
+      { input: '<svg />' },
+    ]
+    values.local['tool_urlparser_snapshots'] = [{ id: 'existing' }]
+
+    expect((await getToolDataSummary()).map((row) => row.toolId)).not.toContain(
+      'markdown',
+    )
+    await expect(clearToolData('markdown')).rejects.toThrow('不支持清理')
+    await expect(clearToolData('svgoptimizer')).rejects.toThrow('不支持清理')
+    await expect(clearToolData('urlparser')).rejects.toThrow('不支持清理')
+    await clearToolData('convert')
+
+    expect(values.local['tool_markdown_markdown-state']).toEqual([
+      { input: '# private' },
+    ])
+    expect(values.local['tool_svgoptimizer_svgoptimizer-state']).toEqual([
+      { input: '<svg />' },
+    ])
+    expect(values.local['tool_urlparser_snapshots']).toEqual([
+      { id: 'existing' },
+    ])
   })
 
   it('reports partial removal failure', async () => {

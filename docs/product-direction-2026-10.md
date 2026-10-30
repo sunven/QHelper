@@ -14,8 +14,8 @@ AI 降低了单次生成、解释和转换的门槛，但确定性工具仍有�
 
 ## 现有资产与取舍
 
-- `lib/registry/tools.ts`：已有 28 个普通工具，覆盖转换、格式化、安全、图片和数据处理。单点功能广度已经足够支撑实验。
-- `lib/context-hub/` 与 `docs/specs/qhelper-context-hub.md`：已有本地识别，JSON、URL、Base64 可携带原文进入临时会话。下一步要验证完整任务收益，单纯增加识别种类未必提高价值。
+- `lib/registry/tools.ts`：已有 22 个普通工具，覆盖转换、格式化、安全、图片和数据处理。单点功能广度已经足够支撑实验。
+- `lib/context-hub/` 与 `docs/specs/qhelper-context-hub.md`：已有本地识别，JSON、Base64 可携带原文进入临时会话。下一步要验证完整任务收益，单纯增加识别种类未必提高价值。
 - `entrypoints/devtools/index.ts` 与 `lib/fe-tools/json-string.ts`：已有可选启用的 JSON 请求捕获和嵌套 JSON 字符串处理。目前限定 localhost、127.0.0.1 和代码匹配的 192.168 主机，不是任意页面的通用诊断系统。
 - JSON、文本 Diff、JSON Schema、快照等能力可以成为接口排查流程的构件，但组合流程尚未实现。
 - Side Panel 网页总结已有入口与 API 配置。通用总结与核心开发调试场景联系较弱，暂不作为增长主线。

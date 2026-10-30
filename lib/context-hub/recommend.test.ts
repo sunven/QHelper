@@ -15,7 +15,6 @@ function result(kind: ContextDetectionResult['kind']): ContextDetectionResult {
 describe('getContextRecommendations', () => {
   it.each([
     ['json', 'json'],
-    ['url', 'urlparser'],
     ['base64', 'convert'],
     ['timestamp', 'timestamp'],
     ['cron', 'cron'],
@@ -28,6 +27,16 @@ describe('getContextRecommendations', () => {
         }),
       ]),
     )
+  })
+
+  it('keeps URL facts without recommending a removed tool', () => {
+    expect(getContextRecommendations(result('url'))).toEqual([
+      expect.objectContaining({
+        id: 'url-facts-only',
+        kind: 'fallback',
+        confidence: 'low',
+      }),
+    ])
   })
 
   it('keeps JWT useful without requiring a dedicated JWT tool', () => {

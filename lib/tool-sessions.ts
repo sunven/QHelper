@@ -32,8 +32,6 @@ export function serializeSession(
 ): Record<string, unknown> {
   const values = { ...session.values }
   const state = values.state as Record<string, unknown> | undefined
-  if (state && session.toolId === 'markdown')
-    values.state = { input: state.input }
   if (state && session.toolId === 'cron')
     values.state = { expression: state.expression, interval: state.interval }
   if (state && session.toolId === 'jsonschema')

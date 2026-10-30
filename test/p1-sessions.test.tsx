@@ -12,29 +12,10 @@ import { installToolDataStorage } from './tool-data-storage'
 const cases: [string, Record<string, unknown>, string][] = [
   ['json', { jsoncon: '{"private":17}' }, '{"private":17}'],
   ['convert', { srcText: 'cHJpdmF0ZQ==' }, 'cHJpdmF0ZQ=='],
-  [
-    'urlparser',
-    { input: 'https://example.test/private?q=17' },
-    'https://example.test/private?q=17',
-  ],
   ['timestamp', { srcStamp: '1700000017' }, '1700000017'],
   ['qrcode', { text: 'private-qr-17' }, 'private-qr-17'],
-  ['markdown', { state: { input: '# private-17' } }, '# private-17'],
-  [
-    'formatter',
-    { input: '.private { color: red; }', language: 'css' },
-    '.private { color: red; }',
-  ],
   ['cron', { state: { expression: '17 * * * *' } }, '17 * * * *'],
   ['toml', { input: 'private = 17' }, 'private = 17'],
-  [
-    'svgoptimizer',
-    {
-      input:
-        '<svg xmlns="http://www.w3.org/2000/svg"><text>private17</text></svg>',
-    },
-    '<svg xmlns="http://www.w3.org/2000/svg"><text>private17</text></svg>',
-  ],
   [
     'jsonschema',
     { state: { jsonData: '{"private":17}', jsonSchema: '{}' } },

@@ -2,31 +2,12 @@ import { Star } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { usePersistedValue } from '@/hooks/usePersistedValue'
 import { useToolSettingControl } from '@/hooks/useToolSettingControl'
 import {
   isOrdinaryToolId,
   type ToolCatalogLaunchEntry,
 } from '@/lib/tool-catalog'
-import {
-  deleteData,
-  readData,
-  subscribeData,
-  writeData,
-} from '@/lib/tool-data/storage'
-import {
-  favoriteTools,
-  normalizeToolIds,
-  RECENT_TOOLS_KEY,
-  searchTools,
-} from '@/lib/tool-discovery'
-
-const recentStore = {
-  get: readData,
-  set: writeData,
-  remove: deleteData,
-  subscribe: subscribeData,
-}
+import { favoriteTools, searchTools } from '@/lib/tool-discovery'
 
 export function ToolDiscovery({
   entries,
@@ -40,11 +21,6 @@ export function ToolDiscovery({
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(0)
   const favorites = useToolSettingControl(favoriteTools)
-  const { value: recent } = usePersistedValue<string[]>(
-    RECENT_TOOLS_KEY,
-    [],
-    recentStore,
-  )
   const results = useMemo(() => searchTools(entries, query), [entries, query])
   const searching = Boolean(query.trim())
   useEffect(() => onSearchingChange(searching), [searching, onSearchingChange])
@@ -102,11 +78,6 @@ export function ToolDiscovery({
   }
 
   const pinned = byIds(favorites.value.ids)
-  const recentEntries = byIds(
-    normalizeToolIds(recent).filter(
-      (toolId) => !favorites.value.ids.includes(toolId),
-    ),
-  )
   return (
     <section aria-label="查找工具" className="space-y-1 p-1">
       <Input
@@ -166,12 +137,6 @@ export function ToolDiscovery({
             <div>
               <p className="text-xs text-muted-foreground">收藏</p>
               {renderEntries(pinned, 'favorites')}
-            </div>
-          )}
-          {recentEntries.length > 0 && (
-            <div>
-              <p className="text-xs text-muted-foreground">最近使用</p>
-              {renderEntries(recentEntries, 'recent')}
             </div>
           )}
           <p className="text-xs text-muted-foreground">

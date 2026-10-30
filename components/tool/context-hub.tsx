@@ -197,7 +197,7 @@ export function ContextHub() {
           <CardHeader className="border-border/70 border-b">
             <CardTitle>推荐操作</CardTitle>
             <CardDescription>
-              JSON、URL、Base64 可携带原文进入临时处理；其他类型打开现有工具。
+              JSON、Base64 可携带原文进入临时处理；其他类型打开现有工具。
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-1.5">
@@ -229,7 +229,7 @@ export function ContextHub() {
                   href={getToolNavigationPath(recommendation.toolId)}
                   onClick={(event) => {
                     if (!sessions || !recommendation.toolId) return
-                    const slots: Record<string, string> = { json: 'jsoncon', url: 'input', base64: 'srcText' }
+                    const slots: Record<string, string> = { json: 'jsoncon', base64: 'srcText' }
                     const slot = slots[detection.kind]
                     if (slot) {
                       event.preventDefault()

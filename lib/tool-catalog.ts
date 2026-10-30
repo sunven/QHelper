@@ -2,10 +2,6 @@ import type { ToolIconToken } from '@/components/tool-icons'
 import type { ToolMetadata } from './registry/ToolMetadata'
 import { ToolCategory } from './registry/ToolMetadata'
 import { tools as registeredTools } from './registry/tools'
-import {
-  SYNTAX_FORMATTER_ALIASES,
-  SYNTAX_FORMATTER_ID,
-} from './syntax-formatter/aliases'
 
 export const TOOLS_SPA_ENTRY = 'tools.html'
 export const TOOLS_ROUTE_BASE = 'tools'
@@ -107,7 +103,6 @@ export const TOOL_CATEGORY_LABELS: Record<ToolCategory, string> = {
   [ToolCategory.ENCODING]: '编码转换',
   [ToolCategory.IMAGE]: '图片工具',
   [ToolCategory.SECURITY]: '安全与加密',
-  [ToolCategory.WEB_FORMAT]: 'Web 格式',
   [ToolCategory.DATA_FORMAT]: '数据格式',
   [ToolCategory.AI]: 'AI 工具',
   [ToolCategory.OTHER]: '其他',
@@ -118,7 +113,6 @@ export const TOOL_CATEGORY_ORDER: ToolCategory[] = [
   ToolCategory.ENCODING,
   ToolCategory.IMAGE,
   ToolCategory.SECURITY,
-  ToolCategory.WEB_FORMAT,
   ToolCategory.DATA_FORMAT,
   ToolCategory.AI,
   ToolCategory.OTHER,
@@ -179,20 +173,6 @@ const ORDINARY_TOOL_LAUNCH_ENTRIES = TOOL_CATEGORIES.flatMap(
   (category) => category.tools,
 ).map(toOrdinaryToolLaunchEntry)
 
-const SYNTAX_FORMATTER_ALIAS_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] =
-  SYNTAX_FORMATTER_ALIASES.map((alias) => ({
-    id: alias.id,
-    name: alias.id,
-    icon: 'Code',
-    surfaces: ['build-alias'],
-    intent: {
-      kind: 'ordinary-tool-page',
-      toolId: SYNTAX_FORMATTER_ID,
-      extensionPath: getToolEntryPath(alias.id),
-      preserveActivity: true,
-    },
-  }))
-
 const SYSTEM_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
   {
     id: TOOL_SETTINGS_ID,
@@ -252,7 +232,6 @@ const SYSTEM_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
 
 const LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
   ...ORDINARY_TOOL_LAUNCH_ENTRIES,
-  ...SYNTAX_FORMATTER_ALIAS_LAUNCH_ENTRIES,
   ...SYSTEM_LAUNCH_ENTRIES,
 ]
 
