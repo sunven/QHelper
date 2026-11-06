@@ -6,15 +6,12 @@ const toolPages = [
   'timestamp',
   'convert',
   'imagebase64',
-  'colorTransform',
   'trans-radix',
   'uuid',
   'password',
   'aes-gcm',
   'bcrypt-hash',
-  'pictureSplicing',
   'qrcode',
-  'uglify',
 ]
 
 test('tool shell uses breadcrumb title without a duplicated body title', async ({

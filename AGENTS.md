@@ -33,7 +33,6 @@ QHelper is a Chrome/Chromium extension for frontend developer tools. It is built
   - `tools/` for the main tools SPA.
   - `sidepanel/` for web summary UI.
   - `*.content.ts(x)` for content scripts.
-  - `sandbox/` and `*.sandbox.html` for worker-like isolated execution.
 - `components/tool/` contains individual tool UIs and tool shell components.
 - `components/ui/` contains reusable UI primitives.
 - `lib/` contains domain logic and browser service wrappers:

@@ -536,20 +536,6 @@ export const tools: ToolMetadata[] = [
     status: ToolStatus.STABLE,
   },
 
-  {
-    id: 'uglify',
-    name: '代码压缩',
-    nameEn: 'Uglify',
-    category: ToolCategory.ENCODING,
-    icon: 'Zap',
-    description: 'JavaScript 代码压缩混淆',
-    keywords: ['压缩', '混淆', 'uglify', 'minify'],
-    tags: ['code', 'minify', 'compress'],
-    version: '1.0.0',
-    features: ['single_input', 'copy_result', 'export'],
-    status: ToolStatus.STABLE,
-  },
-
   // ===== 图片工具 =====
   {
     id: 'imagebase64',
@@ -565,20 +551,6 @@ export const tools: ToolMetadata[] = [
     status: ToolStatus.STABLE,
   },
 
-  {
-    id: 'pictureSplicing',
-    name: '图片拼接',
-    nameEn: 'Image Splicer',
-    category: ToolCategory.IMAGE,
-    icon: 'ImagePlus',
-    description: '多张图片纵向/横向拼接',
-    keywords: ['图片', '拼接', '合并', 'image', 'splice', 'merge'],
-    tags: ['image', 'splice', 'merge'],
-    version: '1.0.0',
-    features: ['file_input', 'drag_drop', 'export'],
-    status: ToolStatus.STABLE,
-  },
-
   // ===== 其他工具 =====
   {
     id: 'timestamp',
@@ -589,20 +561,6 @@ export const tools: ToolMetadata[] = [
     description: 'Unix 时间戳与日期时间互转',
     keywords: ['时间戳', '日期', '转换', 'timestamp', 'date', 'time'],
     tags: ['time', 'timestamp', 'date', 'convert'],
-    version: '1.0.0',
-    features: ['real_time'],
-    status: ToolStatus.STABLE,
-  },
-
-  {
-    id: 'colorTransform',
-    name: '颜色转换',
-    nameEn: 'Color Converter',
-    category: ToolCategory.OTHER,
-    icon: 'Palette',
-    description: 'RGB、HEX、HSL 颜色格式转换',
-    keywords: ['颜色', '转换', 'rgb', 'hex', 'hsl', 'color'],
-    tags: ['color', 'convert', 'rgb', 'hex', 'hsl'],
     version: '1.0.0',
     features: ['real_time'],
     status: ToolStatus.STABLE,

@@ -26,16 +26,6 @@ export const tools = [
   },
 
   {
-    id: 'context-hub',
-    keywords: ['智能识别', '数据入口'],
-    name: 'Context Hub',
-    category: ToolCategory.COMMON,
-    icon: 'Sparkle',
-    description: '本地识别开发数据并推荐下一步工具',
-    preserveActivity: false,
-  },
-
-  {
     id: 'trans-radix',
     keywords: ['binary', 'hex', '十六进制'],
     name: '进制转换',
@@ -54,14 +44,6 @@ export const tools = [
     description: 'Base64、URL、HTML 实体编解码',
   },
 
-  {
-    id: 'uglify',
-    name: '代码压缩',
-    category: ToolCategory.ENCODING,
-    icon: 'Sparkle',
-    description: 'JavaScript 代码压缩混淆',
-  },
-
   // ===== 图片工具 =====
   {
     id: 'imagebase64',
@@ -69,15 +51,6 @@ export const tools = [
     category: ToolCategory.IMAGE,
     icon: 'Image',
     description: '图片转 Base64 编码',
-  },
-
-  {
-    id: 'pictureSplicing',
-    keywords: ['拼图', '图片合并'],
-    name: '图片拼接',
-    category: ToolCategory.IMAGE,
-    icon: 'ImageSquare',
-    description: '多张图片纵向/横向拼接',
   },
 
   {
@@ -107,15 +80,6 @@ export const tools = [
     category: ToolCategory.OTHER,
     icon: 'Clock',
     description: 'Unix 时间戳与日期时间互转',
-  },
-
-  {
-    id: 'colorTransform',
-    keywords: ['hex', 'rgb', 'hsl', '颜色'],
-    name: '颜色转换',
-    category: ToolCategory.OTHER,
-    icon: 'Palette',
-    description: 'RGB、HEX、HSL 颜色格式转换',
   },
 
   {

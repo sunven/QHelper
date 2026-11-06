@@ -42,12 +42,12 @@ test('popup search and favorites are shared with the sidebar', async ({
   await expect(page.getByText('没有找到匹配的工具。')).toBeVisible()
 })
 
-test('removed 数据格式 tools are absent from discovery and Cron uses the Context Hub fallback', async ({
+test('removed 数据格式 tools are absent from discovery', async ({
   context,
   extensionId,
   popupPage,
 }) => {
-  const page = await openToolPage(context, extensionId, 'context-hub')
+  const page = await openToolPage(context, extensionId, 'json')
   for (const view of [popupPage, page]) {
     await expect(view.getByText('数据格式', { exact: true })).toHaveCount(0)
     const search = view.getByRole('textbox', { name: '搜索工具' })
@@ -59,61 +59,8 @@ test('removed 数据格式 tools are absent from discovery and Cron uses the Con
     await search.press('Escape')
   }
 
-  await page.getByRole('textbox', { name: 'Context input' }).fill('*/5 * * * *')
-  await expect(page.getByText('未知格式', { exact: true }).first()).toBeVisible()
-  await expect(page.getByText('浏览工具目录', { exact: true })).toBeVisible()
-  await expect(page.getByRole('link', { name: '打开 Cron 解析器' })).toHaveCount(0)
   await page.close()
 })
-
-for (const handoff of [
-  {
-    id: 'json',
-    raw: '  {"private":"json-handoff"}  ',
-    link: '打开 JSON 格式化',
-    selector: '[data-testid="json-input"]',
-  },
-  {
-    id: 'convert',
-    raw: '  aGVsbG8gdGVtcG9yYXJ5  ',
-    link: '打开字符串编解码',
-    selector: 'textarea[placeholder="粘贴需要进行编解码的字符串"]',
-  },
-]) {
-  test(`Context Hub carries exact ${handoff.id} input only in memory`, async ({
-    context,
-    extensionId,
-  }) => {
-    const page = await openToolPage(context, extensionId, 'context-hub')
-    await page.getByRole('textbox', { name: 'Context input' }).fill(handoff.raw)
-    await page.getByRole('link', { name: handoff.link, exact: true }).click()
-    await expect(page.locator(`${handoff.selector}:visible`)).toHaveValue(
-      handoff.raw,
-    )
-    await expect(
-      page.getByRole('button', { name: '结束临时处理' }),
-    ).toBeVisible()
-    await expect(page).toHaveURL(
-      `chrome-extension://${extensionId}/tools/${handoff.id}.html`,
-    )
-    const persisted = await page.evaluate(async () =>
-      JSON.stringify({
-        chrome: await chrome.storage.local.get(null),
-        local: { ...localStorage },
-        session: { ...sessionStorage },
-        state: history.state,
-      }),
-    )
-    expect(persisted).not.toContain(handoff.raw.trim())
-    await page.reload()
-    await expect(
-      page.getByRole('button', { name: '开始临时处理' }),
-    ).toBeVisible()
-    await expect(page.locator(`${handoff.selector}:visible`)).not.toHaveValue(
-      handoff.raw,
-    )
-  })
-}
 
 test('temporary edits survive navigation and snapshots leave the ordinary draft intact', async ({
   context,

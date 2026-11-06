@@ -77,9 +77,6 @@ importers:
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
-      uglify-js:
-        specifier: ^3.19.3
-        version: 3.19.3
       vite:
         specifier: ^8.3.0
         version: 8.3.0(@types/node@25.0.10)(esbuild@0.27.2)(jiti@2.7.0)
@@ -4018,11 +4015,6 @@ packages:
 
   ufo@1.6.4:
     resolution: {integrity: sha512-JFNbkD1Svwe0KvGi8GOeLcP4kAWQ609twvCdcHxq1oSL8svv39ZuSvajcD8B+5D0eL4+s1Is2D/O6KN3qcTeRA==}
-
-  uglify-js@3.19.3:
-    resolution: {integrity: sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ==}
-    engines: {node: '>=0.8.0'}
-    hasBin: true
 
   uhyphen@0.2.0:
     resolution: {integrity: sha512-qz3o9CHXmJJPGBdqzab7qAYuW8kQGKNEuoHFYrBwV6hWIMcpAmxDLXojcHfFr9US1Pe6zUswEIJIbLI610fuqA==}
@@ -8113,8 +8105,6 @@ snapshots:
   ua-parser-js@1.0.41: {}
 
   ufo@1.6.4: {}
-
-  uglify-js@3.19.3: {}
 
   uhyphen@0.2.0: {}
 

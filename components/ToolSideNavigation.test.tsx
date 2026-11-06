@@ -51,7 +51,7 @@ describe('ToolSideNavigation', () => {
               key: 'json',
             }),
             expect.objectContaining({
-              key: 'context-hub',
+              key: 'trans-radix',
             }),
           ]),
         }),

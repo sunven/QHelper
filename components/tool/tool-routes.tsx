@@ -2,21 +2,17 @@ import type { ComponentType } from 'react'
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
 import { AesGcmTool } from '@/components/tool/aes-gcm'
 import { BcryptHashTool } from '@/components/tool/bcrypt-hash'
-import { ColorTransformTool } from '@/components/tool/colorTransform'
-import { ContextHub } from '@/components/tool/context-hub'
 import { ConvertTool } from '@/components/tool/convert'
 import { DownloadsTool } from '@/components/tool/downloads'
 import { ImageBase64Tool } from '@/components/tool/imagebase64'
 import { JsonTool } from '@/components/tool/json'
 import { OcrTool } from '@/components/tool/ocr'
 import { PasswordGenerator } from '@/components/tool/password'
-import { PictureSplicingTool } from '@/components/tool/pictureSplicing'
 import { QrCodeTool } from '@/components/tool/qrcode'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { TextDiffTool } from '@/components/tool/text-diff'
 import { TimestampTool } from '@/components/tool/timestamp'
 import { TransRadixTool } from '@/components/tool/trans-radix'
-import { UglifyTool } from '@/components/tool/uglify'
 import { UUIDGenerator } from '@/components/tool/uuid'
 import {
   createOrdinaryToolRoutes,
@@ -27,12 +23,9 @@ import {
 
 const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   json: JsonTool,
-  'context-hub': ContextHub,
   'trans-radix': TransRadixTool,
   convert: ConvertTool,
-  uglify: UglifyTool,
   imagebase64: ImageBase64Tool,
-  pictureSplicing: PictureSplicingTool,
   ocr: OcrTool,
   qrcode: QrCodeTool,
   uuid: UUIDGenerator,
@@ -40,7 +33,6 @@ const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   'aes-gcm': AesGcmTool,
   'bcrypt-hash': BcryptHashTool,
   timestamp: TimestampTool,
-  colorTransform: ColorTransformTool,
   downloads: DownloadsTool,
   'text-diff': TextDiffTool,
 }

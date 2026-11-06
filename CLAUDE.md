@@ -56,10 +56,7 @@ entrypoints/
 ├── json/            # JSON formatter/parser with diff support
 ├── timestamp/       # Unix timestamp converter
 ├── convert/         # String encoding/decoding tools
-├── uglify/          # JavaScript minifier
 ├── imagebase64/     # Image to Base64 converter
-├── colorTransform/  # Color format converter
-├── pictureSplicing/ # Image splicing tool
 ├── trans-radix/     # Number base converter
 └── background.ts    # Service worker (replaces background page from v2)
 ```
@@ -138,7 +135,7 @@ From `wxt.config.ts`:
 ## Tool Categories (Popup Menu)
 
 - **Common:** JSON formatter, Radix conversion
-- **Encoding:** String encode/decode, Uglify
+- **Encoding:** String encode/decode
 - **Image:** Base64 converter, Image splicing
 - **Other:** Timestamp converter, Color converter, Clear cookies
 

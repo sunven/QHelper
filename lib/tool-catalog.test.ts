@@ -79,7 +79,7 @@ describe('tool-catalog', () => {
       expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
       expect(aliases).not.toContain(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(17)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(13)
     expect(Object.values(ToolCategory)).not.toContain('data_format')
     expect(TOOL_CATEGORIES.map((category) => category.name)).not.toContain(
       '数据格式',
@@ -126,11 +126,6 @@ describe('tool-catalog', () => {
               name: 'JSON 格式化',
               path: '/tools/json.html',
             }),
-            expect.objectContaining({
-              key: 'context-hub',
-              name: 'Context Hub',
-              path: '/tools/context-hub.html',
-            }),
           ]),
         }),
       ]),
@@ -149,7 +144,6 @@ describe('tool-catalog', () => {
     expect(directory.entries.map((entry) => entry.id)).toEqual(
       expect.arrayContaining([
         'json',
-        'context-hub',
         'web-summary-launch',
         'bookmarks',
         'clear-cookie',
