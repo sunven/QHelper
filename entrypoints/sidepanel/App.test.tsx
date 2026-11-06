@@ -2,13 +2,19 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 
-const { usePersistedValue, streamWebPageSummary, resolveSummarizableTab, extractTabContent } =
-  vi.hoisted(() => ({
-    usePersistedValue: vi.fn(),
-    streamWebPageSummary: vi.fn(),
-    resolveSummarizableTab: vi.fn(),
-    extractTabContent: vi.fn(),
-  }))
+const {
+  usePersistedValue,
+  streamWebPageSummary,
+  fetchWebSummaryModels,
+  resolveSummarizableTab,
+  extractTabContent,
+} = vi.hoisted(() => ({
+  usePersistedValue: vi.fn(),
+  streamWebPageSummary: vi.fn(),
+  fetchWebSummaryModels: vi.fn(),
+  resolveSummarizableTab: vi.fn(),
+  extractTabContent: vi.fn(),
+}))
 
 vi.mock('@/hooks/usePersistedValue', () => ({
   usePersistedValue,
@@ -16,6 +22,10 @@ vi.mock('@/hooks/usePersistedValue', () => ({
 
 vi.mock('@/lib/web-summary/ai', () => ({
   streamWebPageSummary,
+}))
+
+vi.mock('@/lib/web-summary/models', () => ({
+  fetchWebSummaryModels,
 }))
 
 // 提取 seam：mock 掉 tab 解析与注入，保留纯函数 getRefreshHint 的真实现
@@ -76,6 +86,39 @@ describe('sidepanel/App', () => {
     expect(screen.getByTestId('web-summary-api-key')).toBeVisible()
   })
 
+  it('labels the current page and the summarized page', async () => {
+    streamWebPageSummary.mockResolvedValue('done')
+
+    render(<App />)
+
+    expect(await screen.findByText('当前页面')).toBeVisible()
+    expect(await screen.findByText('Article page')).toBeVisible()
+
+    fireEvent.click(await screen.findByTestId('web-summary-summarize'))
+
+    await waitFor(() => {
+      expect(screen.getByText('总结页面')).toBeVisible()
+    })
+    expect(screen.getAllByText('Article page')).toHaveLength(2)
+  })
+
+  it('updates the current page label when switching tabs', async () => {
+    render(<App />)
+
+    expect(await screen.findByText('Article page')).toBeVisible()
+
+    const listener = vi.mocked(chrome.tabs.onActivated.addListener).mock.calls[0]?.[0]
+    resolveSummarizableTab.mockResolvedValueOnce({
+      id: 2,
+      title: 'Another page',
+      url: 'https://example.com/another',
+    } as chrome.tabs.Tab)
+
+    listener?.({ tabId: 2, windowId: 1 })
+
+    expect(await screen.findByText('Another page')).toBeVisible()
+  })
+
   it('toggles api key visibility in the config drawer', async () => {
     render(<App />)
 
@@ -91,6 +134,52 @@ describe('sidepanel/App', () => {
 
     fireEvent.click(visibilityToggle)
     expect(apiKeyInput).toHaveAttribute('type', 'password')
+  })
+
+  it('fetches model options and applies the selected model', async () => {
+    const setValue = vi.fn(() => Promise.resolve())
+    usePersistedValue.mockReturnValue({
+      value: {
+        endpoint: 'https://example.com/v1/chat/completions',
+        model: '',
+        apiKey: 'secret',
+      },
+      setValue,
+      loading: false,
+    })
+    fetchWebSummaryModels.mockResolvedValue(['gpt-4.1', 'gpt-4.1-mini'])
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByTestId('web-summary-config-toggle'))
+    fireEvent.click(screen.getByTestId('web-summary-fetch-models'))
+
+    expect(await screen.findByText('gpt-4.1')).toBeVisible()
+    expect(fetchWebSummaryModels).toHaveBeenCalledWith({
+      endpoint: 'https://example.com/v1/chat/completions',
+      apiKey: 'secret',
+    })
+
+    fireEvent.click(screen.getByText('gpt-4.1'))
+
+    await waitFor(() => {
+      expect(setValue).toHaveBeenCalledWith(expect.objectContaining({ model: 'gpt-4.1' }))
+    })
+    expect(screen.queryByTestId('web-summary-model-options')).not.toBeInTheDocument()
+  })
+
+  it('shows an inline error when fetching models fails', async () => {
+    fetchWebSummaryModels.mockRejectedValue(new Error('模型列表接口返回 401：unauthorized'))
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByTestId('web-summary-config-toggle'))
+    fireEvent.click(screen.getByTestId('web-summary-fetch-models'))
+
+    expect(
+      await screen.findByText('模型列表接口返回 401：unauthorized'),
+    ).toBeVisible()
+    expect(screen.queryByTestId('web-summary-model-options')).not.toBeInTheDocument()
   })
 
   it('clears the loading state after aborting an in-flight summary', async () => {

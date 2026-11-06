@@ -43,6 +43,14 @@ const mockChrome = {
     query: vi.fn(() => Promise.resolve([])),
     get: vi.fn(() => Promise.resolve(undefined)),
     sendMessage: vi.fn(() => Promise.resolve(undefined)),
+    onActivated: {
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    },
+    onUpdated: {
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+    },
   },
   scripting: {
     executeScript: vi.fn(() => Promise.resolve([])),

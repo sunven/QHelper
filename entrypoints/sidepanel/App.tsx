@@ -18,12 +18,39 @@ import {
   resolveSummarizableTab,
 } from '@/lib/web-summary/page-source'
 import { renderSafeMarkdown } from '@/lib/web-summary/markdown'
-import type {
-  OpenWebSummaryResponse,
-  WebSummaryPendingAction,
-} from '@/types/web-summary'
-import { Bot, Copy, Eye, EyeOff, LoaderCircle, PanelsTopLeft, Settings2, SquareStop, X } from 'lucide-react'
+import { fetchWebSummaryModels } from '@/lib/web-summary/models'
+import type { WebSummaryPendingAction } from '@/types/web-summary'
+import {
+  Bot,
+  Check,
+  Copy,
+  Eye,
+  EyeOff,
+  FileText,
+  LoaderCircle,
+  PanelsTopLeft,
+  RefreshCw,
+  Settings2,
+  SquareStop,
+  X,
+} from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+
+type PageInfo = {
+  title: string
+  url: string
+}
+
+function getPageInfo(tab: chrome.tabs.Tab | undefined): PageInfo | null {
+  if (!tab?.url) {
+    return null
+  }
+
+  return {
+    title: tab.title?.trim() || tab.url,
+    url: tab.url,
+  }
+}
 
 export function App() {
   const { value: storedConfig, setValue: setStoredConfig, loading: configLoading } = usePersistedValue(
@@ -41,6 +68,12 @@ export function App() {
   const [copySuccess, setCopySuccess] = useState(false)
   const [isConfigOpen, setIsConfigOpen] = useState(false)
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false)
+  const [models, setModels] = useState<string[]>([])
+  const [isModelsOpen, setIsModelsOpen] = useState(false)
+  const [isFetchingModels, setIsFetchingModels] = useState(false)
+  const [modelsError, setModelsError] = useState<string | null>(null)
+  const [activePage, setActivePage] = useState<PageInfo | null>(null)
+  const [summarySource, setSummarySource] = useState<PageInfo | null>(null)
 
   const summaryHtml = useMemo(() => renderSafeMarkdown(summaryMarkdown), [summaryMarkdown])
   const summarizeRef = useRef<(tabId?: number) => Promise<void>>(async () => undefined)
@@ -51,10 +84,45 @@ export function App() {
   }, [abortController])
 
   const updateConfigField = (field: keyof typeof config, value: string) => {
+    if (field === 'endpoint' || field === 'apiKey') {
+      setModels([])
+      setIsModelsOpen(false)
+      setModelsError(null)
+    }
+
     void setStoredConfig({
       ...config,
       [field]: value,
     })
+  }
+
+  const fetchModels = async () => {
+    if (isFetchingModels) {
+      return
+    }
+
+    setModelsError(null)
+    setIsFetchingModels(true)
+
+    try {
+      const modelList = await fetchWebSummaryModels({
+        endpoint: config.endpoint,
+        apiKey: config.apiKey,
+      })
+      setModels(modelList)
+      setIsModelsOpen(true)
+    } catch (caughtError) {
+      setModels([])
+      setIsModelsOpen(false)
+      setModelsError(getErrorMessage(caughtError))
+    } finally {
+      setIsFetchingModels(false)
+    }
+  }
+
+  const selectModel = (model: string) => {
+    updateConfigField('model', model)
+    setIsModelsOpen(false)
   }
 
   const summarizePage = async (requestedTabId?: number) => {
@@ -81,6 +149,10 @@ export function App() {
     if (!targetTab) {
       return
     }
+
+    const targetPage = getPageInfo(targetTab)
+    setActivePage(targetPage)
+    setSummarySource(targetPage)
 
     setStatusText('正在提取当前网页正文…')
     setSummaryMarkdown('')
@@ -130,6 +202,10 @@ export function App() {
         currentTab = undefined
       }
 
+      if (active) {
+        setActivePage(getPageInfo(currentTab))
+      }
+
       const pendingAction = await chrome.runtime.sendMessage(
         {
           type: 'WEB_SUMMARY_SIDE_PANEL_READY',
@@ -150,26 +226,41 @@ export function App() {
     }
   }, [])
 
-  const handleLaunchFromPopup = async () => {
-    let activeTab: chrome.tabs.Tab | undefined
-    try {
-      activeTab = await resolveSummarizableTab()
-    } catch {
-      activeTab = undefined
+  useEffect(() => {
+    const refreshActivePage = async () => {
+      try {
+        const tab = await resolveSummarizableTab()
+        setActivePage(getPageInfo(tab))
+      } catch {
+        setActivePage(null)
+      }
     }
 
-    const response = await chrome.runtime.sendMessage({
-      type: 'OPEN_WEB_SUMMARY',
-      tabId: activeTab?.id,
-    }) as OpenWebSummaryResponse
-
-    if (!response?.ok) {
-      setError(response?.error || '无法打开网页总结侧边栏。')
-      return
+    const handleTabActivated = () => {
+      void refreshActivePage()
     }
 
-    setStatusText('已请求重新打开侧边栏。')
-  }
+    const handleTabUpdated = (
+      _tabId: number,
+      changeInfo: chrome.tabs.OnUpdatedInfo,
+      tab: chrome.tabs.Tab,
+    ) => {
+      if (
+        tab.active &&
+        (changeInfo.url || changeInfo.title || changeInfo.status === 'complete')
+      ) {
+        void refreshActivePage()
+      }
+    }
+
+    chrome.tabs.onActivated?.addListener(handleTabActivated)
+    chrome.tabs.onUpdated?.addListener(handleTabUpdated)
+
+    return () => {
+      chrome.tabs.onActivated?.removeListener(handleTabActivated)
+      chrome.tabs.onUpdated?.removeListener(handleTabUpdated)
+    }
+  }, [])
 
   const handleCopySummary = async () => {
     if (!summaryMarkdown.trim()) {
@@ -221,6 +312,16 @@ export function App() {
           </CardHeader>
           <CardContent className="flex min-h-0 flex-1 flex-col gap-1.5 px-2.5 pt-1.5">
             <div className="flex min-h-0 flex-1 flex-col gap-1.5">
+              <div className="flex min-w-0 items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50/80 px-2 py-1 text-[11px] leading-4 text-slate-500">
+                <FileText className="h-3 w-3 shrink-0 text-slate-400" />
+                <span className="shrink-0">当前页面</span>
+                <span
+                  className="truncate font-medium text-slate-700"
+                  title={activePage?.url ?? ''}
+                >
+                  {activePage?.title ?? '未找到可总结的网页'}
+                </span>
+              </div>
               <div className="flex items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
                   <Button
                     data-testid="web-summary-summarize"
@@ -259,15 +360,6 @@ export function App() {
                     variant="ghost"
                     size="sm"
                     className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
-                    onClick={() => void handleLaunchFromPopup()}
-                  >
-                    重新打开
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
                     onClick={() => void handleCopySummary()}
                     disabled={!summaryMarkdown.trim()}
                   >
@@ -287,6 +379,18 @@ export function App() {
                       {statusText}
                     </div>
                   </div>
+                  {summarySource && (
+                    <div className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] leading-4 text-slate-500">
+                      <FileText className="h-3 w-3 shrink-0" />
+                      <span className="shrink-0">总结页面</span>
+                      <span
+                        className="truncate font-medium text-slate-700"
+                        title={summarySource.url}
+                      >
+                        {summarySource.title}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2">
                   {summaryMarkdown ? (
@@ -352,7 +456,7 @@ export function App() {
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-2 pt-2">
+              <CardContent className="min-h-0 flex-1 space-y-2 overflow-y-auto pt-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="web-summary-endpoint" className="text-[13px]">接口地址</Label>
                   <Input
@@ -361,18 +465,6 @@ export function App() {
                     value={config.endpoint}
                     onChange={(event) => updateConfigField('endpoint', event.target.value)}
                     placeholder="https://api.openai.com/v1/chat/completions"
-                    className="h-8 rounded-md px-2.5 text-sm"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="web-summary-model" className="text-[13px]">模型名称</Label>
-                  <Input
-                    id="web-summary-model"
-                    data-testid="web-summary-model"
-                    value={config.model}
-                    onChange={(event) => updateConfigField('model', event.target.value)}
-                    placeholder="gpt-4.1-mini / 自定义兼容模型"
                     className="h-8 rounded-md px-2.5 text-sm"
                   />
                 </div>
@@ -400,6 +492,65 @@ export function App() {
                       {isApiKeyVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="web-summary-model" className="text-[13px]">模型名称</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      id="web-summary-model"
+                      data-testid="web-summary-model"
+                      value={config.model}
+                      onChange={(event) => updateConfigField('model', event.target.value)}
+                      placeholder="gpt-4.1-mini / 自定义兼容模型"
+                      className="h-8 min-w-0 flex-1 rounded-md px-2.5 text-sm"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      data-testid="web-summary-fetch-models"
+                      onClick={() => void fetchModels()}
+                      disabled={!config.endpoint.trim() || isFetchingModels}
+                      className="h-8 shrink-0 whitespace-nowrap px-2 text-[12px]"
+                    >
+                      {isFetchingModels ? (
+                        <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-3.5 w-3.5" />
+                      )}
+                      获取模型
+                    </Button>
+                  </div>
+                  {isModelsOpen && models.length > 0 && (
+                    <div
+                      role="listbox"
+                      aria-label="可选模型"
+                      data-testid="web-summary-model-options"
+                      className="max-h-40 overflow-y-auto rounded-md border border-slate-200 bg-white py-0.5"
+                    >
+                      {models.map((model) => (
+                        <button
+                          key={model}
+                          type="button"
+                          role="option"
+                          aria-selected={config.model === model}
+                          data-testid="web-summary-model-option"
+                          onClick={() => selectModel(model)}
+                          className={cn(
+                            'flex w-full items-center justify-between gap-2 px-2.5 py-1.5 text-left text-xs text-slate-700 transition-colors hover:bg-slate-50',
+                            config.model === model && 'bg-emerald-50 text-emerald-700',
+                          )}
+                        >
+                          <span className="truncate">{model}</span>
+                          {config.model === model && <Check className="h-3.5 w-3.5 shrink-0" />}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {modelsError && (
+                    <p className="text-[11px] leading-4 text-red-600">{modelsError}</p>
+                  )}
                 </div>
 
                 <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-2 text-[11px] leading-5 text-slate-500">
