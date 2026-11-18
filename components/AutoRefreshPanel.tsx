@@ -144,6 +144,12 @@ export function AutoRefreshPanel() {
   }
 
   const supported = state?.supported ?? false
+  const refreshing =
+    !loading &&
+    supported &&
+    state?.masterEnabled &&
+    !state.paused &&
+    state.effective !== 'none'
   const statusLabel = loading
     ? '读取中…'
     : !supported
@@ -161,15 +167,22 @@ export function AutoRefreshPanel() {
   return (
     <section
       data-testid="auto-refresh-panel"
-      className="flex flex-col gap-1.5 border border-border/70 bg-card/60 px-2 py-1.5"
+      className="flex flex-col gap-1 rounded-lg border border-border bg-card px-3 py-2 tabular-nums"
     >
       <div className="flex items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-1.5">
-          <span className="flex size-5 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-primary">
-            <ArrowsClockwiseIcon aria-hidden weight="duotone" />
-          </span>
-          <span className="shrink-0 text-xs font-medium">自动刷新</span>
-          <span className="truncate text-xs text-muted-foreground">
+        <div className="flex min-w-0 items-center gap-2">
+          <ArrowsClockwiseIcon
+            aria-hidden
+            className="size-4 shrink-0 text-muted-foreground"
+          />
+          <h2 className="shrink-0 text-sm font-medium">自动刷新</h2>
+          <span
+            className={
+              refreshing
+                ? 'truncate text-xs text-primary'
+                : 'truncate text-xs text-muted-foreground'
+            }
+          >
             {statusLabel}
           </span>
         </div>
@@ -203,7 +216,7 @@ export function AutoRefreshPanel() {
       )}
 
       {!loading && state && state.masterEnabled && state.paused && (
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-2">
           <span className="text-xs text-muted-foreground">
             此标签页已暂停，恢复后继续执行当前规则。
           </span>
@@ -239,8 +252,8 @@ export function AutoRefreshPanel() {
         !state.paused &&
         state.effective === 'session' &&
         state.session && (
-          <div className="flex flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xs tabular-nums">
               <span>
                 临时刷新 · 每{' '}
                 {formatIntervalSeconds(state.session.intervalSeconds)}
@@ -284,8 +297,8 @@ export function AutoRefreshPanel() {
         !state.paused &&
         state.effective === 'rule' &&
         state.rule && (
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs">
+          <div className="flex flex-col gap-2">
+            <span className="font-mono text-xs tabular-nums">
               持久规则 · 每 {formatIntervalSeconds(state.rule.intervalSeconds)}
             </span>
             <div className="flex flex-wrap items-center gap-1">
@@ -318,9 +331,9 @@ export function AutoRefreshPanel() {
         !state.paused &&
         state.effective === 'none' &&
         supported && (
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-2">
             <span className="text-xs text-muted-foreground">
-              为当前页面启动临时刷新，关闭标签页后自动结束。
+              临时刷新随当前标签页关闭而结束
             </span>
             <IntervalInput
               compact

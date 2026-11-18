@@ -48,14 +48,28 @@ export function IntervalInput({
   }
 
   return (
-    <div className={cn('flex flex-col gap-2', compact && 'gap-1.5')}>
+    <div
+      className={cn(
+        'flex flex-col gap-2',
+        compact &&
+          'flex-row flex-wrap items-center gap-x-3 gap-y-1 font-mono tabular-nums',
+      )}
+    >
       <div className="flex flex-wrap items-center gap-1">
         {presets.map((preset) => (
           <Button
             key={preset}
             type="button"
             size={compact ? 'xs' : 'sm'}
-            variant={valueSeconds === preset ? 'default' : 'outline'}
+            variant={
+              !compact && valueSeconds === preset ? 'default' : 'outline'
+            }
+            aria-pressed={valueSeconds === preset}
+            className={
+              compact
+                ? 'aria-pressed:border-primary aria-pressed:text-primary'
+                : undefined
+            }
             disabled={disabled}
             onClick={() => onChange(preset)}
           >
@@ -84,7 +98,7 @@ export function IntervalInput({
               setDraft(String(lastValidRef.current))
             }
           }}
-          className="w-28"
+          className={compact ? 'h-6 w-16 px-2' : 'w-28'}
           aria-label="自定义刷新间隔（秒）"
         />
         <span className="text-xs text-muted-foreground">

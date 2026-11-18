@@ -9,6 +9,23 @@ describe('tool search controls', () => {
     vi.clearAllMocks()
     installToolDataStorage()
   })
+  it('only labels the favorites column in popup results that offer stars', () => {
+    render(
+      <ToolDiscovery
+        surface="popup"
+        entries={getLaunchDirectory('popup-main').entries}
+        onLaunch={vi.fn()}
+        onSearchingChange={vi.fn()}
+      />,
+    )
+    const input = screen.getByRole('textbox', { name: '搜索工具' })
+    expect(screen.queryByText('星标收藏')).not.toBeInTheDocument()
+    fireEvent.change(input, { target: { value: 'json' } })
+    expect(screen.getByText('星标收藏')).toBeVisible()
+    fireEvent.change(input, { target: { value: '清除 Cookie' } })
+    expect(screen.getByTestId('discovery-search-clear-cookie')).toBeVisible()
+    expect(screen.queryByText('星标收藏')).not.toBeInTheDocument()
+  })
   it('supports keyboard launch, clearing, empty results and independent favorites', async () => {
     const launch = vi.fn()
     render(

@@ -1,3 +1,4 @@
+import { MagnifyingGlassIcon, StarIcon } from '@phosphor-icons/react'
 import { Star } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -13,16 +14,19 @@ export function ToolDiscovery({
   entries,
   onLaunch,
   onSearchingChange,
+  surface = 'sidebar',
 }: {
   entries: ToolCatalogLaunchEntry[]
   onLaunch: (entry: ToolCatalogLaunchEntry) => void
   onSearchingChange: (searching: boolean) => void
+  surface?: 'popup' | 'sidebar'
 }) {
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(0)
   const favorites = useToolSettingControl(favoriteTools)
   const results = useMemo(() => searchTools(entries, query), [entries, query])
   const searching = Boolean(query.trim())
+  const inPopup = surface === 'popup'
   useEffect(() => onSearchingChange(searching), [searching, onSearchingChange])
 
   const byIds = (ids: string[]) =>
@@ -63,14 +67,23 @@ export function ToolDiscovery({
             disabled={favorites.loading}
             onClick={() => toggleFavorite(entry.id)}
           >
-            <Star
-              aria-hidden
-              className={
-                favorites.value.ids.includes(entry.id)
-                  ? 'fill-current text-amber-500'
-                  : ''
-              }
-            />
+            {inPopup ? (
+              <StarIcon
+                aria-hidden
+                weight={
+                  favorites.value.ids.includes(entry.id) ? 'fill' : 'regular'
+                }
+              />
+            ) : (
+              <Star
+                aria-hidden
+                className={
+                  favorites.value.ids.includes(entry.id)
+                    ? 'fill-current text-amber-500'
+                    : ''
+                }
+              />
+            )}
           </Button>
         )}
       </div>
@@ -79,38 +92,50 @@ export function ToolDiscovery({
 
   const pinned = byIds(favorites.value.ids)
   return (
-    <section aria-label="查找工具" className="space-y-1 p-1">
-      <Input
-        aria-label="搜索工具"
-        placeholder="搜索工具名称或用途…"
-        value={query}
-        onChange={(event) => {
-          setQuery(event.target.value)
-          setSelected(0)
-        }}
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.preventDefault()
-            setQuery('')
+    <section
+      aria-label="查找工具"
+      className={inPopup ? 'space-y-2' : 'space-y-1 p-1'}
+    >
+      <div className="relative">
+        {inPopup && (
+          <MagnifyingGlassIcon
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-3 my-auto size-4 text-muted-foreground"
+          />
+        )}
+        <Input
+          aria-label="搜索工具"
+          placeholder={inPopup ? '按名称或用途搜索工具' : '搜索工具名称或用途…'}
+          className={inPopup ? 'h-9 pl-9' : undefined}
+          value={query}
+          onChange={(event) => {
+            setQuery(event.target.value)
             setSelected(0)
-          }
-          if (!searching || !results.length) return
-          if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-            event.preventDefault()
-            setSelected(
-              (current) =>
-                (current +
-                  (event.key === 'ArrowDown' ? 1 : -1) +
-                  results.length) %
-                results.length,
-            )
-          }
-          if (event.key === 'Enter') {
-            event.preventDefault()
-            onLaunch(results[Math.min(selected, results.length - 1)])
-          }
-        }}
-      />
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.preventDefault()
+              setQuery('')
+              setSelected(0)
+            }
+            if (!searching || !results.length) return
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+              event.preventDefault()
+              setSelected(
+                (current) =>
+                  (current +
+                    (event.key === 'ArrowDown' ? 1 : -1) +
+                    results.length) %
+                  results.length,
+              )
+            }
+            if (event.key === 'Enter') {
+              event.preventDefault()
+              onLaunch(results[Math.min(selected, results.length - 1)])
+            }
+          }}
+        />
+      </div>
       {favorites.error && (
         <p role="alert" className="text-xs text-destructive">
           {favorites.error}
@@ -123,6 +148,12 @@ export function ToolDiscovery({
       )}
       {searching ? (
         <div aria-label="搜索结果">
+          {inPopup && results.some((entry) => isOrdinaryToolId(entry.id)) && (
+            <div className="mb-1 flex justify-between px-2 text-xs text-muted-foreground">
+              <span>搜索结果</span>
+              <span>星标收藏</span>
+            </div>
+          )}
           {results.length ? (
             renderEntries(results, 'search')
           ) : (
@@ -139,9 +170,11 @@ export function ToolDiscovery({
               {renderEntries(pinned, 'favorites')}
             </div>
           )}
-          <p className="text-xs text-muted-foreground">
-            搜索工具后可点击星标收藏。
-          </p>
+          {!inPopup && (
+            <p className="text-xs text-muted-foreground">
+              搜索工具后可点击星标收藏。
+            </p>
+          )}
         </>
       )}
     </section>

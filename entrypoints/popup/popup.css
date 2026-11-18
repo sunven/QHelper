@@ -1,0 +1,23 @@
+.qhelper-popup {
+  width: 520px;
+  margin: 0;
+}
+
+.qhelper-popup :is(button, input) {
+  border-radius: 6px;
+  transition-property: color, background-color, border-color;
+}
+
+.qhelper-popup :is(button, input):focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+
+.qhelper-popup button[data-variant="default"]:hover:enabled {
+  background-color: color-mix(in oklch, var(--primary), var(--foreground) 12%);
+}
+
+/* Share label-driven column widths across all six tool groups. */
+.popup-directory {
+  grid-template-columns: repeat(4, minmax(max-content, 1fr));
+}

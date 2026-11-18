@@ -12,6 +12,24 @@ test.describe('Extension Popup', () => {
     await expect(popup.getToolButton('clear-cookie')).toBeVisible();
   });
 
+  test('shows each complete tool name at popup width', async ({ popupPage }) => {
+    await popupPage.setViewportSize({ width: 520, height: 600 });
+    const tools = popupPage.getByRole('navigation', { name: '工具目录' }).getByRole('button');
+    await expect(tools.first()).toBeVisible();
+    await popupPage.evaluate(() => document.fonts.ready);
+    const clipped = await tools.evaluateAll((buttons) => buttons.flatMap((button) => {
+      const text = document.createTreeWalker(button, NodeFilter.SHOW_TEXT).nextNode();
+      if (!text) return [button.getAttribute('aria-label')];
+      const range = document.createRange();
+      range.selectNodeContents(text);
+      const label = range.getBoundingClientRect();
+      const bounds = button.getBoundingClientRect();
+      return label.left < bounds.left || label.right > Math.min(bounds.right, document.documentElement.clientWidth)
+        ? [text.textContent] : [];
+    }));
+    expect(clipped).toEqual([]);
+  });
+
   test('clicking JSON tool opens new tab', async ({ popupPage, extensionId }) => {
     const popup = new PopupPage(popupPage);
 
