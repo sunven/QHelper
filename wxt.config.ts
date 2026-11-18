@@ -87,6 +87,7 @@ export default defineConfig({
       'scripting',
       'downloads',
       'videoCapture',
+      'alarms',
     ],
     host_permissions: ['<all_urls>'],
     icons: {

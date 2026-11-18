@@ -79,7 +79,7 @@ describe('tool-catalog', () => {
       expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
       expect(aliases).not.toContain(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(13)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(14)
     expect(Object.values(ToolCategory)).not.toContain('data_format')
     expect(TOOL_CATEGORIES.map((category) => category.name)).not.toContain(
       '数据格式',

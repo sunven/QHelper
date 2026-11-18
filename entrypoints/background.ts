@@ -1,3 +1,4 @@
+import { createAutoRefreshController } from '@/lib/auto-refresh/background'
 import {
   createWebSummaryPanelProtocol,
   ensureWebSummaryContextMenu,
@@ -20,6 +21,25 @@ import type {
 
 export default defineBackground(() => {
   const panelProtocol = createWebSummaryPanelProtocol()
+  const autoRefresh = createAutoRefreshController()
+
+  void autoRefresh.initialize()
+
+  chrome.alarms.onAlarm.addListener((alarm) => {
+    void autoRefresh.handleAlarm(alarm)
+  })
+
+  chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+    void autoRefresh.handleTabUpdated(tabId, changeInfo, tab)
+  })
+
+  chrome.tabs.onRemoved.addListener((tabId) => {
+    void autoRefresh.handleTabRemoved(tabId)
+  })
+
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    autoRefresh.handleStorageChanged(changes, areaName)
+  })
 
   const syncContextMenus = () => {
     void Promise.all([
@@ -29,8 +49,14 @@ export default defineBackground(() => {
   }
 
   syncContextMenus()
-  chrome.runtime.onInstalled.addListener(syncContextMenus)
-  chrome.runtime.onStartup.addListener(syncContextMenus)
+  chrome.runtime.onInstalled.addListener(() => {
+    syncContextMenus()
+    void autoRefresh.reconcile()
+  })
+  chrome.runtime.onStartup.addListener(() => {
+    syncContextMenus()
+    void autoRefresh.reconcile()
+  })
   chrome.contextMenus.onClicked.addListener((info, tab) => {
     if (info.menuItemId === COPY_PAGE_TITLE_MENU_ID) {
       void copyPageTitleFromContextClick(info, tab).catch(() => undefined)
@@ -50,6 +76,10 @@ export default defineBackground(() => {
   })
 
   chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) => {
+    if (autoRefresh.handleMessage(message, sender, sendResponse)) {
+      return true
+    }
+
     if (handleDictionaryFetchMessage(message, sendResponse)) {
       return true
     }

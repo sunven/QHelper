@@ -1,4 +1,5 @@
 import {
+  ArrowsClockwiseIcon,
   ArrowsLeftRightIcon,
   BookmarkSimpleIcon,
   BracketsCurlyIcon,
@@ -25,6 +26,7 @@ import type { Icon } from '@phosphor-icons/react'
  * 漏配在编译期报错（Record 查找必中，无运行时兜底）。
  */
 const toolIconTokens = {
+  ArrowsClockwise: ArrowsClockwiseIcon,
   ArrowsLeftRight: ArrowsLeftRightIcon,
   BookmarkSimple: BookmarkSimpleIcon,
   BracketsCurly: BracketsCurlyIcon,

@@ -149,9 +149,10 @@ pnpm build
 
 ```
 cookies: 用于"清除 Cookie"功能，数据不离开浏览器
-tabs: 用于在新标签页打开工具界面，不读取标签页内容
-storage: 用于存储用户偏好设置，仅本地存储
-host_permissions: 用于网页总结内容提取；在 GitHub 仓库首页注入 "Zread" 按钮和当前仓库 Star History 浮窗入口
+tabs: 用于在新标签页打开工具界面；自动刷新读取当前标签页 URL 并按规则刷新
+storage: 用于存储用户偏好设置和自动刷新规则，仅本地存储
+alarms: 用于持久刷新规则的定时调度
+host_permissions: 用于网页总结内容提取；在 GitHub 仓库首页注入 "Zread" 按钮和当前仓库 Star History 浮窗入口；在 http(s) 页面注入自动刷新浮标，不读取页面内容
 ```
 
 #### 定价与分发页

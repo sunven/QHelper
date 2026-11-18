@@ -9,6 +9,7 @@ import {
 } from '@phosphor-icons/react'
 import { useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom/client'
+import { AutoRefreshPanel } from '@/components/AutoRefreshPanel'
 import { ToolDiscovery } from '@/components/ToolDiscovery'
 import { getToolIcon } from '@/components/tool-icons'
 import { Button } from '@/components/ui/button'
@@ -171,6 +172,8 @@ function App() {
               <GearSixIcon aria-hidden weight="duotone" />
             </Button>
           </header>
+
+          <AutoRefreshPanel />
 
           <ToolDiscovery entries={popupDirectory.entries} onLaunch={(entry) => { void handleLaunchEntryClick(entry) }} onSearchingChange={setSearching} />
 

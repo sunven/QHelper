@@ -34,6 +34,15 @@ export const tools = [
     description: '二进制、八进制、十进制、十六进制转换',
   },
 
+  {
+    id: 'auto-refresh',
+    keywords: ['auto refresh', 'reload', '定时刷新'],
+    name: '自动刷新',
+    category: ToolCategory.COMMON,
+    icon: 'ArrowsClockwise',
+    description: '按固定间隔自动刷新指定网页',
+  },
+
   // ===== 编码转换 =====
   {
     id: 'convert',

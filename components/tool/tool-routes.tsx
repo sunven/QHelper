@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react'
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
 import { AesGcmTool } from '@/components/tool/aes-gcm'
+import { AutoRefreshTool } from '@/components/tool/auto-refresh'
 import { BcryptHashTool } from '@/components/tool/bcrypt-hash'
 import { ConvertTool } from '@/components/tool/convert'
 import { DownloadsTool } from '@/components/tool/downloads'
@@ -24,6 +25,7 @@ import {
 const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   json: JsonTool,
   'trans-radix': TransRadixTool,
+  'auto-refresh': AutoRefreshTool,
   convert: ConvertTool,
   imagebase64: ImageBase64Tool,
   ocr: OcrTool,

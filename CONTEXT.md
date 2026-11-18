@@ -88,6 +88,34 @@ _Avoid_: Internal analytics page, embedded report
 A **Repository Page Helper** for a **Repository Home Page** that recolors the repository's own last-commit timestamp when the current repository's default branch has received no new commits for a prolonged period. The recoloring is the warning: an active repository leaves the timestamp untouched. It is repository-specific public metadata, not captured content, request data, tool history, or a **Tool Setting**.
 _Avoid_: Stale repo alert, activity monitor, maintenance score
 
+**Refresh Interval**:
+The fixed delay between automatic reloads of a page. A **Refresh Interval** belongs to a **Refresh Rule** or a **Session Refresh**; it is not a calendar schedule or a random delay.
+_Avoid_: Refresh frequency, timer, cron
+
+**Refresh Rule**:
+A user-authored configuration that a page identified by its exact URL (ignoring the fragment) should reload on a fixed **Refresh Interval**. An enabled **Refresh Rule** applies automatically to every open matching tab and to matching tabs opened later; it is device-local and survives browser restarts. It is not a **Session Refresh**.
+_Avoid_: Auto-refresh toggle, global refresh setting, page timer
+
+**Session Refresh**:
+A temporary refresh configuration bound to one tab and the page where the user starts it. A **Session Refresh** sleeps while that tab is on another page, resumes when it returns, overrides a **Refresh Rule** for the same page, and disappears when the tab closes or the browser restarts. It is not a **Refresh Rule**.
+_Avoid_: Temporary rule, one-off timer, tab cache
+
+**Per-Tab Pause**:
+A session-scoped suspension of all automatic refresh in one tab, regardless of the page or **Refresh Rule** involved. A **Per-Tab Pause** is lifted by the user or by the tab closing; it does not disable a **Refresh Rule** and does not survive a browser restart.
+_Avoid_: Rule disable, global pause, stopping a session
+
+**Auto-Refresh Master Switch**:
+A device-local control that suspends all **Refresh Rules** and **Session Refreshes** without changing their enabled state. Turning the **Auto-Refresh Master Switch** back on restores the prior per-rule state.
+_Avoid_: Disable all rules permanently, global rule deletion
+
+**Refresh Indicator**:
+The in-page control shown while a tab is being automatically refreshed. It reports the next refresh and offers **Per-Tab Pause**; it is not a **Refresh Rule** editor.
+_Avoid_: Refresh widget, countdown overlay, auto-refresh popup
+
+**Refresh Rule Manager**:
+The ordinary QHelper tool page where the user creates, edits, enables, and deletes **Refresh Rules**, and operates the **Auto-Refresh Master Switch**. A **Refresh Rule Manager** does not itself execute refreshes.
+_Avoid_: Auto-refresh settings page, timer dashboard
+
 ## Example Dialogue
 
 Developer: "Should Json String request data be a Synced Setting?"
