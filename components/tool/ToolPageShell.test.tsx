@@ -10,15 +10,15 @@ vi.mock('@/components/ToolSideNavigation', () => ({
 describe('ToolPageShell', () => {
   it('renders one tool view without owning the shared navigation layout', () => {
     render(
-      <ToolPageShell toolId="json">
+      <ToolPageShell toolId="trans-radix">
         <div>Tool body</div>
       </ToolPageShell>,
     );
 
     expect(screen.getByText('Tool body')).toBeVisible();
-    expect(screen.getByRole('heading', { name: 'JSON 格式化' })).toHaveClass('sr-only');
-    expect(screen.getByText('Tool body').closest('.tool-page-view')).toHaveAttribute('data-tool-id', 'json');
-    expect(screen.getByText('Tool body').closest('.tool-page-view')).toHaveAccessibleName('JSON 格式化');
+    expect(screen.getByRole('heading', { name: '进制转换' })).toHaveClass('sr-only');
+    expect(screen.getByText('Tool body').closest('.tool-page-view')).toHaveAttribute('data-tool-id', 'trans-radix');
+    expect(screen.getByText('Tool body').closest('.tool-page-view')).toHaveAccessibleName('进制转换');
     expect(document.querySelector('.tool-hero-title')).not.toBeInTheDocument();
     expect(screen.queryByTestId('tool-side-navigation-region')).not.toBeInTheDocument();
     expect(screen.queryByTestId('tool-page-main')).not.toBeInTheDocument();
@@ -41,8 +41,8 @@ describe('ToolWorkspaceShell', () => {
 
   it('renders side navigation and reserves shared shell width for it', () => {
     render(
-      <ToolWorkspaceShell activeToolId="json">
-        <ToolPageShell toolId="json">
+      <ToolWorkspaceShell activeToolId="trans-radix">
+        <ToolPageShell toolId="trans-radix">
           <div>Tool body</div>
         </ToolPageShell>
       </ToolWorkspaceShell>,

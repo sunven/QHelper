@@ -131,7 +131,7 @@ function ToolSideNavigationContent({
   const currentCategoryKey =
     getToolCatalogCategoryForTool(currentToolKey)?.key ?? null
   const [openKeys, setOpenKeys] = React.useState<string[]>(() =>
-    currentCategoryKey ? [currentCategoryKey] : [],
+    TOOL_CATEGORIES.map((category) => category.key),
   )
 
   React.useEffect(() => {

@@ -25,7 +25,7 @@ vi.mock('@/lib/tool-catalog', async (importOriginal) => ({
 describe('ToolSideNavigation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    window.history.replaceState({}, '', '/tools/json.html')
+    window.history.replaceState({}, '', '/tools/trans-radix.html')
     window.matchMedia = vi.fn().mockImplementation((query) => ({
       addEventListener: vi.fn(),
       addListener: vi.fn(),
@@ -48,10 +48,10 @@ describe('ToolSideNavigation', () => {
           label: '常用',
           children: expect.arrayContaining([
             expect.objectContaining({
-              key: 'json',
+              key: 'trans-radix',
             }),
             expect.objectContaining({
-              key: 'trans-radix',
+              key: 'auto-refresh',
             }),
           ]),
         }),
@@ -65,17 +65,19 @@ describe('ToolSideNavigation', () => {
     expect(screen.getByTestId('tool-side-navigation')).toBeVisible()
     expect(screen.getByText('Tools')).toBeVisible()
     expect(screen.getByText('常用')).toBeVisible()
-    expect(screen.getByText('JSON 格式化')).toBeVisible()
+    expect(screen.getByText('进制转换')).toBeVisible()
     expect(
-      screen.getByRole('menuitem', { name: /JSON 格式化/ }),
+      screen.getByRole('menuitem', { name: /进制转换/ }),
     ).toHaveAttribute('data-active', 'true')
   })
 
-  it('opens the current tool category by default', async () => {
+  it('expands all tool categories by default', async () => {
     renderWithSidebar(<ToolSideNavigation />)
 
     await waitFor(() => {
       expect(screen.getByRole('menuitem', { name: /进制转换/ })).toBeVisible()
+      expect(screen.getByRole('menuitem', { name: /UUID 生成器/ })).toBeVisible()
+      expect(screen.getByRole('menuitem', { name: /清除站点数据/ })).toBeVisible()
     })
   })
 
@@ -105,7 +107,7 @@ describe('ToolSideNavigation', () => {
     }
 
     renderWithSidebar(
-      <MemoryRouter initialEntries={['/json.html']}>
+      <MemoryRouter initialEntries={['/auto-refresh.html']}>
         <ToolSideNavigation />
         <Routes>
           <Route path="/:toolFile" element={<LocationProbe />} />

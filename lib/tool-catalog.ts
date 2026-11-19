@@ -5,7 +5,7 @@ import { tools as registeredTools } from './registry/tools'
 
 export const TOOLS_SPA_ENTRY = 'tools.html'
 export const TOOLS_ROUTE_BASE = 'tools'
-export const DEFAULT_TOOL_ID = 'json'
+export const DEFAULT_TOOL_ID = 'trans-radix'
 export const TOOL_SETTINGS_ID = 'settings'
 export const TOOL_BOOKMARKS_ID = 'bookmarks'
 export const WEB_SUMMARY_LAUNCH_ID = 'web-summary-launch'

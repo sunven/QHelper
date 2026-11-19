@@ -6,12 +6,10 @@ import { BcryptHashTool } from '@/components/tool/bcrypt-hash'
 import { ClearSiteDataTool } from '@/components/tool/clear-site-data'
 import { DownloadsTool } from '@/components/tool/downloads'
 import { ImageBase64Tool } from '@/components/tool/imagebase64'
-import { JsonTool } from '@/components/tool/json'
 import { OcrTool } from '@/components/tool/ocr'
 import { PasswordGenerator } from '@/components/tool/password'
 import { QrCodeTool } from '@/components/tool/qrcode'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
-import { TextDiffTool } from '@/components/tool/text-diff'
 import { TransRadixTool } from '@/components/tool/trans-radix'
 import { UUIDGenerator } from '@/components/tool/uuid'
 import {
@@ -22,7 +20,6 @@ import {
 } from '@/lib/tool-catalog'
 
 const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
-  json: JsonTool,
   'trans-radix': TransRadixTool,
   'auto-refresh': AutoRefreshTool,
   imagebase64: ImageBase64Tool,
@@ -34,12 +31,6 @@ const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   'bcrypt-hash': BcryptHashTool,
   downloads: DownloadsTool,
   'clear-site-data': ClearSiteDataTool,
-  'text-diff': TextDiffTool,
-}
-
-// 工具特有的 Tool Page Shell 布局变体在路由映射处声明，不进 Tool Catalog
-const shellClassNameByToolId: Partial<Record<OrdinaryToolId, string>> = {
-  'text-diff': 'h-full',
 }
 
 function createToolPage(
@@ -51,10 +42,7 @@ function createToolPage(
   function ToolPage() {
     return (
       <ToolErrorBoundary toolId={toolId} toolName={tool?.name ?? toolId}>
-        <ToolPageShell
-          toolId={toolId}
-          className={shellClassNameByToolId[toolId]}
-        >
+        <ToolPageShell toolId={toolId}>
           <Component />
         </ToolPageShell>
       </ToolErrorBoundary>

@@ -1,11 +1,8 @@
 import {
   ArrowsClockwiseIcon,
-  ArrowsLeftRightIcon,
   BookmarkSimpleIcon,
   BracketsCurlyIcon,
   CalculatorIcon,
-  ClockIcon,
-  CodeIcon,
   FileCodeIcon,
   FileTextIcon,
   GearSixIcon,
@@ -27,12 +24,9 @@ import type { Icon } from '@phosphor-icons/react'
  */
 const toolIconTokens = {
   ArrowsClockwise: ArrowsClockwiseIcon,
-  ArrowsLeftRight: ArrowsLeftRightIcon,
   BookmarkSimple: BookmarkSimpleIcon,
   BracketsCurly: BracketsCurlyIcon,
   Calculator: CalculatorIcon,
-  Clock: ClockIcon,
-  Code: CodeIcon,
   FileCode: FileCodeIcon,
   FileText: FileTextIcon,
   GearSix: GearSixIcon,

@@ -2,7 +2,6 @@ import { expect, test } from '../support/fixtures'
 import { openToolPage } from '../support/helpers/extension'
 
 const toolPages = [
-  'json',
   'imagebase64',
   'trans-radix',
   'uuid',
@@ -17,15 +16,19 @@ test('tool shell uses breadcrumb title without a duplicated body title', async (
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'json')
+  const page = await openToolPage(context, extensionId, 'trans-radix')
   const pageView = page.locator('main .tool-page-view').first()
 
   await expect(page.getByTestId('tool-workspace-navbar')).toContainText(
-    'JSON 格式化',
+    '进制转换',
   )
   await expect(pageView.locator('.tool-hero-title')).toHaveCount(0)
-  await expect(page.locator('#tool-page-title-json')).toHaveClass(/sr-only/)
-  await expect(page.locator('#tool-page-title-json')).toHaveText('JSON 格式化')
+  await expect(page.locator('#tool-page-title-trans-radix')).toHaveClass(
+    /sr-only/,
+  )
+  await expect(page.locator('#tool-page-title-trans-radix')).toHaveText(
+    '进制转换',
+  )
 
   await page.close()
 })
@@ -34,12 +37,12 @@ test('tool navigation uses the left-side menu', async ({
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'json')
+  const page = await openToolPage(context, extensionId, 'trans-radix')
   const navbar = page.getByTestId('tool-workspace-navbar')
   const navigation = page.getByTestId('tool-side-navigation')
   const main = page.getByTestId('tool-page-main')
-  const selectedJsonTool = navigation.getByRole('menuitem', {
-    name: /JSON 格式化/,
+  const selectedTool = navigation.getByRole('menuitem', {
+    name: /进制转换/,
   })
 
   await expect(navbar).toBeVisible()
@@ -48,10 +51,10 @@ test('tool navigation uses the left-side menu', async ({
   await expect(navigation.getByText('Tools')).toBeVisible()
   await expect(main).toBeVisible()
   await expect(navigation.getByText('常用')).toBeVisible()
-  await expect(selectedJsonTool).toBeVisible()
-  await expect(selectedJsonTool).toHaveAttribute('data-active', 'true')
+  await expect(selectedTool).toBeVisible()
+  await expect(selectedTool).toHaveAttribute('data-active', 'true')
   await expect(
-    navigation.getByRole('menuitem', { name: /进制转换/ }),
+    navigation.getByRole('menuitem', { name: /自动刷新/ }),
   ).toBeVisible()
 
   const boxes = await Promise.all([
@@ -107,11 +110,22 @@ test('tool navigation keeps form state inside the shared SPA', async ({
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'json')
-  const input = page.getByTestId('json-input')
+  const page = await openToolPage(context, extensionId, 'trans-radix')
+  const input = page.getByPlaceholder('输入10进制数')
 
-  await input.fill('{"spa":true}')
-  await expect(input).toHaveValue('{"spa":true}')
+  await input.fill('255')
+  await expect(input).toHaveValue('255')
+
+  await page
+    .getByTestId('tool-side-navigation')
+    .getByRole('menuitem', { name: /自动刷新/ })
+    .click()
+  await expect(page).toHaveURL(
+    `chrome-extension://${extensionId}/tools/auto-refresh.html`,
+  )
+  await expect(
+    page.locator('#tool-page-title-auto-refresh'),
+  ).toHaveText('自动刷新')
 
   await page
     .getByTestId('tool-side-navigation')
@@ -120,16 +134,7 @@ test('tool navigation keeps form state inside the shared SPA', async ({
   await expect(page).toHaveURL(
     `chrome-extension://${extensionId}/tools/trans-radix.html`,
   )
-  await expect(page.getByRole('heading', { name: '进制转换' })).toBeVisible()
-
-  await page
-    .getByTestId('tool-side-navigation')
-    .getByRole('menuitem', { name: /JSON 格式化/ })
-    .click()
-  await expect(page).toHaveURL(
-    `chrome-extension://${extensionId}/tools/json.html`,
-  )
-  await expect(page.getByTestId('json-input')).toHaveValue('{"spa":true}')
+  await expect(input).toHaveValue('255')
 
   await page.close()
 })
@@ -138,7 +143,7 @@ test('tool settings button opens the settings page', async ({
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'json')
+  const page = await openToolPage(context, extensionId, 'trans-radix')
 
   await page.getByTestId('tool-settings-link').click()
 

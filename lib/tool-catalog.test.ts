@@ -58,6 +58,21 @@ describe('tool-catalog', () => {
     ).not.toContain('web_format')
   })
 
+  it('excludes removed JSON and text diff tools from tools, launches and generated aliases', () => {
+    const directory = getLaunchDirectory('popup-main')
+    const aliases = getToolsSpaAliases().map((alias) => alias.id)
+
+    for (const id of ['json', 'text-diff']) {
+      expect(isOrdinaryToolId(id)).toBe(false)
+      expect(getToolCatalogTool(id)).toBeUndefined()
+      expect(getLaunchEntry(id)).toBeUndefined()
+      expect(parseToolRouteParam(`${id}.html`)).toBeNull()
+      expect(getToolIdFromPathname(`/tools/${id}.html`)).toBeNull()
+      expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
+      expect(aliases).not.toContain(id)
+    }
+  })
+
   it('derives ordinary tool ids from registered tools', () => {
     expect(new Set(ORDINARY_TOOL_IDS)).toEqual(
       new Set(tools.map((tool) => tool.id)),
@@ -79,7 +94,7 @@ describe('tool-catalog', () => {
       expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
       expect(aliases).not.toContain(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(13)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(11)
     expect(TOOL_CATEGORIES.map((category) => String(category.key))).not.toContain(
       'encoding',
     )
@@ -93,24 +108,24 @@ describe('tool-catalog', () => {
   })
 
   it('exposes catalog lookup for UI callers without using the registry directly', () => {
-    expect(getToolCatalogTool('json')).toMatchObject({
-      key: 'json',
-      name: 'JSON 格式化',
-      path: '/tools/json.html',
-      category: ToolCategory.COMMON,
-      icon: 'Code',
+    expect(getToolCatalogTool('uuid')).toMatchObject({
+      key: 'uuid',
+      name: 'UUID 生成器',
+      path: '/tools/uuid.html',
+      category: ToolCategory.SECURITY,
+      icon: 'Hash',
     })
     expect(getToolCatalogTool('settings')).toBeUndefined()
-    expect(getToolCatalogCategoryForTool('json')).toMatchObject({
-      key: ToolCategory.COMMON,
-      name: TOOL_CATEGORY_LABELS[ToolCategory.COMMON],
+    expect(getToolCatalogCategoryForTool('uuid')).toMatchObject({
+      key: ToolCategory.SECURITY,
+      name: TOOL_CATEGORY_LABELS[ToolCategory.SECURITY],
     })
-    expect(getToolCatalogTool('text-diff')).toMatchObject({
-      key: 'text-diff',
-      name: '文本 Diff',
-      path: '/tools/text-diff.html',
+    expect(getToolCatalogTool('trans-radix')).toMatchObject({
+      key: 'trans-radix',
+      name: '进制转换',
+      path: '/tools/trans-radix.html',
       category: ToolCategory.COMMON,
-      icon: 'ArrowsLeftRight',
+      icon: 'Calculator',
     })
     expect(ORDINARY_TOOL_CATALOG_TOOLS.map((tool) => tool.key)).toEqual(
       ORDINARY_TOOL_IDS,
@@ -125,9 +140,9 @@ describe('tool-catalog', () => {
           name: TOOL_CATEGORY_LABELS[ToolCategory.COMMON],
           tools: expect.arrayContaining([
             expect.objectContaining({
-              key: 'json',
-              name: 'JSON 格式化',
-              path: '/tools/json.html',
+              key: 'trans-radix',
+              name: '进制转换',
+              path: '/tools/trans-radix.html',
             }),
           ]),
         }),
@@ -146,7 +161,7 @@ describe('tool-catalog', () => {
     expect(directory.surface).toBe('popup-main')
     expect(directory.entries.map((entry) => entry.id)).toEqual(
       expect.arrayContaining([
-        'json',
+        'trans-radix',
         'web-summary-launch',
         'bookmarks',
         'clear-site-data',
@@ -220,32 +235,34 @@ describe('tool-catalog', () => {
     ).toEqual(ORDINARY_TOOL_IDS)
 
     expect(() => createOrdinaryToolRoutes({})).toThrow(
-      'Missing tool component for "json"',
+      'Missing tool component for "trans-radix"',
     )
   })
 })
 
 describe('tool catalog routing helpers', () => {
   it('builds path-based routes for ordinary tools', () => {
-    expect(DEFAULT_TOOL_ID).toBe('json')
-    expect(getToolsSpaPath('json')).toBe('tools/json.html')
+    expect(DEFAULT_TOOL_ID).toBe('trans-radix')
     expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html')
+    expect(getToolsSpaPath('uuid')).toBe('tools/uuid.html')
     expect(getToolRoutePath('imagebase64')).toBe('/imagebase64.html')
     expect(getToolRoutePath('settings')).toBe('/settings.html')
   })
 
   it('parses route params by stripping the html extension', () => {
-    expect(parseToolRouteParam('json.html')).toBe('json')
+    expect(parseToolRouteParam('uuid.html')).toBe('uuid')
     expect(parseToolRouteParam('trans-radix.html')).toBe('trans-radix')
-    expect(parseToolRouteParam('json')).toBe('json')
+    expect(parseToolRouteParam('uuid')).toBe('uuid')
+    expect(parseToolRouteParam('json.html')).toBeNull()
     expect(parseToolRouteParam('json-string-panel.html')).toBeNull()
     expect(parseToolRouteParam('settings')).toBeNull()
     expect(parseToolRouteParam(undefined)).toBeNull()
   })
 
   it('detects the current tool from an SPA pathname', () => {
-    expect(getToolIdFromPathname('/tools/json.html')).toBe('json')
+    expect(getToolIdFromPathname('/tools/uuid.html')).toBe('uuid')
     expect(getToolIdFromPathname('/tools/trans-radix.html')).toBe('trans-radix')
+    expect(getToolIdFromPathname('/tools/json.html')).toBeNull()
     expect(getToolIdFromPathname('/tools/json-string-panel.html')).toBeNull()
     expect(
       getCurrentToolIdFromLocation({ pathname: '/tools/downloads.html' }),
@@ -263,15 +280,15 @@ describe('tool catalog routing helpers', () => {
       },
     })
 
-    expect(getToolsSpaUrl('json')).toBe(
-      'chrome-extension://test/tools/json.html',
+    expect(getToolsSpaUrl('uuid')).toBe(
+      'chrome-extension://test/tools/uuid.html',
     )
 
     vi.unstubAllGlobals()
   })
 
   it('detects the shared SPA entry', () => {
-    expect(isToolsSpaLocation({ pathname: '/tools/json.html' })).toBe(true)
+    expect(isToolsSpaLocation({ pathname: '/tools/uuid.html' })).toBe(true)
     expect(isToolsSpaLocation({ pathname: '/json.html' })).toBe(false)
   })
 })

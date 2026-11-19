@@ -53,7 +53,6 @@ pnpm format
 ```
 entrypoints/
 ├── popup/           # Extension popup (main menu)
-├── json/            # JSON formatter/parser with diff support
 ├── imagebase64/     # Image to Base64 converter
 ├── trans-radix/     # Number base converter
 └── background.ts    # Service worker (replaces background page from v2)
@@ -81,10 +80,10 @@ Entrypoints may call extension APIs directly when the call is tightly coupled to
 
 Use `defineSetting(key, defaults)` from `lib/settings.ts` for low-sensitivity synced Tool Settings. It handles sync storage, local fallback, subscriptions, and reset behavior.
 
-Use local persisted data for captured content, tool history, API credentials, and large local workspaces. Examples:
+Use local persisted data for captured content, snapshots, API credentials, and large local workspaces. Examples:
 
 - `lib/chrome/local-persisted-data.ts` for device-local extension storage.
-- `hooks/useToolState.ts` and `hooks/useToolHistory.ts` for tool state/history.
+- `hooks/useToolState.ts` for tool state.
 
 ### Path Aliases
 
@@ -132,7 +131,7 @@ From `wxt.config.ts`:
 
 ## Tool Categories (Popup Menu)
 
-- **Common:** JSON formatter, Radix conversion
+- **Common:** Radix conversion, Auto refresh
 - **Image:** Base64 converter, Image splicing
 - **Other:** Color converter, Clear cookies
 

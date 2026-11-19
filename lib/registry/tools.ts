@@ -9,23 +9,6 @@ import { ToolCategory } from './ToolMetadata'
 export const tools = [
   // ===== 常用工具 =====
   {
-    id: 'json',
-    keywords: ['json format', 'json diff', '美化'],
-    name: 'JSON 格式化',
-    category: ToolCategory.COMMON,
-    icon: 'Code',
-    description: 'JSON 格式化、压缩、diff 对比',
-  },
-
-  {
-    id: 'text-diff',
-    name: '文本 Diff',
-    category: ToolCategory.COMMON,
-    icon: 'ArrowsLeftRight',
-    description: '实时对比两段纯文本的差异',
-  },
-
-  {
     id: 'trans-radix',
     keywords: ['binary', 'hex', '十六进制'],
     name: '进制转换',

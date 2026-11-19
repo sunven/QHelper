@@ -17,11 +17,8 @@ import { isContentKey } from '@/lib/tool-data/catalog'
  *
  * @example
  * ```tsx
- * const [input, setInput] = useToolState('json', 'input', '')
- * const [formatOptions, setFormatOptions] = useToolState('json', 'options', {
- *   indent: 2,
- *   sortKeys: false,
- * })
+ * const [text, setText] = useToolState('qrcode', 'text', '')
+ * const [size, setSize] = useToolState('qrcode', 'size', 280)
  * ```
  */
 export function useToolState<T>(

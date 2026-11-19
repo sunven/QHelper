@@ -10,7 +10,6 @@ import { createToolSession, serializeSession } from '@/lib/tool-sessions'
 import { installToolDataStorage } from './tool-data-storage'
 
 const cases: [string, Record<string, unknown>, string][] = [
-  ['json', { jsoncon: '{"private":17}' }, '{"private":17}'],
   ['qrcode', { text: 'private-qr-17' }, 'private-qr-17'],
 ]
 

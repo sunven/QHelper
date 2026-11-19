@@ -5,7 +5,7 @@ test.describe('Extension Popup', () => {
   test('opens and displays tool buttons', async ({ popupPage }) => {
     const popup = new PopupPage(popupPage);
 
-    await expect(popup.getToolButton('json')).toBeVisible();
+    await expect(popup.getToolButton('trans-radix')).toBeVisible();
     await expect(popup.getToolButton('imagebase64')).toBeVisible();
     await expect(popup.getToolButton('web-summary-launch')).toBeVisible();
     await expect(popup.getToolButton('clear-site-data')).toBeVisible();
@@ -29,13 +29,13 @@ test.describe('Extension Popup', () => {
     expect(clipped).toEqual([]);
   });
 
-  test('clicking JSON tool opens new tab', async ({ popupPage, extensionId }) => {
+  test('clicking trans-radix tool opens new tab', async ({ popupPage, extensionId }) => {
     const popup = new PopupPage(popupPage);
 
-    const toolPage = await popup.clickTool('json');
+    const toolPage = await popup.clickTool('trans-radix');
 
     await expect(toolPage).toHaveURL(
-      `chrome-extension://${extensionId}/tools/json.html`,
+      `chrome-extension://${extensionId}/tools/trans-radix.html`,
     );
     await toolPage.close();
   });

@@ -25,21 +25,21 @@ test('popup search and favorites are shared with the sidebar', async ({
   popupPage,
 }) => {
   const search = popupPage.getByRole('textbox', { name: '搜索工具' })
-  await search.fill('json')
-  const result = popupPage.getByTestId('discovery-search-json')
+  await search.fill('uuid')
+  const result = popupPage.getByTestId('discovery-search-uuid')
   const favorite = result.locator('..').getByRole('button', { name: /^收藏/ })
   await favorite.click()
   await expect(
     result.locator('..').getByRole('button', { name: /^取消收藏/ }),
   ).toHaveAttribute('aria-pressed', 'true')
-  await search.fill('uuid')
+  await search.fill('trans-radix')
   const newPage = context.waitForEvent('page')
   await search.press('Enter')
   const page = await newPage
-  await expect(page).toHaveURL(/\/tools\/uuid\.html$/)
-  await expect(page.getByTestId('discovery-favorites-json')).toBeVisible()
+  await expect(page).toHaveURL(/\/tools\/trans-radix\.html$/)
+  await expect(page.getByTestId('discovery-favorites-uuid')).toBeVisible()
   await popupPage.reload()
-  await expect(popupPage.getByTestId('discovery-favorites-json')).toBeVisible()
+  await expect(popupPage.getByTestId('discovery-favorites-uuid')).toBeVisible()
   await page.getByRole('textbox', { name: '搜索工具' }).fill('no-such-tool')
   await expect(page.getByText('没有找到匹配的工具。')).toBeVisible()
 })
@@ -49,7 +49,7 @@ test('removed 数据格式 tools are absent from discovery', async ({
   extensionId,
   popupPage,
 }) => {
-  const page = await openToolPage(context, extensionId, 'json')
+  const page = await openToolPage(context, extensionId, 'uuid')
   for (const view of [popupPage, page]) {
     await expect(view.getByText('数据格式', { exact: true })).toHaveCount(0)
     const search = view.getByRole('textbox', { name: '搜索工具' })
@@ -68,19 +68,19 @@ test('temporary edits survive navigation and snapshots leave the ordinary draft 
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'json')
-  const input = page.locator('[data-testid="json-input"]:visible')
-  await input.fill('{"ordinary":1}')
+  const page = await openToolPage(context, extensionId, 'qrcode')
+  const input = page.getByPlaceholder('输入文本或 URL')
+  await input.fill('ordinary-qr')
   await page.getByRole('button', { name: '开始临时处理' }).click()
   await expect(input).toHaveValue('')
-  await input.fill('{"temporary":2}')
+  await input.fill('temporary-qr')
   await selectTool(page, 'trans-radix')
   await page.getByTestId('tool-settings-link').click()
   await expect(
     page.getByRole('region', { name: '本地数据', exact: true }),
   ).toBeVisible()
-  await selectTool(page, 'json')
-  await expect(input).toHaveValue('{"temporary":2}')
+  await selectTool(page, 'qrcode')
+  await expect(input).toHaveValue('temporary-qr')
   await page.getByRole('button', { name: '保存一份', exact: true }).click()
   await expect(
     page.getByText('已保存一份快照，当前编辑模式不变。'),
@@ -88,14 +88,14 @@ test('temporary edits survive navigation and snapshots leave the ordinary draft 
   await expect(page.getByRole('button', { name: '结束临时处理' })).toBeVisible()
   page.on('dialog', (dialog) => dialog.accept())
   await page.getByRole('button', { name: '结束临时处理' }).click()
-  await expect(input).toHaveValue('{"ordinary":1}')
+  await expect(input).toHaveValue('ordinary-qr')
   await page
     .getByRole('button', { name: '已保存快照 (1)', exact: true })
     .click()
   await page.getByRole('button', { name: '恢复', exact: true }).click()
-  await expect(input).toHaveValue('{"temporary":2}')
+  await expect(input).toHaveValue('temporary-qr')
   await page.getByRole('button', { name: '结束临时处理' }).click()
-  await expect(input).toHaveValue('{"ordinary":1}')
+  await expect(input).toHaveValue('ordinary-qr')
 })
 
 test('clearing data resets visible and hidden drafts in other tabs without clearing preferences', async ({
@@ -111,12 +111,12 @@ test('clearing data resets visible and hidden drafts in other tabs without clear
   await expect(
     hidden.getByPlaceholder('输入文本或 URL'),
   ).toHaveValue('old-draft')
-  await selectTool(hidden, 'json')
+  await selectTool(hidden, 'trans-radix')
   const settings = await openToolPage(context, extensionId, 'settings')
   await settings.evaluate(async () => {
     await chrome.storage.local.set({
       webSummaryConfig: { apiKey: 'test-only-key' },
-      tool_json_history: ['keep-me'],
+      tool_imagebase64_srcText: 'keep-me',
       tool_qrcode_size: 'keep-preference',
     })
     localStorage.setItem(
@@ -146,7 +146,7 @@ test('clearing data resets visible and hidden drafts in other tabs without clear
   expect(await stored(settings, 'webSummaryConfig')).toEqual({
     apiKey: 'test-only-key',
   })
-  expect(await stored(settings, 'tool_json_history')).toEqual(['keep-me'])
+  expect(await stored(settings, 'tool_imagebase64_srcText')).toBe('keep-me')
   expect(await stored(settings, 'tool_qrcode_size')).toBe('keep-preference')
   await visible.getByPlaceholder('输入文本或 URL').fill('new-draft')
   await expect
