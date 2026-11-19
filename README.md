@@ -42,7 +42,7 @@ QHelper 前端助手是一款实用的浏览器扩展，集成了前端开发中
 
 | 工具 | 功能描述 |
 |------|----------|
-| 清除 Cookie | 一键清除当前站点所有 Cookie |
+| 清除站点数据 | 按站点清理 Cookie、localStorage、sessionStorage、IndexedDB、Cache Storage 与 Service Worker，也可以显式选择全部站点 |
 
 ### 特色功能
 
@@ -142,7 +142,8 @@ pnpm format
 
 | 权限 | 用途 |
 |------|------|
-| `cookies` | 用于"清除 Cookie"功能 |
+| `cookies` | 用于"清除站点数据"功能，读取与删除目标站点的 Cookie |
+| `browsingData` | 用于"清除站点数据"功能，清理 localStorage、IndexedDB、Cache Storage 与 Service Worker |
 | `tabs` | 用于在新标签页打开工具、获取当前网页信息，以及按规则刷新标签页 |
 | `activeTab` | 用于从当前活动网页打开网页总结侧边栏 |
 | `storage` | 用于存储用户偏好设置、`webSummaryConfig` 和自动刷新规则 |

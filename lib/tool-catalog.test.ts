@@ -79,7 +79,7 @@ describe('tool-catalog', () => {
       expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
       expect(aliases).not.toContain(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(14)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(15)
     expect(Object.values(ToolCategory)).not.toContain('data_format')
     expect(TOOL_CATEGORIES.map((category) => category.name)).not.toContain(
       '数据格式',
@@ -146,7 +146,7 @@ describe('tool-catalog', () => {
         'json',
         'web-summary-launch',
         'bookmarks',
-        'clear-cookie',
+        'clear-site-data',
       ]),
     )
     expect(
@@ -186,15 +186,18 @@ describe('tool-catalog', () => {
     expect(getToolCatalogTool('settings')).toBeUndefined()
   })
 
-  it('marks destructive browser commands in the Launch Entry', () => {
-    expect(getLaunchEntry('clear-cookie')).toMatchObject({
-      id: 'clear-cookie',
-      intent: { kind: 'browser-command', command: 'clear-cookies' },
-      risk: {
-        level: 'destructive',
-        confirmMessage: '这会清除浏览器 Cookie，可能让当前登录会话失效。',
+  it('launches the clear-site-data tool as an ordinary tool page', () => {
+    expect(getLaunchEntry('clear-site-data')).toMatchObject({
+      id: 'clear-site-data',
+      name: '清除站点数据',
+      surfaces: ['popup-main', 'build-alias'],
+      intent: {
+        kind: 'ordinary-tool-page',
+        toolId: 'clear-site-data',
+        extensionPath: 'tools/clear-site-data.html',
       },
     })
+    expect(getLaunchEntry('clear-cookie')).toBeUndefined()
   })
 
   it('derives tools SPA aliases from Launch Entries', () => {

@@ -73,7 +73,7 @@ All Chrome API interactions are centralized in `lib/chrome/`:
 
 ```typescript
 import { create } from '@/lib/chrome/tabs'
-import { removeAll } from '@/lib/chrome/cookies'
+import { getCookiesForHostname, removeCookies } from '@/lib/chrome/cookies'
 import { get, set, remove, clear, onChanged } from '@/lib/chrome/storage'
 ```
 

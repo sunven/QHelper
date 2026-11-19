@@ -78,6 +78,7 @@ export default defineConfig({
     version: '1.2',
     permissions: [
       'cookies',
+      'browsingData',
       'tabs',
       'storage',
       'activeTab',

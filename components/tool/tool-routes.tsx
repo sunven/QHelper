@@ -3,6 +3,7 @@ import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
 import { AesGcmTool } from '@/components/tool/aes-gcm'
 import { AutoRefreshTool } from '@/components/tool/auto-refresh'
 import { BcryptHashTool } from '@/components/tool/bcrypt-hash'
+import { ClearSiteDataTool } from '@/components/tool/clear-site-data'
 import { ConvertTool } from '@/components/tool/convert'
 import { DownloadsTool } from '@/components/tool/downloads'
 import { ImageBase64Tool } from '@/components/tool/imagebase64'
@@ -36,6 +37,7 @@ const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   'bcrypt-hash': BcryptHashTool,
   timestamp: TimestampTool,
   downloads: DownloadsTool,
+  'clear-site-data': ClearSiteDataTool,
   'text-diff': TextDiffTool,
 }
 

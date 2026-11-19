@@ -5,8 +5,8 @@ import { AutoRefreshPanel } from '@/components/AutoRefreshPanel'
 import { ToolDiscovery } from '@/components/ToolDiscovery'
 import { getToolIcon } from '@/components/tool-icons'
 import { Button } from '@/components/ui/button'
-import { removeAll } from '@/lib/chrome/cookies'
-import { create } from '@/lib/chrome/tabs'
+import { create, getCurrent } from '@/lib/chrome/tabs'
+import { getSiteOrigin } from '@/lib/site-data/target'
 import {
   getLaunchDirectory,
   getLaunchEntry,
@@ -17,26 +17,40 @@ import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
 import './popup.css'
 
+const CLEAR_SITE_DATA_TOOL_ID = 'clear-site-data'
+
+async function getSiteDataLaunchPath(extensionPath: string): Promise<string> {
+  const tab = await getCurrent()
+  const origin = getSiteOrigin(tab?.url)
+  if (!origin) {
+    return extensionPath
+  }
+
+  const params = new URLSearchParams({ origin })
+  if (tab?.id !== undefined) {
+    params.set('tabId', String(tab.id))
+  }
+
+  return `${extensionPath}?${params.toString()}`
+}
+
 async function handleLaunchEntryClick(entry: ToolCatalogLaunchEntry) {
   try {
     switch (entry.intent.kind) {
-      case 'ordinary-tool-page':
+      case 'ordinary-tool-page': {
+        const extensionPath =
+          entry.id === CLEAR_SITE_DATA_TOOL_ID
+            ? await getSiteDataLaunchPath(entry.intent.extensionPath)
+            : entry.intent.extensionPath
+        await create(extensionPath)
+        return
+      }
       case 'system-page':
       case 'extension-page':
         await create(entry.intent.extensionPath)
         return
       case 'side-panel-action':
         await chrome.runtime.sendMessage({ type: 'OPEN_WEB_SUMMARY' })
-        return
-      case 'browser-command':
-        if (
-          entry.risk?.level === 'destructive' &&
-          !window.confirm(entry.risk.confirmMessage)
-        ) {
-          return
-        }
-        await removeAll()
-        alert('Cookie 已清除')
         return
     }
   } catch (error) {

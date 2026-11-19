@@ -12,6 +12,7 @@ const toolPages = [
   'aes-gcm',
   'bcrypt-hash',
   'qrcode',
+  'clear-site-data',
 ]
 
 test('tool shell uses breadcrumb title without a duplicated body title', async ({

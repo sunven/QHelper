@@ -19,3 +19,7 @@ export async function getCurrent(): Promise<chrome.tabs.Tab | undefined> {
   const [tab] = await query({ active: true, currentWindow: true });
   return tab;
 }
+
+export async function reload(tabId: number): Promise<void> {
+  await chrome.tabs.reload(tabId);
+}

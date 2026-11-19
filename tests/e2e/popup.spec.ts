@@ -9,7 +9,7 @@ test.describe('Extension Popup', () => {
     await expect(popup.getToolButton('timestamp')).toBeVisible();
     await expect(popup.getToolButton('imagebase64')).toBeVisible();
     await expect(popup.getToolButton('web-summary-launch')).toBeVisible();
-    await expect(popup.getToolButton('clear-cookie')).toBeVisible();
+    await expect(popup.getToolButton('clear-site-data')).toBeVisible();
   });
 
   test('shows each complete tool name at popup width', async ({ popupPage }) => {
@@ -89,26 +89,26 @@ test.describe('Extension Popup', () => {
     await settingsPage.close();
   });
 
-  test('asks before running the clear cookie command', async ({ popupPage }) => {
+  test('clicking clear-site-data opens the site data cleaner', async ({
+    popupPage,
+    extensionId,
+  }) => {
     const popup = new PopupPage(popupPage);
 
-    await popupPage.evaluate(() => {
-      window.confirm = (message?: string) => {
-        (
-          window as Window & { __qhelperConfirmMessage?: string }
-        ).__qhelperConfirmMessage = message ?? '';
-        return false;
-      };
-    });
+    const toolPage = await popup.clickTool('clear-site-data');
 
-    await popup.getToolButton('clear-cookie').click();
-
-    const confirmMessage = await popupPage.evaluate(
-      () =>
-        (window as Window & { __qhelperConfirmMessage?: string })
-          .__qhelperConfirmMessage,
+    await expect(toolPage).toHaveURL(
+      `chrome-extension://${extensionId}/tools/clear-site-data.html`,
     );
-
-    expect(confirmMessage).toContain('这会清除浏览器 Cookie');
+    await expect(toolPage.getByTestId('tool-workspace-navbar')).toContainText(
+      '清除站点数据',
+    );
+    await expect(
+      toolPage.getByTestId('clear-site-data-target-all'),
+    ).toBeChecked();
+    await expect(
+      toolPage.getByTestId('clear-site-data-target-current'),
+    ).toBeDisabled();
+    await toolPage.close();
   });
 });

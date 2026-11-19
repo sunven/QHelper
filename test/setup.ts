@@ -45,6 +45,9 @@ const mockChrome = {
     getAll: vi.fn(() => Promise.resolve([])),
     remove: vi.fn(() => Promise.resolve()),
   },
+  browsingData: {
+    remove: vi.fn(() => Promise.resolve()),
+  },
   tabs: {
     create: vi.fn(() => Promise.resolve()),
     query: vi.fn(() => Promise.resolve([])),

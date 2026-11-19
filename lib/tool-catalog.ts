@@ -9,7 +9,6 @@ export const DEFAULT_TOOL_ID = 'json'
 export const TOOL_SETTINGS_ID = 'settings'
 export const TOOL_BOOKMARKS_ID = 'bookmarks'
 export const WEB_SUMMARY_LAUNCH_ID = 'web-summary-launch'
-export const CLEAR_COOKIE_LAUNCH_ID = 'clear-cookie'
 
 export type OrdinaryToolId = (typeof registeredTools)[number]['id']
 
@@ -36,15 +35,6 @@ export type LaunchIntent =
       kind: 'side-panel-action'
       action: 'open-web-summary'
     }
-  | {
-      kind: 'browser-command'
-      command: 'clear-cookies'
-    }
-
-export type LaunchRisk = {
-  level: 'destructive'
-  confirmMessage: string
-}
 
 export type ToolCatalogLaunchEntry = {
   id: string
@@ -55,7 +45,6 @@ export type ToolCatalogLaunchEntry = {
   icon: ToolIconToken
   surfaces: readonly LaunchSurface[]
   intent: LaunchIntent
-  risk?: LaunchRisk
 }
 
 export type LaunchEntryGroup = {
@@ -207,23 +196,6 @@ const SYSTEM_LAUNCH_ENTRIES: ToolCatalogLaunchEntry[] = [
       kind: 'extension-page',
       page: TOOL_BOOKMARKS_ID,
       extensionPath: 'bookmarks.html',
-    },
-  },
-  {
-    id: CLEAR_COOKIE_LAUNCH_ID,
-    name: '清除 Cookie',
-    description:
-      '一键清理浏览器 Cookie，适合排查登录失效、缓存脏数据和会话问题。',
-    category: ToolCategory.OTHER,
-    icon: 'Trash',
-    surfaces: ['popup-main'],
-    intent: {
-      kind: 'browser-command',
-      command: 'clear-cookies',
-    },
-    risk: {
-      level: 'destructive',
-      confirmMessage: '这会清除浏览器 Cookie，可能让当前登录会话失效。',
     },
   },
 ]

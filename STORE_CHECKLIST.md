@@ -148,7 +148,8 @@ pnpm build
 权限说明（参考）:
 
 ```
-cookies: 用于"清除 Cookie"功能，数据不离开浏览器
+cookies: 用于"清除站点数据"功能，读取与删除目标站点的 Cookie，数据不离开浏览器
+browsingData: 用于"清除站点数据"功能，清理目标站点的 localStorage、IndexedDB、Cache Storage 与 Service Worker
 tabs: 用于在新标签页打开工具界面；自动刷新读取当前标签页 URL 并按规则刷新
 storage: 用于存储用户偏好设置和自动刷新规则，仅本地存储
 alarms: 用于持久刷新规则的定时调度
@@ -196,7 +197,7 @@ QHelper 前端助手是一款专为前端开发者设计的 Chrome/Chromium 浏�
 - 图片转 Base64：快速将图片转换为 Base64 编码
 
 ### 其他工具
-- 清除 Cookie：一键清除当前站点所有 Cookie
+- 清除站点数据：按站点清理 Cookie、localStorage、sessionStorage、IndexedDB、Cache Storage 与 Service Worker，可显式切换到全部站点模式
 
 ## 特色功能
 

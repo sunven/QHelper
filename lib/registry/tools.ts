@@ -99,6 +99,25 @@ export const tools = [
     description: '清理原始文件已删除的下载历史记录',
   },
 
+  {
+    id: 'clear-site-data',
+    keywords: [
+      'cookie',
+      'storage',
+      'localStorage',
+      'sessionStorage',
+      'indexedDB',
+      '站点数据',
+      '缓存',
+      '存储',
+    ],
+    name: '清除站点数据',
+    category: ToolCategory.OTHER,
+    icon: 'Trash',
+    description:
+      '按站点清理 Cookie、localStorage、sessionStorage、IndexedDB、Cache Storage 与 Service Worker',
+  },
+
   // ===== 安全与加密 =====
   {
     id: 'uuid',

@@ -22,8 +22,8 @@ describe('tool search controls', () => {
     expect(screen.queryByText('星标收藏')).not.toBeInTheDocument()
     fireEvent.change(input, { target: { value: 'json' } })
     expect(screen.getByText('星标收藏')).toBeVisible()
-    fireEvent.change(input, { target: { value: '清除 Cookie' } })
-    expect(screen.getByTestId('discovery-search-clear-cookie')).toBeVisible()
+    fireEvent.change(input, { target: { value: '书签' } })
+    expect(screen.getByTestId('discovery-search-bookmarks')).toBeVisible()
     expect(screen.queryByText('星标收藏')).not.toBeInTheDocument()
   })
   it('supports keyboard launch, clearing, empty results and independent favorites', async () => {

@@ -431,10 +431,6 @@ export type LaunchIntent =
   | {
       kind: 'side-panel-action';
       action: 'open-web-summary';
-    }
-  | {
-      kind: 'browser-command';
-      command: 'clear-cookies';
     };
 
 export type ToolCatalogLaunchEntry = {
@@ -445,10 +441,6 @@ export type ToolCatalogLaunchEntry = {
   icon: string;
   surfaces: readonly LaunchSurface[];
   intent: LaunchIntent;
-  risk?: {
-    level: 'destructive';
-    confirmMessage: string;
-  };
 };
 
 export type LaunchDirectory = {
