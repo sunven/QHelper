@@ -89,7 +89,6 @@ export type ToolRoute<Component> = {
 
 export const TOOL_CATEGORY_LABELS: Record<ToolCategory, string> = {
   [ToolCategory.COMMON]: '常用',
-  [ToolCategory.ENCODING]: '编码转换',
   [ToolCategory.IMAGE]: '图片工具',
   [ToolCategory.SECURITY]: '安全与加密',
   [ToolCategory.AI]: 'AI 工具',
@@ -98,7 +97,6 @@ export const TOOL_CATEGORY_LABELS: Record<ToolCategory, string> = {
 
 export const TOOL_CATEGORY_ORDER: ToolCategory[] = [
   ToolCategory.COMMON,
-  ToolCategory.ENCODING,
   ToolCategory.IMAGE,
   ToolCategory.SECURITY,
   ToolCategory.AI,

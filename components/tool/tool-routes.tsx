@@ -4,7 +4,6 @@ import { AesGcmTool } from '@/components/tool/aes-gcm'
 import { AutoRefreshTool } from '@/components/tool/auto-refresh'
 import { BcryptHashTool } from '@/components/tool/bcrypt-hash'
 import { ClearSiteDataTool } from '@/components/tool/clear-site-data'
-import { ConvertTool } from '@/components/tool/convert'
 import { DownloadsTool } from '@/components/tool/downloads'
 import { ImageBase64Tool } from '@/components/tool/imagebase64'
 import { JsonTool } from '@/components/tool/json'
@@ -13,7 +12,6 @@ import { PasswordGenerator } from '@/components/tool/password'
 import { QrCodeTool } from '@/components/tool/qrcode'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
 import { TextDiffTool } from '@/components/tool/text-diff'
-import { TimestampTool } from '@/components/tool/timestamp'
 import { TransRadixTool } from '@/components/tool/trans-radix'
 import { UUIDGenerator } from '@/components/tool/uuid'
 import {
@@ -27,7 +25,6 @@ const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   json: JsonTool,
   'trans-radix': TransRadixTool,
   'auto-refresh': AutoRefreshTool,
-  convert: ConvertTool,
   imagebase64: ImageBase64Tool,
   ocr: OcrTool,
   qrcode: QrCodeTool,
@@ -35,7 +32,6 @@ const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   password: PasswordGenerator,
   'aes-gcm': AesGcmTool,
   'bcrypt-hash': BcryptHashTool,
-  timestamp: TimestampTool,
   downloads: DownloadsTool,
   'clear-site-data': ClearSiteDataTool,
   'text-diff': TextDiffTool,

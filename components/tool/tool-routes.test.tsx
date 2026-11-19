@@ -12,9 +12,9 @@ describe('toolRoutes', () => {
     }
   })
 
-  // timestamp: 普通工具；text-diff: shell 布局变体；json: 此前缺失错误兜底的工具
+  // trans-radix: 普通工具；text-diff: shell 布局变体；json: 此前缺失错误兜底的工具
   it.each([
-    'timestamp',
+    'trans-radix',
     'text-diff',
     'json',
   ])('applies the Tool Page Shell skeleton to %s', (toolId) => {

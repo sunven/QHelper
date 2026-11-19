@@ -5,7 +5,6 @@ import type { ToolIconToken } from '@/components/tool-icons'
  */
 export enum ToolCategory {
   COMMON = 'common', // 常用
-  ENCODING = 'encoding', // 编码转换
   IMAGE = 'image', // 图片工具
   SECURITY = 'security', // 安全与加密
   AI = 'ai', // AI 工具

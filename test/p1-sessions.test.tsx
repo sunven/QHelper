@@ -11,8 +11,6 @@ import { installToolDataStorage } from './tool-data-storage'
 
 const cases: [string, Record<string, unknown>, string][] = [
   ['json', { jsoncon: '{"private":17}' }, '{"private":17}'],
-  ['convert', { srcText: 'cHJpdmF0ZQ==' }, 'cHJpdmF0ZQ=='],
-  ['timestamp', { srcStamp: '1700000017' }, '1700000017'],
   ['qrcode', { text: 'private-qr-17' }, 'private-qr-17'],
 ]
 
@@ -66,9 +64,9 @@ describe('temporary tool inputs', () => {
 
   it('explicit save persists a separate snapshot without promoting temporary input', async () => {
     const storage = installToolDataStorage()
-    storage.local.tool_convert_srcText = 'ordinary draft'
-    const session = createToolSession('convert', true, {
-      srcText: 'temporary input',
+    storage.local.tool_qrcode_text = 'ordinary draft'
+    const session = createToolSession('qrcode', true, {
+      text: 'temporary input',
     })
     render(
       <ToolSessionToolbar
@@ -79,10 +77,10 @@ describe('temporary tool inputs', () => {
     )
     fireEvent.click(screen.getByRole('button', { name: '保存一份' }))
     await screen.findByText('已保存一份快照，当前编辑模式不变。')
-    expect((await getToolSnapshots('convert'))[0].values).toEqual({
-      srcText: 'temporary input',
+    expect((await getToolSnapshots('qrcode'))[0].values).toEqual({
+      text: 'temporary input',
     })
-    expect(storage.local.tool_convert_srcText).toBe('ordinary draft')
+    expect(storage.local.tool_qrcode_text).toBe('ordinary draft')
     expect(session.temporary).toBe(true)
   })
 })

@@ -1,7 +1,5 @@
 export const CONTENT_KEYS: Record<string, readonly string[]> = {
   json: ['tool_json_history'],
-  convert: ['tool_convert_srcText', 'tool_convert_history'],
-  timestamp: ['tool_timestamp_srcStamp', 'tool_timestamp_srcLocale'],
   qrcode: ['tool_qrcode_text'],
 }
 

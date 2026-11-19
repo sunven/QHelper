@@ -54,8 +54,6 @@ pnpm format
 entrypoints/
 ├── popup/           # Extension popup (main menu)
 ├── json/            # JSON formatter/parser with diff support
-├── timestamp/       # Unix timestamp converter
-├── convert/         # String encoding/decoding tools
 ├── imagebase64/     # Image to Base64 converter
 ├── trans-radix/     # Number base converter
 └── background.ts    # Service worker (replaces background page from v2)
@@ -135,9 +133,8 @@ From `wxt.config.ts`:
 ## Tool Categories (Popup Menu)
 
 - **Common:** JSON formatter, Radix conversion
-- **Encoding:** String encode/decode
 - **Image:** Base64 converter, Image splicing
-- **Other:** Timestamp converter, Color converter, Clear cookies
+- **Other:** Color converter, Clear cookies
 
 ## Agent skills
 

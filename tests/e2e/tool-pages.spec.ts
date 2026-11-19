@@ -3,8 +3,6 @@ import { openToolPage } from '../support/helpers/extension'
 
 const toolPages = [
   'json',
-  'timestamp',
-  'convert',
   'imagebase64',
   'trans-radix',
   'uuid',

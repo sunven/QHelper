@@ -24,9 +24,9 @@ describe('tool discovery', () => {
     vi.mocked(chrome.storage.sync.set).mockRejectedValueOnce(
       new Error('offline'),
     )
-    const result = await favoriteTools.set({ ids: ['json', 'convert'] })
+    const result = await favoriteTools.set({ ids: ['json', 'uuid'] })
     expect(result.storageArea).toBe('local')
-    expect(await favoriteTools.get()).toEqual({ ids: ['json', 'convert'] })
+    expect(await favoriteTools.get()).toEqual({ ids: ['json', 'uuid'] })
   })
 
   it('excludes removed 数据格式 tools from search and existing favorites', () => {
@@ -36,9 +36,9 @@ describe('tool discovery', () => {
     for (const id of removedIds) {
       expect(searchTools(entries, id)).toEqual([])
     }
-    expect(normalizeToolIds(['json', ...removedIds, 'convert'])).toEqual([
+    expect(normalizeToolIds(['json', ...removedIds, 'uuid'])).toEqual([
       'json',
-      'convert',
+      'uuid',
     ])
   })
 })

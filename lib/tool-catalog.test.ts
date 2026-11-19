@@ -79,7 +79,10 @@ describe('tool-catalog', () => {
       expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
       expect(aliases).not.toContain(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(15)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(13)
+    expect(TOOL_CATEGORIES.map((category) => String(category.key))).not.toContain(
+      'encoding',
+    )
     expect(Object.values(ToolCategory)).not.toContain('data_format')
     expect(TOOL_CATEGORIES.map((category) => category.name)).not.toContain(
       '数据格式',
@@ -133,8 +136,8 @@ describe('tool-catalog', () => {
   })
 
   it('derives paths from tool ids', () => {
-    expect(getToolsSpaPath('convert')).toBe('tools/convert.html')
-    expect(getToolNavigationPath('convert')).toBe('/tools/convert.html')
+    expect(getToolsSpaPath('imagebase64')).toBe('tools/imagebase64.html')
+    expect(getToolNavigationPath('imagebase64')).toBe('/tools/imagebase64.html')
   })
 
   it('builds the popup main Launch Entry directory from the Tool Catalog', () => {
@@ -227,7 +230,7 @@ describe('tool catalog routing helpers', () => {
     expect(DEFAULT_TOOL_ID).toBe('json')
     expect(getToolsSpaPath('json')).toBe('tools/json.html')
     expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html')
-    expect(getToolRoutePath('convert')).toBe('/convert.html')
+    expect(getToolRoutePath('imagebase64')).toBe('/imagebase64.html')
     expect(getToolRoutePath('settings')).toBe('/settings.html')
   })
 

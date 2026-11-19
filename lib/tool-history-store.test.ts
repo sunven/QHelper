@@ -17,7 +17,7 @@ function primeStoredHistory(
 }
 
 describe('createToolHistoryStore', () => {
-  const toolId = 'convert'
+  const toolId = 'json'
   const storageKey = getToolStateStorageKey(toolId, 'history')
 
   beforeEach(() => {

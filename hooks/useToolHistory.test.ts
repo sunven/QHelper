@@ -6,7 +6,7 @@ import { getToolStateStorageKey } from '@/lib/chrome/local-persisted-data'
 type Snapshot = { value: string }
 
 describe('useToolHistory', () => {
-  const toolId = 'convert'
+  const toolId = 'json'
   const storageKey = getToolStateStorageKey(toolId, 'history')
 
   beforeEach(() => {

@@ -24,7 +24,7 @@ describe('tool content management', () => {
       'text-preview',
     )
     await expect(clearToolData('text-preview')).rejects.toThrow('不支持清理')
-    await clearToolData('convert')
+    await clearToolData('qrcode')
 
     expect(localStorage.getItem('qhelper.text-preview.workspace.v1')).toBe(
       workspace,
@@ -39,7 +39,7 @@ describe('tool content management', () => {
       tool_qrcode_text: 'private',
       tool_qrcode_size: 280,
       webSummaryConfig: { apiKey: 'credential' },
-      tool_convert_srcText: 'other',
+      tool_imagebase64_srcText: 'other',
     })
     localStorage.setItem('tool_qrcode_text', JSON.stringify('old fallback'))
     await saveToolSnapshot('qrcode', { text: 'snapshot' })
@@ -49,25 +49,25 @@ describe('tool content management', () => {
     expect(await getToolSnapshots('qrcode')).toEqual([])
     expect(values.local.tool_qrcode_size).toBe(280)
     expect(values.local.webSummaryConfig).toEqual({ apiKey: 'credential' })
-    expect(values.local.tool_convert_srcText).toBe('other')
+    expect(values.local.tool_imagebase64_srcText).toBe('other')
   })
 
   it('rejects a stale page write even when it arrives after clearing finished', async () => {
-    const oldPage = createToolDataStore('convert')
-    await oldPage.set('tool_convert_srcText', 'before')
-    await clearToolData('convert')
+    const oldPage = createToolDataStore('qrcode')
+    await oldPage.set('tool_qrcode_text', 'before')
+    await clearToolData('qrcode')
     await expect(
-      oldPage.set('tool_convert_srcText', 'resurrected'),
+      oldPage.set('tool_qrcode_text', 'resurrected'),
     ).rejects.toThrow('已清理')
-    expect(await readData('tool_convert_srcText')).toBeUndefined()
-    const newPage = createToolDataStore('convert')
-    await newPage.set('tool_convert_srcText', 'new edit')
-    expect(await readData('tool_convert_srcText')).toBe('new edit')
+    expect(await readData('tool_qrcode_text')).toBeUndefined()
+    const newPage = createToolDataStore('qrcode')
+    await newPage.set('tool_qrcode_text', 'new edit')
+    expect(await readData('tool_qrcode_text')).toBe('new edit')
   })
 
   it('serializes an in-flight operation before clearing and blocks later stale writes', async () => {
-    const page = createToolDataStore('convert')
-    await page.get('tool_convert_srcText')
+    const page = createToolDataStore('qrcode')
+    await page.get('tool_qrcode_text')
     let release!: () => void
     let started!: () => void
     const ready = new Promise<void>((resolve) => {
@@ -79,13 +79,13 @@ describe('tool content management', () => {
     const pending = page.run!(async () => {
       started()
       await gate
-      await writeData('tool_convert_srcText', 'late')
+      await writeData('tool_qrcode_text', 'late')
     })
     await ready
-    const clearing = clearToolData('convert')
+    const clearing = clearToolData('qrcode')
     release()
     await Promise.all([pending, clearing])
-    expect(await readData('tool_convert_srcText')).toBeUndefined()
+    expect(await readData('tool_qrcode_text')).toBeUndefined()
   })
 
   it('leaves removed formatter data untouched and excludes it from management', async () => {
@@ -98,7 +98,7 @@ describe('tool content management', () => {
       'formatter',
     )
     await expect(clearToolData('formatter')).rejects.toThrow('不支持清理')
-    await clearToolData('convert')
+    await clearToolData('qrcode')
 
     expect(values.local['tool_htmlformat_htmlformat-state']).toEqual([
       { input: '<private />' },
@@ -122,7 +122,7 @@ describe('tool content management', () => {
     await expect(clearToolData('markdown')).rejects.toThrow('不支持清理')
     await expect(clearToolData('svgoptimizer')).rejects.toThrow('不支持清理')
     await expect(clearToolData('urlparser')).rejects.toThrow('不支持清理')
-    await clearToolData('convert')
+    await clearToolData('qrcode')
 
     expect(values.local['tool_markdown_markdown-state']).toEqual([
       { input: '# private' },
@@ -153,7 +153,7 @@ describe('tool content management', () => {
       expect(managedIds).not.toContain(id)
       await expect(clearToolData(id)).rejects.toThrow('不支持清理')
     }
-    await clearToolData('convert')
+    await clearToolData('qrcode')
 
     for (const [key, content] of Object.entries(previousContent)) {
       expect(values.local[key]).toEqual(content)
@@ -170,29 +170,29 @@ describe('tool content management', () => {
     vi.mocked(chrome.storage.local.remove).mockRejectedValueOnce(
       new Error('unavailable'),
     )
-    await expect(clearToolData('convert')).rejects.toThrow('部分数据')
+    await expect(clearToolData('qrcode')).rejects.toThrow('部分数据')
   })
 
   it('includes malformed fallback content so it remains clearable', async () => {
-    localStorage.setItem('tool_convert_srcText', '{broken')
+    localStorage.setItem('tool_qrcode_text', '{broken')
     const row = (await getToolDataSummary()).find(
-      (item) => item.toolId === 'convert',
+      (item) => item.toolId === 'qrcode',
     )!
     expect(row.records).toBe(1)
     expect(row.bytes).toBeGreaterThan(0)
-    await clearToolData('convert')
-    expect(localStorage.getItem('tool_convert_srcText')).toBeNull()
+    await clearToolData('qrcode')
+    expect(localStorage.getItem('tool_qrcode_text')).toBeNull()
   })
 
   it('keeps snapshots separate from a draft and reports content size', async () => {
-    values.local.tool_convert_srcText = 'original'
-    await saveToolSnapshot('convert', { srcText: 'saved' })
-    expect(values.local.tool_convert_srcText).toBe('original')
-    expect((await getToolSnapshots('convert'))[0].values).toEqual({
-      srcText: 'saved',
+    values.local.tool_qrcode_text = 'original'
+    await saveToolSnapshot('qrcode', { text: 'saved' })
+    expect(values.local.tool_qrcode_text).toBe('original')
+    expect((await getToolSnapshots('qrcode'))[0].values).toEqual({
+      text: 'saved',
     })
     const summary = (await getToolDataSummary()).find(
-      (row) => row.toolId === 'convert',
+      (row) => row.toolId === 'qrcode',
     )!
     expect(summary.records).toBe(2)
     expect(summary.bytes).toBeGreaterThan(0)

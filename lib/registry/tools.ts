@@ -43,16 +43,6 @@ export const tools = [
     description: '按固定间隔自动刷新指定网页',
   },
 
-  // ===== 编码转换 =====
-  {
-    id: 'convert',
-    keywords: ['encode', 'decode', '编码', '解码'],
-    name: '字符串编解码',
-    category: ToolCategory.ENCODING,
-    icon: 'ArrowsLeftRight',
-    description: 'Base64、URL、HTML 实体编解码',
-  },
-
   // ===== 图片工具 =====
   {
     id: 'imagebase64',
@@ -82,15 +72,6 @@ export const tools = [
   },
 
   // ===== 其他工具 =====
-  {
-    id: 'timestamp',
-    keywords: ['unix', '日期', 'date'],
-    name: '时间戳转换',
-    category: ToolCategory.OTHER,
-    icon: 'Clock',
-    description: 'Unix 时间戳与日期时间互转',
-  },
-
   {
     id: 'downloads',
     name: '下载清理',

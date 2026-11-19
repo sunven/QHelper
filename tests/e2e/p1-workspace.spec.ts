@@ -18,6 +18,8 @@ async function stored(page: Page, key: string) {
   )
 }
 
+const DEFAULT_QR_TEXT = 'https://github.com/sunven/QHelper'
+
 test('popup search and favorites are shared with the sidebar', async ({
   context,
   popupPage,
@@ -30,11 +32,11 @@ test('popup search and favorites are shared with the sidebar', async ({
   await expect(
     result.locator('..').getByRole('button', { name: /^取消收藏/ }),
   ).toHaveAttribute('aria-pressed', 'true')
-  await search.fill('convert')
+  await search.fill('uuid')
   const newPage = context.waitForEvent('page')
   await search.press('Enter')
   const page = await newPage
-  await expect(page).toHaveURL(/\/tools\/convert\.html$/)
+  await expect(page).toHaveURL(/\/tools\/uuid\.html$/)
   await expect(page.getByTestId('discovery-favorites-json')).toBeVisible()
   await popupPage.reload()
   await expect(popupPage.getByTestId('discovery-favorites-json')).toBeVisible()
@@ -72,7 +74,7 @@ test('temporary edits survive navigation and snapshots leave the ordinary draft 
   await page.getByRole('button', { name: '开始临时处理' }).click()
   await expect(input).toHaveValue('')
   await input.fill('{"temporary":2}')
-  await selectTool(page, 'convert')
+  await selectTool(page, 'trans-radix')
   await page.getByTestId('tool-settings-link').click()
   await expect(
     page.getByRole('region', { name: '本地数据', exact: true }),
@@ -100,54 +102,54 @@ test('clearing data resets visible and hidden drafts in other tabs without clear
   context,
   extensionId,
 }) => {
-  const visible = await openToolPage(context, extensionId, 'convert')
-  await visible.getByPlaceholder('粘贴需要进行编解码的字符串').fill('old-draft')
+  const visible = await openToolPage(context, extensionId, 'qrcode')
+  await visible.getByPlaceholder('输入文本或 URL').fill('old-draft')
   await expect
-    .poll(() => stored(visible, 'tool_convert_srcText'))
+    .poll(() => stored(visible, 'tool_qrcode_text'))
     .toBe('old-draft')
-  const hidden = await openToolPage(context, extensionId, 'convert')
+  const hidden = await openToolPage(context, extensionId, 'qrcode')
   await expect(
-    hidden.getByPlaceholder('粘贴需要进行编解码的字符串'),
+    hidden.getByPlaceholder('输入文本或 URL'),
   ).toHaveValue('old-draft')
   await selectTool(hidden, 'json')
   const settings = await openToolPage(context, extensionId, 'settings')
   await settings.evaluate(async () => {
     await chrome.storage.local.set({
       webSummaryConfig: { apiKey: 'test-only-key' },
-      tool_qrcode_text: 'keep-me',
-      tool_convert_options: 'keep-preference',
+      tool_json_history: ['keep-me'],
+      tool_qrcode_size: 'keep-preference',
     })
     localStorage.setItem(
-      'tool_convert_srcText',
+      'tool_qrcode_text',
       JSON.stringify('stale-fallback'),
     )
   })
   settings.on('dialog', (dialog) => dialog.accept())
   await settings
-    .getByTestId('local-data-convert')
+    .getByTestId('local-data-qrcode')
     .getByRole('button', { name: '清理', exact: true })
     .click()
   await expect(
     settings.getByRole('status').filter({ hasText: '本地内容已清理' }),
   ).toBeVisible()
   await expect(
-    visible.getByPlaceholder('粘贴需要进行编解码的字符串'),
-  ).toHaveValue('')
-  await selectTool(hidden, 'convert')
+    visible.getByPlaceholder('输入文本或 URL'),
+  ).toHaveValue(DEFAULT_QR_TEXT)
+  await selectTool(hidden, 'qrcode')
   await expect(
-    hidden.getByPlaceholder('粘贴需要进行编解码的字符串'),
-  ).toHaveValue('')
-  expect(await stored(settings, 'tool_convert_srcText')).toBeUndefined()
+    hidden.getByPlaceholder('输入文本或 URL'),
+  ).toHaveValue(DEFAULT_QR_TEXT)
+  expect(await stored(settings, 'tool_qrcode_text')).toBeUndefined()
   expect(
-    await settings.evaluate(() => localStorage.getItem('tool_convert_srcText')),
+    await settings.evaluate(() => localStorage.getItem('tool_qrcode_text')),
   ).toBeNull()
   expect(await stored(settings, 'webSummaryConfig')).toEqual({
     apiKey: 'test-only-key',
   })
-  expect(await stored(settings, 'tool_qrcode_text')).toBe('keep-me')
-  expect(await stored(settings, 'tool_convert_options')).toBe('keep-preference')
-  await visible.getByPlaceholder('粘贴需要进行编解码的字符串').fill('new-draft')
+  expect(await stored(settings, 'tool_json_history')).toEqual(['keep-me'])
+  expect(await stored(settings, 'tool_qrcode_size')).toBe('keep-preference')
+  await visible.getByPlaceholder('输入文本或 URL').fill('new-draft')
   await expect
-    .poll(() => stored(settings, 'tool_convert_srcText'))
+    .poll(() => stored(settings, 'tool_qrcode_text'))
     .toBe('new-draft')
 })
