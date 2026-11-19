@@ -29,19 +29,17 @@ export function ToolDiscovery({
   const inPopup = surface === 'popup'
   useEffect(() => onSearchingChange(searching), [searching, onSearchingChange])
 
-  const byIds = (ids: string[]) =>
-    ids.flatMap((toolId) => {
-      const entry = entries.find((item) => item.id === toolId)
-      return entry ? [entry] : []
-    })
+  const entriesById = useMemo(
+    () => new Map(entries.map((entry) => [entry.id, entry])),
+    [entries],
+  )
 
   function toggleFavorite(toolId: string) {
-    const ids = favorites.value.ids
-    void favorites.change({
-      ids: ids.includes(toolId)
-        ? ids.filter((item) => item !== toolId)
-        : [...ids, toolId],
-    })
+    void favorites.change((current) => ({
+      ids: current.ids.includes(toolId)
+        ? current.ids.filter((item) => item !== toolId)
+        : [...current.ids, toolId],
+    }))
   }
 
   function renderEntries(items: ToolCatalogLaunchEntry[], section: string) {
@@ -90,7 +88,10 @@ export function ToolDiscovery({
     ))
   }
 
-  const pinned = byIds(favorites.value.ids)
+  const pinned = favorites.value.ids.flatMap((toolId) => {
+    const entry = entriesById.get(toolId)
+    return entry ? [entry] : []
+  })
   return (
     <section
       aria-label="查找工具"

@@ -1,8 +1,8 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatIntervalSeconds } from '@/lib/auto-refresh/url'
 import { cn } from '@/lib/utils'
-import { useEffect, useRef, useState } from 'react'
 
 type IntervalInputProps = {
   valueSeconds: number
@@ -26,14 +26,13 @@ export function IntervalInput({
   id,
 }: IntervalInputProps) {
   const [draft, setDraft] = useState(String(valueSeconds))
-  const lastValidRef = useRef(valueSeconds)
+  const [lastValueSeconds, setLastValueSeconds] = useState(valueSeconds)
 
-  useEffect(() => {
+  // 外部值变化时在渲染期同步草稿，替代 prop→state 的 effect。
+  if (lastValueSeconds !== valueSeconds) {
+    setLastValueSeconds(valueSeconds)
     setDraft(String(valueSeconds))
-    if (valueSeconds >= minSeconds && valueSeconds <= maxSeconds) {
-      lastValidRef.current = valueSeconds
-    }
-  }, [valueSeconds, minSeconds, maxSeconds])
+  }
 
   const commitDraft = (raw: string) => {
     setDraft(raw)
@@ -95,7 +94,7 @@ export function IntervalInput({
               parsed < minSeconds ||
               parsed > maxSeconds
             ) {
-              setDraft(String(lastValidRef.current))
+              setDraft(String(valueSeconds))
             }
           }}
           className={compact ? 'h-6 w-16 px-2' : 'w-28'}

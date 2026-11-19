@@ -77,6 +77,49 @@ describe('usePersistedValue', () => {
     expect(result.current.value).toEqual({ count: 7 })
   })
 
+  it('applies successive functional updates queued in the same tick', async () => {
+    const { result } = renderHook(() =>
+      usePersistedValue('myKey', { count: 0 }),
+    )
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    await act(async () => {
+      const { setValue } = result.current
+      await Promise.all([
+        setValue((prev) => ({ count: prev.count + 1 })),
+        setValue((prev) => ({ count: prev.count + 1 })),
+      ])
+    })
+
+    expect(result.current.value).toEqual({ count: 2 })
+  })
+
+  it('debounces persisted writes and keeps the latest value', async () => {
+    const { result } = renderHook(() =>
+      usePersistedValue('myKey', { count: 0 }, undefined, {
+        writeDelayMs: 100,
+      }),
+    )
+    await waitFor(() => {
+      expect(result.current.loading).toBe(false)
+    })
+
+    await act(async () => {
+      const { setValue } = result.current
+      await Promise.all([setValue({ count: 1 }), setValue({ count: 2 })])
+    })
+
+    expect(chrome.storage.local.set).not.toHaveBeenCalled()
+    await waitFor(() => {
+      expect(chrome.storage.local.set).toHaveBeenCalledTimes(1)
+    })
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({
+      myKey: { count: 2 },
+    })
+  })
+
   it('keeps the new value when the write fails (optimistic)', async () => {
     // chrome 与 localStorage 两层都写失败
     ;(chrome.storage.local.set as any).mockImplementation(() =>

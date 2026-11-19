@@ -60,8 +60,6 @@ export function ToolSessionToolbar({
       setBusy(false)
     }
   }
-  session.saveSnapshot = save
-
   return (
     <section
       aria-label="工具会话"

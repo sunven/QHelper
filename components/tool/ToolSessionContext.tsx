@@ -2,8 +2,8 @@ import {
   createContext,
   type Dispatch,
   type SetStateAction,
-  useCallback,
   useContext,
+  useLayoutEffect,
   useState,
 } from 'react'
 import type { ToolSession } from '@/lib/tool-sessions'
@@ -48,19 +48,12 @@ export function useSessionState<T>(
     }
     return defaults
   })
-  if (session) session.values[key] = value
-  const update = useCallback<Dispatch<SetStateAction<T>>>(
-    (next) => {
-      setValue((previous) => {
-        const result =
-          typeof next === 'function'
-            ? (next as (previous: T) => T)(previous)
-            : next
-        if (session) session.values[key] = result
-        return result
-      })
-    },
-    [key, session],
-  )
-  return [value, update]
+  // 会话快照读取 session.values；在提交后同步，避免渲染期写外部对象。
+  useLayoutEffect(() => {
+    if (session) {
+      session.values[key] = value
+    }
+  }, [session, key, value])
+
+  return [value, setValue]
 }

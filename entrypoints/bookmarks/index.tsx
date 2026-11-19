@@ -13,6 +13,7 @@ import {
 import {
   type FormEvent,
   useCallback,
+  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -40,6 +41,8 @@ import {
 } from '@/lib/bookmarks/dead-link-checker'
 import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
+
+const LINK_CHECK_FLUSH_INTERVAL_MS = 150
 
 function normalizeSearchQuery(value: string) {
   return value.trim().toLowerCase()
@@ -228,7 +231,9 @@ function describeBookmarkDeletion(plan: BookmarkDeletionPlan) {
       )
     }
 
-    parts.push(`This removes ${plan.removedIds.size} bookmark entries in total.`)
+    parts.push(
+      `This removes ${plan.removedIds.size} bookmark entries in total.`,
+    )
   }
 
   if (plan.blocked.length > 0) {
@@ -393,12 +398,19 @@ function BookmarkCopyButton({
   title: string
 }) {
   const [copied, setCopied] = useState(false)
+  const resetTimerRef = useRef<number | null>(null)
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(text)
       setCopied(true)
-      window.setTimeout(() => setCopied(false), 1500)
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current)
+      }
+      resetTimerRef.current = window.setTimeout(() => {
+        resetTimerRef.current = null
+        setCopied(false)
+      }, 1500)
     } catch (error) {
       console.error(`Failed to copy bookmark ${title}:`, error)
     }
@@ -615,10 +627,12 @@ function BookmarksTool() {
     ReadonlySet<string>
   >(new Set())
   const linkCheckRunId = useRef(0)
-  const normalizedSearchQuery = normalizeSearchQuery(searchQuery)
+  // 搜索输入保持即时响应，过滤整树与高亮跟随延迟值。
+  const deferredSearchQuery = useDeferredValue(searchQuery)
+  const normalizedSearchQuery = normalizeSearchQuery(deferredSearchQuery)
   const filteredBookmarks = useMemo(
-    () => filterBookmarkTree(bookmarks, searchQuery),
-    [bookmarks, searchQuery],
+    () => filterBookmarkTree(bookmarks, deferredSearchQuery),
+    [bookmarks, deferredSearchQuery],
   )
   const filteredNodeCount = useMemo(
     () => countTreeNodes(filteredBookmarks),
@@ -647,7 +661,11 @@ function BookmarksTool() {
     : undefined
   const defaultFolderParentId = folderOptions[0]?.id || ''
   const selectedDefaultFolderParentId = selectedBookmark
-    ? String(selectedBookmark.url ? selectedBookmark.parentId || defaultFolderParentId : selectedBookmark.id)
+    ? String(
+        selectedBookmark.url
+          ? selectedBookmark.parentId || defaultFolderParentId
+          : selectedBookmark.id,
+      )
     : defaultFolderParentId
   const selectedFolderParentId = folderParentId || selectedDefaultFolderParentId
 
@@ -829,12 +847,12 @@ function BookmarksTool() {
   const columns = useMemo(
     () =>
       buildColumns(
-        searchQuery,
+        deferredSearchQuery,
         linkCheck,
         pendingDeleteIds,
         handleDeleteBookmark,
       ),
-    [handleDeleteBookmark, linkCheck, pendingDeleteIds, searchQuery],
+    [deferredSearchQuery, handleDeleteBookmark, linkCheck, pendingDeleteIds],
   )
 
   const handleCheckDeadLinks = useCallback(async () => {
@@ -864,22 +882,63 @@ function BookmarksTool() {
       return
     }
 
-    await checkBookmarkUrls(linkTargets, {
-      onProgress(result) {
-        if (linkCheckRunId.current !== currentRunId) {
-          return
-        }
+    // 检测结果按间隔批量提交：逐个结果 setState 会让整棵书签表格
+    // 每检查一个 URL 就全量重渲染一次。
+    let queuedResults: Record<string, BookmarkLinkCheckResult> = {}
+    let queuedCompleted = 0
+    let flushTimer: number | null = null
 
-        setLinkCheck((current) => ({
-          ...current,
-          completed: current.completed + 1,
-          results: {
-            ...current.results,
-            [result.id]: result,
-          },
-        }))
-      },
-    })
+    const flushProgress = () => {
+      if (flushTimer !== null) {
+        window.clearTimeout(flushTimer)
+        flushTimer = null
+      }
+
+      if (linkCheckRunId.current !== currentRunId) {
+        queuedResults = {}
+        queuedCompleted = 0
+        return
+      }
+
+      if (queuedCompleted === 0) {
+        return
+      }
+
+      const resultsToApply = queuedResults
+      const completedDelta = queuedCompleted
+      queuedResults = {}
+      queuedCompleted = 0
+
+      setLinkCheck((current) => ({
+        ...current,
+        completed: Math.min(current.total, current.completed + completedDelta),
+        results: {
+          ...current.results,
+          ...resultsToApply,
+        },
+      }))
+    }
+
+    try {
+      await checkBookmarkUrls(linkTargets, {
+        onProgress(result) {
+          if (linkCheckRunId.current !== currentRunId) {
+            return
+          }
+
+          queuedResults[result.id] = result
+          queuedCompleted += 1
+          if (flushTimer === null) {
+            flushTimer = window.setTimeout(() => {
+              flushTimer = null
+              flushProgress()
+            }, LINK_CHECK_FLUSH_INTERVAL_MS)
+          }
+        },
+      })
+    } finally {
+      flushProgress()
+    }
 
     if (linkCheckRunId.current === currentRunId) {
       setLinkCheck((current) => ({
@@ -908,6 +967,8 @@ function BookmarksTool() {
 
     return () => {
       mounted = false
+      // 使进行中的死链检测回调与批量刷新失效，避免卸载后 setState。
+      linkCheckRunId.current += 1
     }
   }, [])
 

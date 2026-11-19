@@ -30,7 +30,10 @@ describe('temporary tool inputs', () => {
         </TooltipProvider>
       </MemoryRouter>,
     )
-    const editor = (await screen.findAllByDisplayValue(input))[0]
+    // 工具组件按路由懒加载，首次渲染需等待动态 import 完成
+    const editor = (
+      await screen.findAllByDisplayValue(input, {}, { timeout: 5000 })
+    )[0]
     const edited = `edited:${input}`
     fireEvent.change(editor, { target: { value: edited } })
     await waitFor(() => expect(editor).toHaveValue(edited))

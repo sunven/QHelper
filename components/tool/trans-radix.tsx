@@ -1,6 +1,9 @@
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import {
   Select,
@@ -9,9 +12,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { ArrowRight, ArrowLeft } from 'lucide-react'
 
 const RADIX_OPTIONS = [
   { value: '2', label: '2进制' },
@@ -19,6 +19,11 @@ const RADIX_OPTIONS = [
   { value: '10', label: '10进制' },
   { value: '16', label: '16进制' },
 ]
+
+const RADIX_SELECT_OPTIONS = Array.from({ length: 35 }, (_, index) => {
+  const value = index + 1
+  return { value, label: `${value}进制` }
+})
 
 export function TransRadixTool() {
   const [radixRadio1, setRadixRadio1] = useState(10)
@@ -34,10 +39,6 @@ export function TransRadixTool() {
 
   const currentRadix1 = radixSelect1 ?? radixRadio1
   const currentRadix2 = radixSelect2 ?? radixRadio2
-  const selectOptions = Array.from({ length: 35 }, (_, i) => {
-    const value = i + 1
-    return { value, label: `${value}进制` }
-  })
 
   function convertValue1To2() {
     if (!value1) {
@@ -114,7 +115,7 @@ export function TransRadixTool() {
                   <SelectValue placeholder="自定义" />
                 </SelectTrigger>
                 <SelectContent>
-                  {selectOptions.map((option) => (
+                  {RADIX_SELECT_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={String(option.value)}>
                       {option.label}
                     </SelectItem>
@@ -183,7 +184,7 @@ export function TransRadixTool() {
                   <SelectValue placeholder="自定义" />
                 </SelectTrigger>
                 <SelectContent>
-                  {selectOptions.map((option) => (
+                  {RADIX_SELECT_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={String(option.value)}>
                       {option.label}
                     </SelectItem>

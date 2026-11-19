@@ -10,7 +10,6 @@ export type ToolSession = {
   temporary: boolean
   values: Record<string, unknown>
   storage: DataStore
-  saveSnapshot?: () => Promise<void>
 }
 
 export function createToolSession(

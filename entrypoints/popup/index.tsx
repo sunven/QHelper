@@ -1,5 +1,5 @@
 import { GearSixIcon, WrenchIcon } from '@phosphor-icons/react'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import { AutoRefreshPanel } from '@/components/AutoRefreshPanel'
 import { ToolDiscovery } from '@/components/ToolDiscovery'
@@ -18,6 +18,10 @@ import '../../index.css'
 import './popup.css'
 
 const CLEAR_SITE_DATA_TOOL_ID = 'clear-site-data'
+const POPUP_DIRECTORY = getLaunchDirectory('popup-main')
+const SETTINGS_ENTRY = getLaunchEntry(TOOL_SETTINGS_ID, {
+  visibleOn: 'popup-header',
+})
 
 async function getSiteDataLaunchPath(extensionPath: string): Promise<string> {
   const tab = await getCurrent()
@@ -62,12 +66,6 @@ async function handleLaunchEntryClick(entry: ToolCatalogLaunchEntry) {
 function App() {
   const [searching, setSearching] = useState(false)
 
-  const popupDirectory = useMemo(() => getLaunchDirectory('popup-main'), [])
-  const settingsEntry = useMemo(
-    () => getLaunchEntry(TOOL_SETTINGS_ID, { visibleOn: 'popup-header' }),
-    [],
-  )
-
   return (
     <main className="flex flex-col gap-3 px-4 py-3">
       <header className="flex h-7 items-center justify-between">
@@ -83,9 +81,9 @@ function App() {
           size="icon-sm"
           aria-label="打开设置"
           data-testid="popup-settings-link"
-          title={settingsEntry?.name ?? '设置'}
+          title={SETTINGS_ENTRY?.name ?? '设置'}
           onClick={() => {
-            if (settingsEntry) void handleLaunchEntryClick(settingsEntry)
+            if (SETTINGS_ENTRY) void handleLaunchEntryClick(SETTINGS_ENTRY)
           }}
         >
           <GearSixIcon aria-hidden />
@@ -96,7 +94,7 @@ function App() {
 
       <ToolDiscovery
         surface="popup"
-        entries={popupDirectory.entries}
+        entries={POPUP_DIRECTORY.entries}
         onLaunch={handleLaunchEntryClick}
         onSearchingChange={setSearching}
       />
@@ -106,7 +104,7 @@ function App() {
           aria-label="工具目录"
           className="popup-directory grid gap-x-1 gap-y-2"
         >
-          {popupDirectory.groups.map((group) => (
+          {POPUP_DIRECTORY.groups.map((group) => (
             <section
               key={group.category}
               className="col-span-full grid grid-cols-subgrid"

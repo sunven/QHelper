@@ -1,3 +1,11 @@
+import {
+  ArrowsClockwiseIcon,
+  GearSixIcon,
+  PauseIcon,
+  PlayIcon,
+  SpinnerGapIcon,
+} from '@phosphor-icons/react'
+import { useCallback, useEffect, useState } from 'react'
 import { IntervalInput } from '@/components/auto-refresh/IntervalInput'
 import { Button } from '@/components/ui/button'
 import { sendAutoRefreshMessage } from '@/lib/auto-refresh/client'
@@ -10,14 +18,6 @@ import {
   AUTO_REFRESH_SESSION_MIN_SECONDS,
   AUTO_REFRESH_SESSION_PRESETS,
 } from '@/types/auto-refresh'
-import {
-  ArrowsClockwiseIcon,
-  GearSixIcon,
-  PauseIcon,
-  PlayIcon,
-  SpinnerGapIcon,
-} from '@phosphor-icons/react'
-import { useCallback, useEffect, useState } from 'react'
 
 export function AutoRefreshPanel() {
   const [tab, setTab] = useState<chrome.tabs.Tab | null>(null)
@@ -62,6 +62,31 @@ export function AutoRefreshPanel() {
 
   useEffect(() => {
     void load()
+  }, [load])
+
+  // 跟随当前标签页切换/加载完成刷新状态，避免弹窗停留在挂载时的快照。
+  useEffect(() => {
+    const handleTabActivated = () => {
+      void load()
+    }
+
+    const handleTabUpdated = (
+      _tabId: number,
+      changeInfo: chrome.tabs.OnUpdatedInfo,
+      tab: chrome.tabs.Tab,
+    ) => {
+      if (tab.active && (changeInfo.url || changeInfo.status === 'complete')) {
+        void load()
+      }
+    }
+
+    chrome.tabs.onActivated?.addListener(handleTabActivated)
+    chrome.tabs.onUpdated?.addListener(handleTabUpdated)
+
+    return () => {
+      chrome.tabs.onActivated?.removeListener(handleTabActivated)
+      chrome.tabs.onUpdated?.removeListener(handleTabUpdated)
+    }
   }, [load])
 
   const runAction = async (action: () => Promise<AutoRefreshTabState>) => {

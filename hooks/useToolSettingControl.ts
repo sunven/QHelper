@@ -21,6 +21,7 @@ export function useToolSettingControl<T extends object>(
   const [error, setError] = useState<string | null>(null)
   const [syncNotice, setSyncNotice] = useState<string | null>(null)
   const valueRef = useRef(definition.defaults)
+  const saveIdRef = useRef(0)
 
   function applyValue(next: T) {
     valueRef.current = next
@@ -60,23 +61,39 @@ export function useToolSettingControl<T extends object>(
     }
   }, [definition])
 
-  async function change(next: Partial<T>) {
+  async function change(next: Partial<T> | ((previous: T) => Partial<T>)) {
     const previous = valueRef.current
+    const patch = typeof next === 'function' ? next(previous) : next
+    const saveId = saveIdRef.current + 1
+    saveIdRef.current = saveId
 
-    applyValue({ ...previous, ...next })
+    applyValue({ ...previous, ...patch })
     setSaving(true)
     setError(null)
     setSyncNotice(null)
 
     try {
-      const result = await definition.set(next)
+      const result = await definition.set(patch)
+      if (saveIdRef.current !== saveId) {
+        return
+      }
+
       applyValue(result.settings)
       setSyncNotice(getSyncNotice(result.storageArea))
     } catch {
+      if (saveIdRef.current !== saveId) {
+        return
+      }
+
       setError('保存失败，请重试')
-      applyValue(await definition.get().catch(() => previous))
+      const restored = await definition.get().catch(() => previous)
+      if (saveIdRef.current === saveId) {
+        applyValue(restored)
+      }
     } finally {
-      setSaving(false)
+      if (saveIdRef.current === saveId) {
+        setSaving(false)
+      }
     }
   }
 

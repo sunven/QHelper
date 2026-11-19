@@ -15,6 +15,8 @@ test.describe('Trans Radix Tool', () => {
     const card = page.locator('[data-slot="card"]').first();
 
     const radios = card.getByRole('radio');
+    // 工具按路由懒加载，先等待内容区渲染完成再统计
+    await expect(radios.first()).toBeVisible();
     const count = await radios.count();
     expect(count).toBeGreaterThanOrEqual(4);
 

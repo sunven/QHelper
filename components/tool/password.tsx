@@ -1,13 +1,37 @@
-import { useState, useMemo, useEffect } from 'react'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { RefreshCw, Shield, ShieldAlert, ShieldCheck } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { CopyButton } from '@/components/tool/CopyButton'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Slider } from '@/components/ui/slider'
-import { RefreshCw, Shield, ShieldAlert, ShieldCheck } from 'lucide-react'
 import { useToolState } from '@/hooks/useToolState'
-import { CopyButton } from '@/components/tool/CopyButton'
+
+const CHAR_SETS = {
+  uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  lowercase: 'abcdefghijklmnopqrstuvwxyz',
+  numbers: '0123456789',
+  symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
+  similar: 'il1Lo0O',
+  ambiguous: '{}[]()/\\\'"`~,;.<>',
+}
+
+const SIMILAR_CHARS = new Set(CHAR_SETS.similar)
+const AMBIGUOUS_CHARS = new Set(CHAR_SETS.ambiguous)
+
+function excludeChars(charset: string, excluded: ReadonlySet<string>): string {
+  let result = ''
+
+  for (const char of charset) {
+    if (!excluded.has(char)) {
+      result += char
+    }
+  }
+
+  return result
+}
 
 export function PasswordGenerator() {
   // 使用持久化状态保存用户配置
@@ -21,16 +45,6 @@ export function PasswordGenerator() {
     excludeSimilar: false,
     excludeAmbiguous: false,
   })
-
-  // 字符集定义
-  const CHAR_SETS = {
-    uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-    lowercase: 'abcdefghijklmnopqrstuvwxyz',
-    numbers: '0123456789',
-    symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?',
-    similar: 'il1Lo0O',
-    ambiguous: '{}[]()/\\\'"`~,;.<>',
-  }
 
   // 计算密码强度
   const strength = useMemo(() => {
@@ -57,11 +71,7 @@ export function PasswordGenerator() {
   }, [password])
 
   // 生成密码
-  useEffect(() => {
-    generatePassword()
-  }, [length, options])
-
-  function generatePassword() {
+  const generatePassword = useCallback(() => {
     let charset = ''
 
     if (options.uppercase) charset += CHAR_SETS.uppercase
@@ -70,21 +80,11 @@ export function PasswordGenerator() {
     if (options.symbols) charset += CHAR_SETS.symbols
 
     if (options.excludeSimilar) {
-      for (const char of CHAR_SETS.similar) {
-        charset = charset.replace(
-          new RegExp(char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
-          '',
-        )
-      }
+      charset = excludeChars(charset, SIMILAR_CHARS)
     }
 
     if (options.excludeAmbiguous) {
-      for (const char of CHAR_SETS.ambiguous) {
-        charset = charset.replace(
-          new RegExp(char.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
-          '',
-        )
-      }
+      charset = excludeChars(charset, AMBIGUOUS_CHARS)
     }
 
     if (charset.length === 0) {
@@ -100,7 +100,11 @@ export function PasswordGenerator() {
     }
 
     setPassword(result)
-  }
+  }, [length, options])
+
+  useEffect(() => {
+    generatePassword()
+  }, [generatePassword])
 
   return (
     <div className="mx-auto grid max-w-[1200px] gap-2 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -193,7 +197,10 @@ export function PasswordGenerator() {
                   id="uppercase"
                   checked={options.uppercase}
                   onCheckedChange={(checked) =>
-                    setOptions({ ...options, uppercase: checked === true })
+                    setOptions((current) => ({
+                      ...current,
+                      uppercase: checked === true,
+                    }))
                   }
                 />
                 <Label htmlFor="uppercase" className="cursor-pointer font-mono">
@@ -206,7 +213,10 @@ export function PasswordGenerator() {
                   id="lowercase"
                   checked={options.lowercase}
                   onCheckedChange={(checked) =>
-                    setOptions({ ...options, lowercase: checked === true })
+                    setOptions((current) => ({
+                      ...current,
+                      lowercase: checked === true,
+                    }))
                   }
                 />
                 <Label htmlFor="lowercase" className="cursor-pointer font-mono">
@@ -219,7 +229,10 @@ export function PasswordGenerator() {
                   id="numbers"
                   checked={options.numbers}
                   onCheckedChange={(checked) =>
-                    setOptions({ ...options, numbers: checked === true })
+                    setOptions((current) => ({
+                      ...current,
+                      numbers: checked === true,
+                    }))
                   }
                 />
                 <Label htmlFor="numbers" className="cursor-pointer font-mono">
@@ -232,7 +245,10 @@ export function PasswordGenerator() {
                   id="symbols"
                   checked={options.symbols}
                   onCheckedChange={(checked) =>
-                    setOptions({ ...options, symbols: checked === true })
+                    setOptions((current) => ({
+                      ...current,
+                      symbols: checked === true,
+                    }))
                   }
                 />
                 <Label htmlFor="symbols" className="cursor-pointer font-mono">
@@ -251,10 +267,10 @@ export function PasswordGenerator() {
                   id="excludeSimilar"
                   checked={options.excludeSimilar}
                   onCheckedChange={(checked) =>
-                    setOptions({
-                      ...options,
+                    setOptions((current) => ({
+                      ...current,
                       excludeSimilar: checked === true,
-                    })
+                    }))
                   }
                 />
                 <Label htmlFor="excludeSimilar" className="cursor-pointer">
@@ -267,10 +283,10 @@ export function PasswordGenerator() {
                   id="excludeAmbiguous"
                   checked={options.excludeAmbiguous}
                   onCheckedChange={(checked) =>
-                    setOptions({
-                      ...options,
+                    setOptions((current) => ({
+                      ...current,
                       excludeAmbiguous: checked === true,
-                    })
+                    }))
                   }
                 />
                 <Label htmlFor="excludeAmbiguous" className="cursor-pointer">

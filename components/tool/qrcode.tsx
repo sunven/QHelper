@@ -1,3 +1,26 @@
+import type { Html5Qrcode as Html5QrcodeInstance } from 'html5-qrcode'
+import {
+  AlertCircle,
+  Camera,
+  Copy,
+  Download,
+  FileImage,
+  LoaderCircle,
+  QrCode,
+  RotateCcw,
+  ScanQrCode,
+  Upload,
+  VideoOff,
+} from 'lucide-react'
+import { QRCodeSVG } from 'qrcode.react'
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -13,22 +36,6 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { useToolState } from '@/hooks/useToolState'
 import { copyToClipboard, formatFileSize, getErrorMessage } from '@/lib/utils'
-import {
-  AlertCircle,
-  Camera,
-  Copy,
-  Download,
-  FileImage,
-  LoaderCircle,
-  QrCode,
-  RotateCcw,
-  ScanQrCode,
-  Upload,
-  VideoOff,
-} from 'lucide-react'
-import type { Html5Qrcode as Html5QrcodeInstance } from 'html5-qrcode'
-import { QRCodeSVG } from 'qrcode.react'
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 
 type QrCorrectionLevel = 'L' | 'M' | 'Q' | 'H'
 
@@ -52,7 +59,9 @@ function downloadBlob(blob: Blob, filename: string) {
 }
 
 export function QrCodeTool() {
-  const [qrText, setQrText] = useToolState('qrcode', 'text', DEFAULT_QR_TEXT)
+  const [qrText, setQrText] = useToolState('qrcode', 'text', DEFAULT_QR_TEXT, {
+    writeDelayMs: 400,
+  })
   const [size, setSize] = useToolState('qrcode', 'size', 280)
   const [level, setLevel] = useToolState<QrCorrectionLevel>(
     'qrcode',
@@ -82,13 +91,12 @@ export function QrCodeTool() {
   const svgRef = useRef<SVGSVGElement>(null)
   const cameraScannerRef = useRef<Html5QrcodeInstance | null>(null)
   const reactId = useId()
-  const safeId = useMemo(
-    () => reactId.replace(/[^a-zA-Z0-9_-]/g, ''),
-    [reactId],
-  )
+  const safeId = reactId.replace(/[^a-zA-Z0-9_-]/g, '')
   const fileReaderId = `qhelper-qrcode-file-reader-${safeId}`
   const cameraReaderId = `qhelper-qrcode-camera-reader-${safeId}`
   const hasQrText = qrText.length > 0
+  // 输入保持即时响应，QR 编码跟随延迟值，避免逐字符同步重编码。
+  const deferredQrText = useDeferredValue(qrText)
 
   const stopCamera = useCallback(async () => {
     const scanner = cameraScannerRef.current
@@ -410,7 +418,7 @@ export function QrCodeTool() {
         </CardHeader>
         <CardContent>
           <div className="flex min-h-[min(54vh,520px)] items-center justify-center overflow-hidden border border-border bg-muted/20 p-4">
-            {hasQrText ? (
+            {deferredQrText ? (
               <QRCodeSVG
                 ref={svgRef}
                 bgColor={background}
@@ -420,7 +428,7 @@ export function QrCodeTool() {
                 marginSize={marginSize}
                 size={Math.max(128, Math.min(512, size || 280))}
                 title="QHelper QR Code"
-                value={qrText}
+                value={deferredQrText}
               />
             ) : (
               <div className="flex flex-col items-center gap-2 text-muted-foreground">

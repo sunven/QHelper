@@ -1,25 +1,3 @@
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ErrorMessage } from '@/components/ui/error-message'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { usePersistedValue } from '@/hooks/usePersistedValue'
-import { cn, copyToClipboard, getErrorMessage } from '@/lib/utils'
-import { streamWebPageSummary } from '@/lib/web-summary/ai'
-import {
-  DEFAULT_WEB_SUMMARY_CONFIG,
-  WEB_SUMMARY_CONFIG_KEY,
-  normalizeWebSummaryConfig,
-  validateWebSummaryConfig,
-} from '@/lib/web-summary/config'
-import {
-  extractTabContent,
-  getRefreshHint,
-  resolveSummarizableTab,
-} from '@/lib/web-summary/page-source'
-import { renderSafeMarkdown } from '@/lib/web-summary/markdown'
-import { fetchWebSummaryModels } from '@/lib/web-summary/models'
-import type { WebSummaryPendingAction } from '@/types/web-summary'
 import {
   Bot,
   Check,
@@ -34,7 +12,38 @@ import {
   SquareStop,
   X,
 } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { ErrorMessage } from '@/components/ui/error-message'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { usePersistedValue } from '@/hooks/usePersistedValue'
+import { cn, copyToClipboard, getErrorMessage } from '@/lib/utils'
+import { streamWebPageSummary } from '@/lib/web-summary/ai'
+import {
+  DEFAULT_WEB_SUMMARY_CONFIG,
+  normalizeWebSummaryConfig,
+  validateWebSummaryConfig,
+  WEB_SUMMARY_CONFIG_KEY,
+} from '@/lib/web-summary/config'
+import { renderSafeMarkdown } from '@/lib/web-summary/markdown'
+import { fetchWebSummaryModels } from '@/lib/web-summary/models'
+import {
+  extractTabContent,
+  getRefreshHint,
+  resolveSummarizableTab,
+} from '@/lib/web-summary/page-source'
+import type { WebSummaryPendingAction } from '@/types/web-summary'
+
+const SUMMARY_FLUSH_INTERVAL_MS = 100
+const COPY_FEEDBACK_MS = 1500
 
 type PageInfo = {
   title: string
@@ -53,18 +62,23 @@ function getPageInfo(tab: chrome.tabs.Tab | undefined): PageInfo | null {
 }
 
 export function App() {
-  const { value: storedConfig, setValue: setStoredConfig, loading: configLoading } = usePersistedValue(
-    WEB_SUMMARY_CONFIG_KEY,
-    DEFAULT_WEB_SUMMARY_CONFIG,
+  const {
+    value: storedConfig,
+    setValue: setStoredConfig,
+    loading: configLoading,
+  } = usePersistedValue(WEB_SUMMARY_CONFIG_KEY, DEFAULT_WEB_SUMMARY_CONFIG)
+  const config = useMemo(
+    () => normalizeWebSummaryConfig(storedConfig),
+    [storedConfig],
   )
-  const config = useMemo(() => normalizeWebSummaryConfig(storedConfig), [storedConfig])
   const configErrors = useMemo(() => validateWebSummaryConfig(config), [config])
 
   const [summaryMarkdown, setSummaryMarkdown] = useState('')
   const [isSummarizing, setIsSummarizing] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [statusText, setStatusText] = useState('打开网页后点击“开始总结”，摘要会显示在当前页面旁边。')
-  const [abortController, setAbortController] = useState<AbortController | null>(null)
+  const [statusText, setStatusText] = useState(
+    '打开网页后点击“开始总结”，摘要会显示在当前页面旁边。',
+  )
   const [copySuccess, setCopySuccess] = useState(false)
   const [isConfigOpen, setIsConfigOpen] = useState(false)
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false)
@@ -75,13 +89,44 @@ export function App() {
   const [activePage, setActivePage] = useState<PageInfo | null>(null)
   const [summarySource, setSummarySource] = useState<PageInfo | null>(null)
 
-  const summaryHtml = useMemo(() => renderSafeMarkdown(summaryMarkdown), [summaryMarkdown])
-  const summarizeRef = useRef<(tabId?: number) => Promise<void>>(async () => undefined)
+  const deferredSummaryMarkdown = useDeferredValue(summaryMarkdown)
+  const summaryHtml = useMemo(
+    () => renderSafeMarkdown(deferredSummaryMarkdown),
+    [deferredSummaryMarkdown],
+  )
+  const summarizeRef = useRef<(tabId?: number) => Promise<void>>(
+    async () => undefined,
+  )
   const abortControllerRef = useRef<AbortController | null>(null)
+  const pendingSummaryRef = useRef('')
+  const summaryFlushTimerRef = useRef<number | null>(null)
+  const copyResetTimerRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    abortControllerRef.current = abortController
-  }, [abortController])
+  // 流式增量先累积到 ref，按固定间隔批量落到 state，避免逐 token
+  // 触发整篇 Markdown 的 parse + sanitize。
+  function flushSummary() {
+    if (summaryFlushTimerRef.current !== null) {
+      window.clearTimeout(summaryFlushTimerRef.current)
+      summaryFlushTimerRef.current = null
+    }
+
+    const pending = pendingSummaryRef.current
+    pendingSummaryRef.current = ''
+    if (pending) {
+      setSummaryMarkdown((previous) => previous + pending)
+    }
+  }
+
+  function scheduleSummaryFlush() {
+    if (summaryFlushTimerRef.current !== null) {
+      return
+    }
+
+    summaryFlushTimerRef.current = window.setTimeout(() => {
+      summaryFlushTimerRef.current = null
+      flushSummary()
+    }, SUMMARY_FLUSH_INTERVAL_MS)
+  }
 
   const updateConfigField = (field: keyof typeof config, value: string) => {
     if (field === 'endpoint' || field === 'apiKey') {
@@ -154,12 +199,17 @@ export function App() {
     setActivePage(targetPage)
     setSummarySource(targetPage)
 
+    pendingSummaryRef.current = ''
+    if (summaryFlushTimerRef.current !== null) {
+      window.clearTimeout(summaryFlushTimerRef.current)
+      summaryFlushTimerRef.current = null
+    }
     setStatusText('正在提取当前网页正文…')
     setSummaryMarkdown('')
     setIsSummarizing(true)
 
     const controller = new AbortController()
-    setAbortController(controller)
+    abortControllerRef.current = controller
 
     try {
       const pageContent = await extractTabContent(targetTab.id)
@@ -171,7 +221,8 @@ export function App() {
         config,
         signal: controller.signal,
         onDelta: (delta) => {
-          setSummaryMarkdown((previous) => previous + delta)
+          pendingSummaryRef.current += delta
+          scheduleSummaryFlush()
         },
       })
 
@@ -184,12 +235,18 @@ export function App() {
         setError(getRefreshHint(caughtError))
       }
     } finally {
+      flushSummary()
       setIsSummarizing(false)
-      setAbortController(null)
+      if (abortControllerRef.current === controller) {
+        abortControllerRef.current = null
+      }
     }
   }
 
-  summarizeRef.current = summarizePage
+  // 在提交后同步最新回调，避免渲染期赋值。
+  useEffect(() => {
+    summarizeRef.current = summarizePage
+  })
 
   useEffect(() => {
     let active = true
@@ -206,12 +263,10 @@ export function App() {
         setActivePage(getPageInfo(currentTab))
       }
 
-      const pendingAction = await chrome.runtime.sendMessage(
-        {
-          type: 'WEB_SUMMARY_SIDE_PANEL_READY',
-          tabId: currentTab?.id,
-        },
-      ) as WebSummaryPendingAction | null
+      const pendingAction = (await chrome.runtime.sendMessage({
+        type: 'WEB_SUMMARY_SIDE_PANEL_READY',
+        tabId: currentTab?.id,
+      })) as WebSummaryPendingAction | null
 
       if (active && pendingAction?.type === 'SUMMARIZE_ACTIVE_PAGE') {
         await summarizeRef.current(pendingAction.tabId)
@@ -223,6 +278,14 @@ export function App() {
     return () => {
       active = false
       abortControllerRef.current?.abort()
+      if (summaryFlushTimerRef.current !== null) {
+        window.clearTimeout(summaryFlushTimerRef.current)
+        summaryFlushTimerRef.current = null
+      }
+      if (copyResetTimerRef.current !== null) {
+        window.clearTimeout(copyResetTimerRef.current)
+        copyResetTimerRef.current = null
+      }
     }
   }, [])
 
@@ -269,14 +332,22 @@ export function App() {
 
     await copyToClipboard(summaryMarkdown)
     setCopySuccess(true)
-    setTimeout(() => setCopySuccess(false), 1500)
+    if (copyResetTimerRef.current !== null) {
+      window.clearTimeout(copyResetTimerRef.current)
+    }
+    copyResetTimerRef.current = window.setTimeout(() => {
+      copyResetTimerRef.current = null
+      setCopySuccess(false)
+    }, COPY_FEEDBACK_MS)
   }
 
   return (
     <div
       data-testid="web-summary-panel"
       className="h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)] text-slate-900"
-      style={{ fontFamily: '"IBM Plex Sans", "SF Pro Text", "Segoe UI", sans-serif' }}
+      style={{
+        fontFamily: '"IBM Plex Sans", "SF Pro Text", "Segoe UI", sans-serif',
+      }}
     >
       <div className="mx-auto flex h-full max-w-[1040px] flex-col p-1.5">
         <Card className="relative h-full gap-1.5 overflow-hidden rounded-lg border-slate-200/80 bg-white/92 py-2">
@@ -287,7 +358,9 @@ export function App() {
                   <PanelsTopLeft className="h-2.5 w-2.5" />
                   <span>Side Panel</span>
                 </div>
-                <CardTitle className="truncate pt-0.5 text-base">网页总结</CardTitle>
+                <CardTitle className="truncate pt-0.5 text-base">
+                  网页总结
+                </CardTitle>
               </div>
               <div className="flex items-center gap-1.5">
                 <Button
@@ -323,55 +396,57 @@ export function App() {
                 </span>
               </div>
               <div className="flex items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
-                  <Button
-                    data-testid="web-summary-summarize"
-                    onClick={() => void summarizePage()}
-                    disabled={configLoading || isSummarizing}
-                    size="sm"
-                    className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
-                  >
-                    {isSummarizing ? (
-                      <>
-                        <LoaderCircle className="h-4 w-4 animate-spin" />
-                        总结中…
-                      </>
-                    ) : (
-                      <>
-                        <Bot className="h-4 w-4" />
-                        开始总结
-                      </>
-                    )}
-                  </Button>
-
-                  {isSummarizing && (
-                    <Button
-                      data-testid="web-summary-stop"
-                      variant="outline"
-                      size="sm"
-                      className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
-                      onClick={() => abortController?.abort()}
-                    >
-                      <SquareStop className="h-4 w-4" />
-                      停止
-                    </Button>
+                <Button
+                  data-testid="web-summary-summarize"
+                  onClick={() => void summarizePage()}
+                  disabled={configLoading || isSummarizing}
+                  size="sm"
+                  className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
+                >
+                  {isSummarizing ? (
+                    <>
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                      总结中…
+                    </>
+                  ) : (
+                    <>
+                      <Bot className="h-4 w-4" />
+                      开始总结
+                    </>
                   )}
+                </Button>
 
+                {isSummarizing && (
                   <Button
-                    variant="ghost"
+                    data-testid="web-summary-stop"
+                    variant="outline"
                     size="sm"
                     className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
-                    onClick={() => void handleCopySummary()}
-                    disabled={!summaryMarkdown.trim()}
+                    onClick={() => abortControllerRef.current?.abort()}
                   >
-                    <Copy className="h-4 w-4" />
-                    {copySuccess ? '已复制' : '复制'}
+                    <SquareStop className="h-4 w-4" />
+                    停止
                   </Button>
+                )}
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
+                  onClick={() => void handleCopySummary()}
+                  disabled={!summaryMarkdown.trim()}
+                >
+                  <Copy className="h-4 w-4" />
+                  {copySuccess ? '已复制' : '复制'}
+                </Button>
               </div>
 
               <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white">
                 <div className="shrink-0 border-b border-slate-100 px-2.5 py-1.5">
                   <div className="flex items-center gap-2">
-                    <div className="shrink-0 text-sm font-semibold text-slate-900">摘要结果</div>
+                    <div className="shrink-0 text-sm font-semibold text-slate-900">
+                      摘要结果
+                    </div>
                     <div
                       className="min-w-0 flex-1 truncate text-right text-[11px] leading-5 text-slate-500"
                       title={statusText}
@@ -401,7 +476,8 @@ export function App() {
                     />
                   ) : (
                     <div className="flex h-full min-h-full items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/70 px-3 text-center text-sm leading-5 text-slate-500">
-                      点击右上角设置按钮打开联网配置抽屉，配置 endpoint / model / API Key 后，点击“开始总结”，摘要会在这里实时生成。
+                      点击右上角设置按钮打开联网配置抽屉，配置 endpoint / model
+                      / API Key 后，点击“开始总结”，摘要会在这里实时生成。
                     </div>
                   )}
                 </div>
@@ -441,7 +517,8 @@ export function App() {
                   <div>
                     <CardTitle className="text-sm">联网配置</CardTitle>
                     <CardDescription className="text-[12px] leading-5">
-                      仅在你点击“开始总结”时，当前网页正文才会发送到你填写的兼容 OpenAI 接口。
+                      仅在你点击“开始总结”时，当前网页正文才会发送到你填写的兼容
+                      OpenAI 接口。
                     </CardDescription>
                   </div>
                   <Button
@@ -458,50 +535,70 @@ export function App() {
               </CardHeader>
               <CardContent className="min-h-0 flex-1 space-y-2 overflow-y-auto pt-2">
                 <div className="space-y-1.5">
-                  <Label htmlFor="web-summary-endpoint" className="text-[13px]">接口地址</Label>
+                  <Label htmlFor="web-summary-endpoint" className="text-[13px]">
+                    接口地址
+                  </Label>
                   <Input
                     id="web-summary-endpoint"
                     data-testid="web-summary-endpoint"
                     value={config.endpoint}
-                    onChange={(event) => updateConfigField('endpoint', event.target.value)}
+                    onChange={(event) =>
+                      updateConfigField('endpoint', event.target.value)
+                    }
                     placeholder="https://api.openai.com/v1/chat/completions"
                     className="h-8 rounded-md px-2.5 text-sm"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="web-summary-api-key" className="text-[13px]">API Key</Label>
+                  <Label htmlFor="web-summary-api-key" className="text-[13px]">
+                    API Key
+                  </Label>
                   <div className="relative">
                     <Input
                       id="web-summary-api-key"
                       data-testid="web-summary-api-key"
                       type={isApiKeyVisible ? 'text' : 'password'}
                       value={config.apiKey}
-                      onChange={(event) => updateConfigField('apiKey', event.target.value)}
+                      onChange={(event) =>
+                        updateConfigField('apiKey', event.target.value)
+                      }
                       placeholder="sk-..."
                       className="h-8 rounded-md px-2.5 pr-9 text-sm"
                     />
                     <button
                       type="button"
                       data-testid="web-summary-api-key-visibility"
-                      aria-label={isApiKeyVisible ? '隐藏 API Key 明文' : '显示 API Key 明文'}
+                      aria-label={
+                        isApiKeyVisible
+                          ? '隐藏 API Key 明文'
+                          : '显示 API Key 明文'
+                      }
                       aria-pressed={isApiKeyVisible}
                       onClick={() => setIsApiKeyVisible((visible) => !visible)}
                       className="absolute inset-y-0 right-0 flex w-8 items-center justify-center rounded-r-md text-slate-500 transition-colors hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/45"
                     >
-                      {isApiKeyVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      {isApiKeyVisible ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </button>
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="web-summary-model" className="text-[13px]">模型名称</Label>
+                  <Label htmlFor="web-summary-model" className="text-[13px]">
+                    模型名称
+                  </Label>
                   <div className="flex items-center gap-1.5">
                     <Input
                       id="web-summary-model"
                       data-testid="web-summary-model"
                       value={config.model}
-                      onChange={(event) => updateConfigField('model', event.target.value)}
+                      onChange={(event) =>
+                        updateConfigField('model', event.target.value)
+                      }
                       placeholder="gpt-4.1-mini / 自定义兼容模型"
                       className="h-8 min-w-0 flex-1 rounded-md px-2.5 text-sm"
                     />
@@ -539,22 +636,29 @@ export function App() {
                           onClick={() => selectModel(model)}
                           className={cn(
                             'flex w-full items-center justify-between gap-2 px-2.5 py-1.5 text-left text-xs text-slate-700 transition-colors hover:bg-slate-50',
-                            config.model === model && 'bg-emerald-50 text-emerald-700',
+                            config.model === model &&
+                              'bg-emerald-50 text-emerald-700',
                           )}
                         >
                           <span className="truncate">{model}</span>
-                          {config.model === model && <Check className="h-3.5 w-3.5 shrink-0" />}
+                          {config.model === model && (
+                            <Check className="h-3.5 w-3.5 shrink-0" />
+                          )}
                         </button>
                       ))}
                     </div>
                   )}
                   {modelsError && (
-                    <p className="text-[11px] leading-4 text-red-600">{modelsError}</p>
+                    <p className="text-[11px] leading-4 text-red-600">
+                      {modelsError}
+                    </p>
                   )}
                 </div>
 
                 <div className="rounded-lg border border-slate-200 bg-slate-50/80 p-2 text-[11px] leading-5 text-slate-500">
-                  配置会保存在 <code>chrome.storage.local</code> 的 <code>webSummaryConfig</code> 键下，仅保存在本机浏览器，不会自动同步到云端。
+                  配置会保存在 <code>chrome.storage.local</code> 的{' '}
+                  <code>webSummaryConfig</code>{' '}
+                  键下，仅保存在本机浏览器，不会自动同步到云端。
                 </div>
               </CardContent>
             </Card>

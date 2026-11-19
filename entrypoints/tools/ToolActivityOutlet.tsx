@@ -1,6 +1,14 @@
-import { Activity, useEffect, useState } from 'react'
+import {
+  Activity,
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router'
-import { SettingsPage } from '@/components/tool/settings'
 import {
   ToolSessionActions,
   ToolSessionContext,
@@ -17,6 +25,12 @@ import { SESSION_TOOL_IDS, supportsToolSession } from '@/lib/tool-data/catalog'
 import { generationKey, subscribeData } from '@/lib/tool-data/storage'
 import { createToolSession, type ToolSession } from '@/lib/tool-sessions'
 
+const SettingsPage = lazy(() =>
+  import('@/components/tool/settings').then((module) => ({
+    default: module.SettingsPage,
+  })),
+)
+
 export function ToolActivityOutlet() {
   const { toolId } = useParams<{ toolId: string }>()
   const navigate = useNavigate()
@@ -26,6 +40,9 @@ export function ToolActivityOutlet() {
     activeToolId ? { [activeToolId]: createToolSession(activeToolId) } : {},
   )
   const [temporary, setTemporary] = useState<Record<string, ToolSession>>({})
+  // openTemporarySession 走 ref 读取最新临时会话，保持回调与 context 值稳定。
+  const temporaryRef = useRef(temporary)
+  temporaryRef.current = temporary
 
   useEffect(() => {
     if (!activeToolId) return
@@ -50,25 +67,32 @@ export function ToolActivityOutlet() {
     }
   }, [])
 
-  function openTemporarySession(
-    id: string,
-    values: Record<string, unknown> = {},
-  ) {
-    if (!supportsToolSession(id)) return
-    if (
-      temporary[id] &&
-      !window.confirm('替换现有临时内容？未保存的修改会丢弃，普通草稿会保留。')
-    )
-      return
-    setTemporary((current) => ({
-      ...current,
-      [id]: createToolSession(id, true, values),
-    }))
-    setNormal((current) =>
-      current[id] ? current : { ...current, [id]: createToolSession(id) },
-    )
-    void navigate(getToolRoutePath(id))
-  }
+  const openTemporarySession = useCallback(
+    (id: string, values: Record<string, unknown> = {}) => {
+      if (!supportsToolSession(id)) return
+      if (
+        temporaryRef.current[id] &&
+        !window.confirm(
+          '替换现有临时内容？未保存的修改会丢弃，普通草稿会保留。',
+        )
+      )
+        return
+      setTemporary((current) => ({
+        ...current,
+        [id]: createToolSession(id, true, values),
+      }))
+      setNormal((current) =>
+        current[id] ? current : { ...current, [id]: createToolSession(id) },
+      )
+      void navigate(getToolRoutePath(id))
+    },
+    [navigate],
+  )
+
+  const sessionActions = useMemo(
+    () => ({ openTemporarySession }),
+    [openTemporarySession],
+  )
 
   function endTemporarySession(id: string) {
     if (
@@ -88,12 +112,22 @@ export function ToolActivityOutlet() {
     return <Navigate replace to={getToolRoutePath(DEFAULT_TOOL_ID)} />
 
   return (
-    <ToolSessionActions.Provider value={{ openTemporarySession }}>
+    <ToolSessionActions.Provider value={sessionActions}>
       <ToolWorkspaceShell
         activeToolId={activeToolId ?? undefined}
         pageTitle={isSettings ? '设置' : undefined}
       >
-        {isSettings && <SettingsPage />}
+        {isSettings && (
+          <Suspense
+            fallback={
+              <p role="status" className="p-4 text-sm text-muted-foreground">
+                正在加载设置…
+              </p>
+            }
+          >
+            <SettingsPage />
+          </Suspense>
+        )}
         {toolRoutes.flatMap(({ id, Component, preserveActivity }) => {
           const regular = normal[id]
           if (!regular) return []

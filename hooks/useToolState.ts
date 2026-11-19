@@ -1,8 +1,10 @@
+import { useLayoutEffect } from 'react'
 import { useCurrentToolSession } from '@/components/tool/ToolSessionContext'
-import { usePersistedValue } from '@/hooks/usePersistedValue'
 import {
-  getToolStateStorageKey,
-} from '@/lib/chrome/local-persisted-data'
+  type PersistedValueOptions,
+  usePersistedValue,
+} from '@/hooks/usePersistedValue'
+import { getToolStateStorageKey } from '@/lib/chrome/local-persisted-data'
 import { isContentKey } from '@/lib/tool-data/catalog'
 
 /**
@@ -25,16 +27,29 @@ export function useToolState<T>(
   toolId: string,
   key: string,
   initialState: T,
-): [
-  state: T,
-  setState: (value: T | ((prev: T) => T)) => void,
-] {
+  options?: PersistedValueOptions,
+): [state: T, setState: (value: T | ((prev: T) => T)) => void] {
   const session = useCurrentToolSession()
   const storageKey = getToolStateStorageKey(toolId, key)
-  const initial = session && key in session.values ? session.values[key] as T
-    : session?.temporary && isContentKey(storageKey) ? '' as T : initialState
-  const { value, setValue } = usePersistedValue(storageKey, initial, session?.storage)
-  if (session) session.values[key] = value
+  const initial =
+    session && key in session.values
+      ? (session.values[key] as T)
+      : session?.temporary && isContentKey(storageKey)
+        ? ('' as T)
+        : initialState
+  const { value, setValue } = usePersistedValue(
+    storageKey,
+    initial,
+    session?.storage,
+    options,
+  )
+
+  // 会话快照读取 session.values；在提交后同步，避免渲染期写外部对象。
+  useLayoutEffect(() => {
+    if (session) {
+      session.values[key] = value
+    }
+  }, [session, key, value])
 
   return [value, setValue]
 }

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { Check, Copy } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Copy, Check } from 'lucide-react'
 
 interface CopyButtonProps {
   /** 要复制的内容 */
@@ -44,6 +44,15 @@ export function CopyButton({
 }: CopyButtonProps) {
   const [copied, setCopied] = useState(false)
   const [failed, setFailed] = useState(false)
+  const resetTimerRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current)
+      }
+    }
+  }, [])
 
   async function handleCopy() {
     if (!content) return
@@ -54,7 +63,11 @@ export function CopyButton({
       setFailed(false)
       onCopy?.()
 
-      setTimeout(() => {
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current)
+      }
+      resetTimerRef.current = window.setTimeout(() => {
+        resetTimerRef.current = null
         setCopied(false)
       }, successDuration)
     } catch (error) {

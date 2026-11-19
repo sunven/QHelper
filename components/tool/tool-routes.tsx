@@ -1,23 +1,69 @@
-import type { ComponentType } from 'react'
+import { type ComponentType, lazy, Suspense } from 'react'
 import { ToolErrorBoundary } from '@/components/ToolErrorBoundary'
-import { AesGcmTool } from '@/components/tool/aes-gcm'
-import { AutoRefreshTool } from '@/components/tool/auto-refresh'
-import { BcryptHashTool } from '@/components/tool/bcrypt-hash'
-import { ClearSiteDataTool } from '@/components/tool/clear-site-data'
-import { DownloadsTool } from '@/components/tool/downloads'
-import { ImageBase64Tool } from '@/components/tool/imagebase64'
-import { OcrTool } from '@/components/tool/ocr'
-import { PasswordGenerator } from '@/components/tool/password'
-import { QrCodeTool } from '@/components/tool/qrcode'
 import { ToolPageShell } from '@/components/tool/ToolPageShell'
-import { TransRadixTool } from '@/components/tool/trans-radix'
-import { UUIDGenerator } from '@/components/tool/uuid'
 import {
   createOrdinaryToolRoutes,
   getToolCatalogTool,
   type OrdinaryToolId,
   type ToolRoute,
 } from '@/lib/tool-catalog'
+
+// 每个工具独立成 chunk：打开任一工具不再加载全部工具代码。
+const TransRadixTool = lazy(() =>
+  import('@/components/tool/trans-radix').then((module) => ({
+    default: module.TransRadixTool,
+  })),
+)
+const AutoRefreshTool = lazy(() =>
+  import('@/components/tool/auto-refresh').then((module) => ({
+    default: module.AutoRefreshTool,
+  })),
+)
+const ImageBase64Tool = lazy(() =>
+  import('@/components/tool/imagebase64').then((module) => ({
+    default: module.ImageBase64Tool,
+  })),
+)
+const OcrTool = lazy(() =>
+  import('@/components/tool/ocr').then((module) => ({
+    default: module.OcrTool,
+  })),
+)
+const QrCodeTool = lazy(() =>
+  import('@/components/tool/qrcode').then((module) => ({
+    default: module.QrCodeTool,
+  })),
+)
+const UUIDGenerator = lazy(() =>
+  import('@/components/tool/uuid').then((module) => ({
+    default: module.UUIDGenerator,
+  })),
+)
+const PasswordGenerator = lazy(() =>
+  import('@/components/tool/password').then((module) => ({
+    default: module.PasswordGenerator,
+  })),
+)
+const AesGcmTool = lazy(() =>
+  import('@/components/tool/aes-gcm').then((module) => ({
+    default: module.AesGcmTool,
+  })),
+)
+const BcryptHashTool = lazy(() =>
+  import('@/components/tool/bcrypt-hash').then((module) => ({
+    default: module.BcryptHashTool,
+  })),
+)
+const DownloadsTool = lazy(() =>
+  import('@/components/tool/downloads').then((module) => ({
+    default: module.DownloadsTool,
+  })),
+)
+const ClearSiteDataTool = lazy(() =>
+  import('@/components/tool/clear-site-data').then((module) => ({
+    default: module.ClearSiteDataTool,
+  })),
+)
 
 const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   'trans-radix': TransRadixTool,
@@ -43,7 +89,15 @@ function createToolPage(
     return (
       <ToolErrorBoundary toolId={toolId} toolName={tool?.name ?? toolId}>
         <ToolPageShell toolId={toolId}>
-          <Component />
+          <Suspense
+            fallback={
+              <p role="status" className="p-4 text-sm text-muted-foreground">
+                正在加载工具…
+              </p>
+            }
+          >
+            <Component />
+          </Suspense>
         </ToolPageShell>
       </ToolErrorBoundary>
     )
