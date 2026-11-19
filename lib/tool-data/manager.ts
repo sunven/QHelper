@@ -38,13 +38,7 @@ export async function getToolDataSummary(): Promise<ToolDataSummary[]> {
           if (value === undefined) continue
           bytes += new TextEncoder().encode(JSON.stringify(value)).byteLength
           records += Array.isArray(value) ? value.length : 1
-          categories.add(
-            key === snapshotsKey(toolId)
-              ? '快照'
-              : Array.isArray(value)
-                ? '历史'
-                : '输入',
-          )
+          categories.add(key === snapshotsKey(toolId) ? '快照' : '输入')
         }
       }
       return { toolId, records, bytes, categories: [...categories] }

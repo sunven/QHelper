@@ -1,21 +1,17 @@
+import type { Icon } from '@phosphor-icons/react'
 import {
   ArrowsClockwiseIcon,
   BookmarkSimpleIcon,
-  BracketsCurlyIcon,
   CalculatorIcon,
-  FileCodeIcon,
-  FileTextIcon,
   GearSixIcon,
   HashIcon,
   ImageIcon,
-  LinkIcon,
   QrCodeIcon,
   ShieldCheckIcon,
   SparkleIcon,
   TextAaIcon,
   TrashIcon,
 } from '@phosphor-icons/react'
-import type { Icon } from '@phosphor-icons/react'
 
 /**
  * 工具图标的稳定 token 解析处：Registry 与 Tool Catalog 声明 token，
@@ -25,14 +21,10 @@ import type { Icon } from '@phosphor-icons/react'
 const toolIconTokens = {
   ArrowsClockwise: ArrowsClockwiseIcon,
   BookmarkSimple: BookmarkSimpleIcon,
-  BracketsCurly: BracketsCurlyIcon,
   Calculator: CalculatorIcon,
-  FileCode: FileCodeIcon,
-  FileText: FileTextIcon,
   GearSix: GearSixIcon,
   Hash: HashIcon,
   Image: ImageIcon,
-  Link: LinkIcon,
   QrCode: QrCodeIcon,
   // ScanText 是 OCR 工具的稳定 token；@phosphor-icons 无此图标，
   // 此前静默回落到 Wrench（旧 popup map 未登记），现解析为 TextAa

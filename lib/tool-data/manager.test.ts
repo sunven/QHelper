@@ -39,7 +39,7 @@ describe('tool content management', () => {
       tool_qrcode_text: 'private',
       tool_qrcode_size: 280,
       webSummaryConfig: { apiKey: 'credential' },
-      tool_imagebase64_srcText: 'other',
+      tool_unrelated_content: 'other',
     })
     localStorage.setItem('tool_qrcode_text', JSON.stringify('old fallback'))
     await saveToolSnapshot('qrcode', { text: 'snapshot' })
@@ -49,7 +49,7 @@ describe('tool content management', () => {
     expect(await getToolSnapshots('qrcode')).toEqual([])
     expect(values.local.tool_qrcode_size).toBe(280)
     expect(values.local.webSummaryConfig).toEqual({ apiKey: 'credential' })
-    expect(values.local.tool_imagebase64_srcText).toBe('other')
+    expect(values.local.tool_unrelated_content).toBe('other')
   })
 
   it('rejects a stale page write even when it arrives after clearing finished', async () => {

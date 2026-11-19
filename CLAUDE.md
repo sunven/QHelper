@@ -132,8 +132,9 @@ From `wxt.config.ts`:
 ## Tool Categories (Popup Menu)
 
 - **Common:** Radix conversion, Auto refresh
-- **Image:** Base64 converter, Image splicing
-- **Other:** Color converter, Clear cookies
+- **Image:** Base64 converter, OCR, QR code
+- **Security:** UUID, Password generator, AES-GCM, Bcrypt hash
+- **Other:** Downloads cleanup, Clear site data
 
 ## Agent skills
 

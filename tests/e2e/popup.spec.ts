@@ -1,4 +1,5 @@
 import { test, expect } from '../support/fixtures';
+import { toolUrl } from '../support/helpers/extension';
 import { PopupPage } from '../support/page-objects/popup.page';
 
 test.describe('Extension Popup', () => {
@@ -34,9 +35,7 @@ test.describe('Extension Popup', () => {
 
     const toolPage = await popup.clickTool('trans-radix');
 
-    await expect(toolPage).toHaveURL(
-      `chrome-extension://${extensionId}/tools/trans-radix.html`,
-    );
+    await expect(toolPage).toHaveURL(toolUrl(extensionId, 'trans-radix'));
     await toolPage.close();
   });
 
@@ -45,9 +44,7 @@ test.describe('Extension Popup', () => {
 
     const toolPage = await popup.clickTool('password');
 
-    await expect(toolPage).toHaveURL(
-      `chrome-extension://${extensionId}/tools/password.html`,
-    );
+    await expect(toolPage).toHaveURL(toolUrl(extensionId, 'password'));
     await toolPage.close();
   });
 
@@ -57,9 +54,7 @@ test.describe('Extension Popup', () => {
       popupPage.getByTestId('popup-settings-link').click(),
     ]);
 
-    await expect(settingsPage).toHaveURL(
-      `chrome-extension://${extensionId}/tools/settings.html`,
-    );
+    await expect(settingsPage).toHaveURL(toolUrl(extensionId, 'settings'));
     await expect(settingsPage.getByTestId('tool-workspace-navbar')).toContainText(
       '设置',
     );
@@ -74,9 +69,7 @@ test.describe('Extension Popup', () => {
 
     const toolPage = await popup.clickTool('clear-site-data');
 
-    await expect(toolPage).toHaveURL(
-      `chrome-extension://${extensionId}/tools/clear-site-data.html`,
-    );
+    await expect(toolPage).toHaveURL(toolUrl(extensionId, 'clear-site-data'));
     await expect(toolPage.getByTestId('tool-workspace-navbar')).toContainText(
       '清除站点数据',
     );

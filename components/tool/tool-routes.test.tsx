@@ -1,7 +1,7 @@
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import { toolRoutes } from '@/components/tool/tool-routes'
-import { ORDINARY_TOOL_IDS, getToolCatalogTool } from '@/lib/tool-catalog'
+import { getToolCatalogTool, ORDINARY_TOOL_IDS } from '@/lib/tool-catalog'
 
 describe('toolRoutes', () => {
   it('maps every ordinary tool id to a component', () => {
@@ -12,25 +12,25 @@ describe('toolRoutes', () => {
     }
   })
 
-  // trans-radix: 普通工具；uuid: 无布局变体的简单工具
-  it.each([
-    'trans-radix',
-    'uuid',
-  ])('applies the Tool Page Shell skeleton to %s', (toolId) => {
-    const route = toolRoutes.find((candidate) => candidate.id === toolId)
-    if (!route) {
-      throw new Error(`Missing route for "${toolId}"`)
-    }
+  // 仅渲染轻量工具：其余工具挂载时会依赖额外的 Chrome API
+  it.each(['trans-radix', 'uuid'])(
+    'applies the Tool Page Shell skeleton to %s',
+    (toolId) => {
+      const route = toolRoutes.find((candidate) => candidate.id === toolId)
+      if (!route) {
+        throw new Error(`Missing route for "${toolId}"`)
+      }
 
-    render(<route.Component />)
+      render(<route.Component />)
 
-    const article = document.querySelector(`[data-tool-id="${toolId}"]`)
-    expect(article).not.toBeNull()
-    expect(article?.getAttribute('aria-labelledby')).toBe(
-      `tool-page-title-${toolId}`,
-    )
+      const article = document.querySelector(`[data-tool-id="${toolId}"]`)
+      expect(article).not.toBeNull()
+      expect(article?.getAttribute('aria-labelledby')).toBe(
+        `tool-page-title-${toolId}`,
+      )
 
-    const heading = document.getElementById(`tool-page-title-${toolId}`)
-    expect(heading).toHaveTextContent(getToolCatalogTool(toolId)?.name ?? '')
-  })
+      const heading = document.getElementById(`tool-page-title-${toolId}`)
+      expect(heading).toHaveTextContent(getToolCatalogTool(toolId)?.name ?? '')
+    },
+  )
 })

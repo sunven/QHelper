@@ -1,5 +1,5 @@
 import { expect, test } from '../support/fixtures'
-import { openToolPage } from '../support/helpers/extension'
+import { openToolPage, toolUrl } from '../support/helpers/extension'
 
 const toolPages = [
   'imagebase64',
@@ -120,20 +120,16 @@ test('tool navigation keeps form state inside the shared SPA', async ({
     .getByTestId('tool-side-navigation')
     .getByRole('menuitem', { name: /自动刷新/ })
     .click()
-  await expect(page).toHaveURL(
-    `chrome-extension://${extensionId}/tools/auto-refresh.html`,
+  await expect(page).toHaveURL(toolUrl(extensionId, 'auto-refresh'))
+  await expect(page.locator('#tool-page-title-auto-refresh')).toHaveText(
+    '自动刷新',
   )
-  await expect(
-    page.locator('#tool-page-title-auto-refresh'),
-  ).toHaveText('自动刷新')
 
   await page
     .getByTestId('tool-side-navigation')
     .getByRole('menuitem', { name: /进制转换/ })
     .click()
-  await expect(page).toHaveURL(
-    `chrome-extension://${extensionId}/tools/trans-radix.html`,
-  )
+  await expect(page).toHaveURL(toolUrl(extensionId, 'trans-radix'))
   await expect(input).toHaveValue('255')
 
   await page.close()

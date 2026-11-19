@@ -24,34 +24,33 @@ import {
   TOOL_CATEGORY_LABELS,
 } from './tool-catalog'
 
+function expectToolAbsent(id: string) {
+  const directory = getLaunchDirectory('popup-main')
+  const aliases = getToolsSpaAliases().map((alias) => alias.id)
+
+  expect(isOrdinaryToolId(id)).toBe(false)
+  expect(getToolCatalogTool(id)).toBeUndefined()
+  expect(getLaunchEntry(id)).toBeUndefined()
+  expect(parseToolRouteParam(`${id}.html`)).toBeNull()
+  expect(getToolIdFromPathname(`/tools/${id}.html`)).toBeNull()
+  expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
+  expect(aliases).not.toContain(id)
+}
+
 describe('tool-catalog', () => {
   it('excludes text preview from tools, launches and generated aliases', () => {
-    expect(isOrdinaryToolId('text-preview')).toBe(false)
-    expect(getToolCatalogTool('text-preview')).toBeUndefined()
-    expect(getLaunchEntry('text-preview')).toBeUndefined()
-    expect(parseToolRouteParam('text-preview.html')).toBeNull()
-    expect(getToolsSpaAliases().map((alias) => alias.id)).not.toContain(
-      'text-preview',
-    )
+    expectToolAbsent('text-preview')
   })
 
   it('excludes the formatter and its legacy aliases from tools, launches and generated aliases', () => {
     for (const id of ['formatter', 'htmlformat', 'xmlformatter', 'csstool']) {
-      expect(isOrdinaryToolId(id)).toBe(false)
-      expect(getToolCatalogTool(id)).toBeUndefined()
-      expect(getLaunchEntry(id)).toBeUndefined()
-      expect(parseToolRouteParam(`${id}.html`)).toBeNull()
-      expect(getToolsSpaAliases().map((alias) => alias.id)).not.toContain(id)
+      expectToolAbsent(id)
     }
   })
 
   it('excludes Web 格式 tools and category from the catalog', () => {
     for (const id of ['markdown', 'urlparser', 'filemerge', 'svgoptimizer']) {
-      expect(isOrdinaryToolId(id)).toBe(false)
-      expect(getToolCatalogTool(id)).toBeUndefined()
-      expect(getLaunchEntry(id)).toBeUndefined()
-      expect(parseToolRouteParam(`${id}.html`)).toBeNull()
-      expect(getToolsSpaAliases().map((alias) => alias.id)).not.toContain(id)
+      expectToolAbsent(id)
     }
     expect(
       TOOL_CATEGORIES.map((category) => String(category.key)),
@@ -59,17 +58,8 @@ describe('tool-catalog', () => {
   })
 
   it('excludes removed JSON and text diff tools from tools, launches and generated aliases', () => {
-    const directory = getLaunchDirectory('popup-main')
-    const aliases = getToolsSpaAliases().map((alias) => alias.id)
-
     for (const id of ['json', 'text-diff']) {
-      expect(isOrdinaryToolId(id)).toBe(false)
-      expect(getToolCatalogTool(id)).toBeUndefined()
-      expect(getLaunchEntry(id)).toBeUndefined()
-      expect(parseToolRouteParam(`${id}.html`)).toBeNull()
-      expect(getToolIdFromPathname(`/tools/${id}.html`)).toBeNull()
-      expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
-      expect(aliases).not.toContain(id)
+      expectToolAbsent(id)
     }
   })
 
@@ -82,29 +72,20 @@ describe('tool-catalog', () => {
   })
 
   it('excludes 数据格式 tools and category from tools, launches and generated aliases', () => {
-    const directory = getLaunchDirectory('popup-main')
-    const aliases = getToolsSpaAliases().map((alias) => alias.id)
-
     for (const id of ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']) {
-      expect(isOrdinaryToolId(id)).toBe(false)
-      expect(getToolCatalogTool(id)).toBeUndefined()
-      expect(getLaunchEntry(id)).toBeUndefined()
-      expect(parseToolRouteParam(`${id}.html`)).toBeNull()
-      expect(getToolIdFromPathname(`/tools/${id}.html`)).toBeNull()
-      expect(directory.entries.map((entry) => entry.id)).not.toContain(id)
-      expect(aliases).not.toContain(id)
+      expectToolAbsent(id)
     }
     expect(ORDINARY_TOOL_IDS).toHaveLength(11)
-    expect(TOOL_CATEGORIES.map((category) => String(category.key))).not.toContain(
-      'encoding',
-    )
+    expect(
+      TOOL_CATEGORIES.map((category) => String(category.key)),
+    ).not.toContain('encoding')
     expect(Object.values(ToolCategory)).not.toContain('data_format')
     expect(TOOL_CATEGORIES.map((category) => category.name)).not.toContain(
       '数据格式',
     )
-    expect(directory.groups.map((group) => group.name)).not.toContain(
-      '数据格式',
-    )
+    expect(
+      getLaunchDirectory('popup-main').groups.map((group) => group.name),
+    ).not.toContain('数据格式')
   })
 
   it('exposes catalog lookup for UI callers without using the registry directly', () => {

@@ -18,8 +18,6 @@ async function stored(page: Page, key: string) {
   )
 }
 
-const DEFAULT_QR_TEXT = 'https://github.com/sunven/QHelper'
-
 test('popup search and favorites are shared with the sidebar', async ({
   context,
   popupPage,
@@ -103,26 +101,22 @@ test('clearing data resets visible and hidden drafts in other tabs without clear
   extensionId,
 }) => {
   const visible = await openToolPage(context, extensionId, 'qrcode')
-  await visible.getByPlaceholder('输入文本或 URL').fill('old-draft')
-  await expect
-    .poll(() => stored(visible, 'tool_qrcode_text'))
-    .toBe('old-draft')
+  const visibleInput = visible.getByPlaceholder('输入文本或 URL')
+  const defaultText = await visibleInput.inputValue()
+  await visibleInput.fill('old-draft')
+  await expect.poll(() => stored(visible, 'tool_qrcode_text')).toBe('old-draft')
   const hidden = await openToolPage(context, extensionId, 'qrcode')
-  await expect(
-    hidden.getByPlaceholder('输入文本或 URL'),
-  ).toHaveValue('old-draft')
+  const hiddenInput = hidden.getByPlaceholder('输入文本或 URL')
+  await expect(hiddenInput).toHaveValue('old-draft')
   await selectTool(hidden, 'trans-radix')
   const settings = await openToolPage(context, extensionId, 'settings')
   await settings.evaluate(async () => {
     await chrome.storage.local.set({
       webSummaryConfig: { apiKey: 'test-only-key' },
-      tool_imagebase64_srcText: 'keep-me',
+      tool_unrelated_content: 'keep-me',
       tool_qrcode_size: 'keep-preference',
     })
-    localStorage.setItem(
-      'tool_qrcode_text',
-      JSON.stringify('stale-fallback'),
-    )
+    localStorage.setItem('tool_qrcode_text', JSON.stringify('stale-fallback'))
   })
   settings.on('dialog', (dialog) => dialog.accept())
   await settings
@@ -132,13 +126,9 @@ test('clearing data resets visible and hidden drafts in other tabs without clear
   await expect(
     settings.getByRole('status').filter({ hasText: '本地内容已清理' }),
   ).toBeVisible()
-  await expect(
-    visible.getByPlaceholder('输入文本或 URL'),
-  ).toHaveValue(DEFAULT_QR_TEXT)
+  await expect(visibleInput).toHaveValue(defaultText)
   await selectTool(hidden, 'qrcode')
-  await expect(
-    hidden.getByPlaceholder('输入文本或 URL'),
-  ).toHaveValue(DEFAULT_QR_TEXT)
+  await expect(hiddenInput).toHaveValue(defaultText)
   expect(await stored(settings, 'tool_qrcode_text')).toBeUndefined()
   expect(
     await settings.evaluate(() => localStorage.getItem('tool_qrcode_text')),
@@ -146,9 +136,9 @@ test('clearing data resets visible and hidden drafts in other tabs without clear
   expect(await stored(settings, 'webSummaryConfig')).toEqual({
     apiKey: 'test-only-key',
   })
-  expect(await stored(settings, 'tool_imagebase64_srcText')).toBe('keep-me')
+  expect(await stored(settings, 'tool_unrelated_content')).toBe('keep-me')
   expect(await stored(settings, 'tool_qrcode_size')).toBe('keep-preference')
-  await visible.getByPlaceholder('输入文本或 URL').fill('new-draft')
+  await visibleInput.fill('new-draft')
   await expect
     .poll(() => stored(settings, 'tool_qrcode_text'))
     .toBe('new-draft')

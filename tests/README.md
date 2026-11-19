@@ -35,7 +35,7 @@ npx playwright test tests/e2e/popup.spec.ts
 tests/
 ├── e2e/                       # Test specs
 │   ├── popup.spec.ts          # Extension popup tests
-│   └── json-tool.spec.ts      # JSON tool page tests
+│   └── tool-pages.spec.ts     # Tool page shell and navigation tests
 └── support/
     ├── fixtures/
     │   ├── index.ts            # Merged fixture exports

@@ -1,18 +1,12 @@
-import { getToolCatalogTool, type OrdinaryToolId } from '@/lib/tool-catalog'
-import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
+import { getToolCatalogTool, type OrdinaryToolId } from '@/lib/tool-catalog'
 
 type ToolPageShellProps = {
   toolId: OrdinaryToolId
   children: ReactNode
-  className?: string
 }
 
-export function ToolPageShell({
-  toolId,
-  children,
-  className,
-}: ToolPageShellProps) {
+export function ToolPageShell({ toolId, children }: ToolPageShellProps) {
   const tool = getToolCatalogTool(toolId)
 
   if (!tool) {
@@ -22,7 +16,7 @@ export function ToolPageShell({
   return (
     <article
       aria-labelledby={`tool-page-title-${toolId}`}
-      className={cn('tool-page-view min-h-full', className)}
+      className="tool-page-view min-h-full"
       data-tool-category={tool.category}
       data-tool-id={toolId}
     >

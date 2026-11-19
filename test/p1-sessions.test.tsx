@@ -9,57 +9,51 @@ import { getToolSnapshots } from '@/lib/tool-data/manager'
 import { createToolSession, serializeSession } from '@/lib/tool-sessions'
 import { installToolDataStorage } from './tool-data-storage'
 
-const cases: [string, Record<string, unknown>, string][] = [
-  ['qrcode', { text: 'private-qr-17' }, 'private-qr-17'],
-]
-
 describe('temporary tool inputs', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     installToolDataStorage()
   })
 
-  it.each(cases)(
-    '%s edits and restores a snapshot without automatic persistent writes',
-    async (id, values, input) => {
-      const Component = toolRoutes.find((route) => route.id === id)!.Component
-      const session = createToolSession(id, true, values)
-      const view = render(
-        <MemoryRouter>
-          <TooltipProvider>
-            <ToolSessionContext.Provider value={session}>
-              <Component />
-            </ToolSessionContext.Provider>
-          </TooltipProvider>
-        </MemoryRouter>,
-      )
-      const editor = (await screen.findAllByDisplayValue(input))[0]
-      const edited = `edited:${input}`
-      fireEvent.change(editor, { target: { value: edited } })
-      await waitFor(() => expect(editor).toHaveValue(edited))
-      const snapshot = serializeSession(session)
-      expect(JSON.stringify(snapshot)).toContain(
-        JSON.stringify(edited).slice(1, -1),
-      )
-      expect(chrome.storage.local.set).not.toHaveBeenCalled()
-      expect(chrome.storage.sync.set).not.toHaveBeenCalled()
-      expect(localStorage.length).toBe(0)
-      view.unmount()
-      const restored = createToolSession(id, true, snapshot)
-      render(
-        <MemoryRouter>
-          <TooltipProvider>
-            <ToolSessionContext.Provider value={restored}>
-              <Component />
-            </ToolSessionContext.Provider>
-          </TooltipProvider>
-        </MemoryRouter>,
-      )
-      expect((await screen.findAllByDisplayValue(edited))[0]).toHaveValue(
-        edited,
-      )
-    },
-  )
+  it('qrcode edits and restores a snapshot without automatic persistent writes', async () => {
+    const input = 'private-qr-17'
+    const Component = toolRoutes.find(
+      (route) => route.id === 'qrcode',
+    )!.Component
+    const session = createToolSession('qrcode', true, { text: input })
+    const view = render(
+      <MemoryRouter>
+        <TooltipProvider>
+          <ToolSessionContext.Provider value={session}>
+            <Component />
+          </ToolSessionContext.Provider>
+        </TooltipProvider>
+      </MemoryRouter>,
+    )
+    const editor = (await screen.findAllByDisplayValue(input))[0]
+    const edited = `edited:${input}`
+    fireEvent.change(editor, { target: { value: edited } })
+    await waitFor(() => expect(editor).toHaveValue(edited))
+    const snapshot = serializeSession(session)
+    expect(JSON.stringify(snapshot)).toContain(
+      JSON.stringify(edited).slice(1, -1),
+    )
+    expect(chrome.storage.local.set).not.toHaveBeenCalled()
+    expect(chrome.storage.sync.set).not.toHaveBeenCalled()
+    expect(localStorage.length).toBe(0)
+    view.unmount()
+    const restored = createToolSession('qrcode', true, snapshot)
+    render(
+      <MemoryRouter>
+        <TooltipProvider>
+          <ToolSessionContext.Provider value={restored}>
+            <Component />
+          </ToolSessionContext.Provider>
+        </TooltipProvider>
+      </MemoryRouter>,
+    )
+    expect((await screen.findAllByDisplayValue(edited))[0]).toHaveValue(edited)
+  })
 
   it('explicit save persists a separate snapshot without promoting temporary input', async () => {
     const storage = installToolDataStorage()

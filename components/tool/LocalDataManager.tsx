@@ -27,7 +27,7 @@ export function LocalDataManager() {
     const name = getToolCatalogTool(row.toolId)?.name ?? row.toolId
     if (
       !window.confirm(
-        `清理 ${name} 的输入、历史和快照（约 ${row.records} 条）？已打开页面的普通草稿也会重置，磁盘文件、偏好和凭证会保留。`,
+        `清理 ${name} 的输入和快照（约 ${row.records} 条）？已打开页面的普通草稿也会重置，磁盘文件、偏好和凭证会保留。`,
       )
     )
       return
