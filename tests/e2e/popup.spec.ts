@@ -6,7 +6,7 @@ test.describe('Extension Popup', () => {
   test('opens and displays tool buttons', async ({ popupPage }) => {
     const popup = new PopupPage(popupPage);
 
-    await expect(popup.getToolButton('trans-radix')).toBeVisible();
+    await expect(popup.getToolButton('auto-refresh')).toBeVisible();
     await expect(popup.getToolButton('password')).toBeVisible();
     await expect(popup.getToolButton('web-summary-launch')).toBeVisible();
     await expect(popup.getToolButton('clear-site-data')).toBeVisible();
@@ -30,12 +30,12 @@ test.describe('Extension Popup', () => {
     expect(clipped).toEqual([]);
   });
 
-  test('clicking trans-radix tool opens new tab', async ({ popupPage, extensionId }) => {
+  test('clicking auto-refresh tool opens new tab', async ({ popupPage, extensionId }) => {
     const popup = new PopupPage(popupPage);
 
-    const toolPage = await popup.clickTool('trans-radix');
+    const toolPage = await popup.clickTool('auto-refresh');
 
-    await expect(toolPage).toHaveURL(toolUrl(extensionId, 'trans-radix'));
+    await expect(toolPage).toHaveURL(toolUrl(extensionId, 'auto-refresh'));
     await toolPage.close();
   });
 

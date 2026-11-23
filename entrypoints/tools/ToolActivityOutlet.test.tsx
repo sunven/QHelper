@@ -7,15 +7,15 @@ import { ToolActivityOutlet } from './ToolActivityOutlet'
 vi.mock('@/components/tool/tool-routes', () => ({
   toolRoutes: [
     {
-      id: 'trans-radix',
+      id: 'uuid',
       preserveActivity: true,
       Component: () => {
         const [value, setValue] = useState('')
         return (
           <section>
-            <h1>Trans Radix Mock</h1>
+            <h1>UUID Mock</h1>
             <textarea
-              aria-label="Trans Radix input"
+              aria-label="UUID input"
               value={value}
               onChange={(event) => setValue(event.target.value)}
             />
@@ -69,8 +69,8 @@ function RouteControls() {
       <button type="button" onClick={() => void navigate('/downloads.html')}>
         Go downloads
       </button>
-      <button type="button" onClick={() => void navigate('/trans-radix.html')}>
-        Go trans-radix
+      <button type="button" onClick={() => void navigate('/uuid.html')}>
+        Go uuid
       </button>
       <button type="button" onClick={() => void navigate('/auto-refresh.html')}>
         Go auto-refresh
@@ -102,7 +102,7 @@ describe('ToolActivityOutlet', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByText('Trans Radix Mock')).toBeVisible()
+    expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
   })
 
   it.each([
@@ -119,7 +119,7 @@ describe('ToolActivityOutlet', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByText('Trans Radix Mock')).toBeVisible()
+    expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
   })
 
   it.each([
@@ -136,7 +136,7 @@ describe('ToolActivityOutlet', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByText('Trans Radix Mock')).toBeVisible()
+    expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
   })
 
   it.each([
@@ -154,12 +154,12 @@ describe('ToolActivityOutlet', () => {
       </MemoryRouter>,
     )
 
-    expect(await screen.findByText('Trans Radix Mock')).toBeVisible()
+    expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
   })
 
   it('keeps React and DOM state when switching visited tools', async () => {
     render(
-      <MemoryRouter initialEntries={['/trans-radix.html']}>
+      <MemoryRouter initialEntries={['/uuid.html']}>
         <RouteControls />
         <Routes>
           <Route path="/:toolId" element={<ToolActivityOutlet />} />
@@ -167,7 +167,7 @@ describe('ToolActivityOutlet', () => {
       </MemoryRouter>,
     )
 
-    const input = screen.getByLabelText('Trans Radix input')
+    const input = screen.getByLabelText('UUID input')
     fireEvent.change(input, { target: { value: '{"a":1}' } })
     expect(screen.getByRole('status')).toHaveTextContent('{"a":1}')
 
@@ -176,12 +176,12 @@ describe('ToolActivityOutlet', () => {
     await waitFor(() => {
       expect(screen.getByText('Downloads Mock')).toBeVisible()
     })
-    expect(screen.getByLabelText('Trans Radix input')).not.toBeVisible()
+    expect(screen.getByLabelText('UUID input')).not.toBeVisible()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Go trans-radix' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Go uuid' }))
 
     await waitFor(() => {
-      expect(screen.getByLabelText('Trans Radix input')).toHaveValue('{"a":1}')
+      expect(screen.getByLabelText('UUID input')).toHaveValue('{"a":1}')
     })
     expect(screen.getByRole('status')).toHaveTextContent('{"a":1}')
   })
@@ -206,10 +206,10 @@ describe('ToolActivityOutlet', () => {
     })
     expect(mounted).toHaveBeenCalledTimes(1)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Go trans-radix' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Go uuid' }))
 
     await waitFor(() => {
-      expect(screen.getByText('Trans Radix Mock')).toBeVisible()
+      expect(screen.getByText('UUID Mock')).toBeVisible()
     })
     await waitFor(() => {
       expect(unmounted).toHaveBeenCalledTimes(1)

@@ -9,11 +9,6 @@ import {
 } from '@/lib/tool-catalog'
 
 // 每个工具独立成 chunk：打开任一工具不再加载全部工具代码。
-const TransRadixTool = lazy(() =>
-  import('@/components/tool/trans-radix').then((module) => ({
-    default: module.TransRadixTool,
-  })),
-)
 const AutoRefreshTool = lazy(() =>
   import('@/components/tool/auto-refresh').then((module) => ({
     default: module.AutoRefreshTool,
@@ -51,7 +46,6 @@ const ClearSiteDataTool = lazy(() =>
 )
 
 const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
-  'trans-radix': TransRadixTool,
   'auto-refresh': AutoRefreshTool,
   uuid: UUIDGenerator,
   password: PasswordGenerator,

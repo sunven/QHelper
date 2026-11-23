@@ -75,6 +75,10 @@ describe('tool-catalog', () => {
     expectToolAbsent('qrcode')
   })
 
+  it('excludes the removed Radix conversion tool from tools, launches and generated aliases', () => {
+    expectToolAbsent('trans-radix')
+  })
+
   it('derives ordinary tool ids from registered tools', () => {
     expect(new Set(ORDINARY_TOOL_IDS)).toEqual(
       new Set(tools.map((tool) => tool.id)),
@@ -87,7 +91,7 @@ describe('tool-catalog', () => {
     for (const id of ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']) {
       expectToolAbsent(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(8)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(7)
     expect(
       TOOL_CATEGORIES.map((category) => String(category.key)),
     ).not.toContain('encoding')
@@ -113,12 +117,12 @@ describe('tool-catalog', () => {
       key: ToolCategory.SECURITY,
       name: TOOL_CATEGORY_LABELS[ToolCategory.SECURITY],
     })
-    expect(getToolCatalogTool('trans-radix')).toMatchObject({
-      key: 'trans-radix',
-      name: '进制转换',
-      path: '/tools/trans-radix.html',
+    expect(getToolCatalogTool('auto-refresh')).toMatchObject({
+      key: 'auto-refresh',
+      name: '自动刷新',
+      path: '/tools/auto-refresh.html',
       category: ToolCategory.COMMON,
-      icon: 'Calculator',
+      icon: 'ArrowsClockwise',
     })
     expect(ORDINARY_TOOL_CATALOG_TOOLS.map((tool) => tool.key)).toEqual(
       ORDINARY_TOOL_IDS,
@@ -133,9 +137,9 @@ describe('tool-catalog', () => {
           name: TOOL_CATEGORY_LABELS[ToolCategory.COMMON],
           tools: expect.arrayContaining([
             expect.objectContaining({
-              key: 'trans-radix',
-              name: '进制转换',
-              path: '/tools/trans-radix.html',
+              key: 'auto-refresh',
+              name: '自动刷新',
+              path: '/tools/auto-refresh.html',
             }),
           ]),
         }),
@@ -156,7 +160,7 @@ describe('tool-catalog', () => {
     expect(directory.surface).toBe('popup-main')
     expect(directory.entries.map((entry) => entry.id)).toEqual(
       expect.arrayContaining([
-        'trans-radix',
+        'auto-refresh',
         'web-summary-launch',
         'bookmarks',
         'clear-site-data',
@@ -230,15 +234,15 @@ describe('tool-catalog', () => {
     ).toEqual(ORDINARY_TOOL_IDS)
 
     expect(() => createOrdinaryToolRoutes({})).toThrow(
-      'Missing tool component for "trans-radix"',
+      'Missing tool component for "auto-refresh"',
     )
   })
 })
 
 describe('tool catalog routing helpers', () => {
   it('builds path-based routes for ordinary tools', () => {
-    expect(DEFAULT_TOOL_ID).toBe('trans-radix')
-    expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html')
+    expect(DEFAULT_TOOL_ID).toBe('auto-refresh')
+    expect(getToolsSpaPath('auto-refresh')).toBe('tools/auto-refresh.html')
     expect(getToolsSpaPath('uuid')).toBe('tools/uuid.html')
     expect(getToolRoutePath('auto-refresh')).toBe('/auto-refresh.html')
     expect(getToolRoutePath('settings')).toBe('/settings.html')
@@ -246,7 +250,7 @@ describe('tool catalog routing helpers', () => {
 
   it('parses route params by stripping the html extension', () => {
     expect(parseToolRouteParam('uuid.html')).toBe('uuid')
-    expect(parseToolRouteParam('trans-radix.html')).toBe('trans-radix')
+    expect(parseToolRouteParam('auto-refresh.html')).toBe('auto-refresh')
     expect(parseToolRouteParam('uuid')).toBe('uuid')
     expect(parseToolRouteParam('json.html')).toBeNull()
     expect(parseToolRouteParam('json-string-panel.html')).toBeNull()
@@ -256,7 +260,7 @@ describe('tool catalog routing helpers', () => {
 
   it('detects the current tool from an SPA pathname', () => {
     expect(getToolIdFromPathname('/tools/uuid.html')).toBe('uuid')
-    expect(getToolIdFromPathname('/tools/trans-radix.html')).toBe('trans-radix')
+    expect(getToolIdFromPathname('/tools/auto-refresh.html')).toBe('auto-refresh')
     expect(getToolIdFromPathname('/tools/json.html')).toBeNull()
     expect(getToolIdFromPathname('/tools/json-string-panel.html')).toBeNull()
     expect(

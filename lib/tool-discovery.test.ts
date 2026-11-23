@@ -11,22 +11,31 @@ describe('tool discovery', () => {
   it('finds canonical tools using aliases and preserves directory order', () => {
     const entries = getLaunchDirectory('popup-main').entries
     expect(searchTools(entries, 'HTMLFORMAT')).toEqual([])
-    expect(searchTools(entries, 'binary').map((entry) => entry.id)).toEqual([
-      'trans-radix',
+    expect(searchTools(entries, 'reload').map((entry) => entry.id)).toEqual([
+      'auto-refresh',
     ])
     expect(searchTools(entries, 'does not exist')).toEqual([])
     expect(searchTools(entries, '')).toEqual(entries)
   })
   it('normalizes favorite IDs and falls back locally when sync fails', async () => {
     expect(
-      normalizeToolIds(['trans-radix', 'trans-radix', 'removed', 'clear-cookie']),
-    ).toEqual(['trans-radix'])
+      normalizeToolIds([
+        'auto-refresh',
+        'auto-refresh',
+        'removed',
+        'clear-cookie',
+      ]),
+    ).toEqual(['auto-refresh'])
     vi.mocked(chrome.storage.sync.set).mockRejectedValueOnce(
       new Error('offline'),
     )
-    const result = await favoriteTools.set({ ids: ['trans-radix', 'uuid'] })
+    const result = await favoriteTools.set({
+      ids: ['auto-refresh', 'uuid'],
+    })
     expect(result.storageArea).toBe('local')
-    expect(await favoriteTools.get()).toEqual({ ids: ['trans-radix', 'uuid'] })
+    expect(await favoriteTools.get()).toEqual({
+      ids: ['auto-refresh', 'uuid'],
+    })
   })
 
   it('excludes removed 数据格式 tools from search and existing favorites', () => {
@@ -36,8 +45,8 @@ describe('tool discovery', () => {
     for (const id of removedIds) {
       expect(searchTools(entries, id)).toEqual([])
     }
-    expect(normalizeToolIds(['trans-radix', ...removedIds, 'uuid'])).toEqual([
-      'trans-radix',
+    expect(normalizeToolIds(['auto-refresh', ...removedIds, 'uuid'])).toEqual([
+      'auto-refresh',
       'uuid',
     ])
   })

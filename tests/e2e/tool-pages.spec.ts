@@ -2,7 +2,6 @@ import { expect, test } from '../support/fixtures'
 import { openToolPage, toolUrl } from '../support/helpers/extension'
 
 const toolPages = [
-  'trans-radix',
   'uuid',
   'password',
   'aes-gcm',
@@ -14,19 +13,15 @@ test('tool shell uses breadcrumb title without a duplicated body title', async (
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'trans-radix')
+  const page = await openToolPage(context, extensionId, 'uuid')
   const pageView = page.locator('main .tool-page-view').first()
 
   await expect(page.getByTestId('tool-workspace-navbar')).toContainText(
-    '进制转换',
+    'UUID 生成器',
   )
   await expect(pageView.locator('.tool-hero-title')).toHaveCount(0)
-  await expect(page.locator('#tool-page-title-trans-radix')).toHaveClass(
-    /sr-only/,
-  )
-  await expect(page.locator('#tool-page-title-trans-radix')).toHaveText(
-    '进制转换',
-  )
+  await expect(page.locator('#tool-page-title-uuid')).toHaveClass(/sr-only/)
+  await expect(page.locator('#tool-page-title-uuid')).toHaveText('UUID 生成器')
 
   await page.close()
 })
@@ -35,12 +30,12 @@ test('tool navigation uses the left-side menu', async ({
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'trans-radix')
+  const page = await openToolPage(context, extensionId, 'uuid')
   const navbar = page.getByTestId('tool-workspace-navbar')
   const navigation = page.getByTestId('tool-side-navigation')
   const main = page.getByTestId('tool-page-main')
   const selectedTool = navigation.getByRole('menuitem', {
-    name: /进制转换/,
+    name: /UUID 生成器/,
   })
 
   await expect(navbar).toBeVisible()
@@ -108,11 +103,11 @@ test('tool navigation keeps form state inside the shared SPA', async ({
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'trans-radix')
-  const input = page.getByPlaceholder('输入10进制数')
+  const page = await openToolPage(context, extensionId, 'uuid')
+  const input = page.getByLabel('生成数量')
 
-  await input.fill('255')
-  await expect(input).toHaveValue('255')
+  await input.fill('5')
+  await expect(input).toHaveValue('5')
 
   await page
     .getByTestId('tool-side-navigation')
@@ -125,10 +120,10 @@ test('tool navigation keeps form state inside the shared SPA', async ({
 
   await page
     .getByTestId('tool-side-navigation')
-    .getByRole('menuitem', { name: /进制转换/ })
+    .getByRole('menuitem', { name: /UUID 生成器/ })
     .click()
-  await expect(page).toHaveURL(toolUrl(extensionId, 'trans-radix'))
-  await expect(input).toHaveValue('255')
+  await expect(page).toHaveURL(toolUrl(extensionId, 'uuid'))
+  await expect(input).toHaveValue('5')
 
   await page.close()
 })
@@ -137,7 +132,7 @@ test('tool settings button opens the settings page', async ({
   context,
   extensionId,
 }) => {
-  const page = await openToolPage(context, extensionId, 'trans-radix')
+  const page = await openToolPage(context, extensionId, 'uuid')
 
   await page.getByTestId('tool-settings-link').click()
 

@@ -25,7 +25,7 @@ vi.mock('@/lib/tool-catalog', async (importOriginal) => ({
 describe('ToolSideNavigation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    window.history.replaceState({}, '', '/tools/trans-radix.html')
+    window.history.replaceState({}, '', '/tools/auto-refresh.html')
     window.matchMedia = vi.fn().mockImplementation((query) => ({
       addEventListener: vi.fn(),
       addListener: vi.fn(),
@@ -48,9 +48,6 @@ describe('ToolSideNavigation', () => {
           label: '常用',
           children: expect.arrayContaining([
             expect.objectContaining({
-              key: 'trans-radix',
-            }),
-            expect.objectContaining({
               key: 'auto-refresh',
             }),
           ]),
@@ -65,9 +62,9 @@ describe('ToolSideNavigation', () => {
     expect(screen.getByTestId('tool-side-navigation')).toBeVisible()
     expect(screen.getByText('Tools')).toBeVisible()
     expect(screen.getByText('常用')).toBeVisible()
-    expect(screen.getByText('进制转换')).toBeVisible()
+    expect(screen.getByText('自动刷新')).toBeVisible()
     expect(
-      screen.getByRole('menuitem', { name: /进制转换/ }),
+      screen.getByRole('menuitem', { name: /自动刷新/ }),
     ).toHaveAttribute('data-active', 'true')
   })
 
@@ -75,7 +72,7 @@ describe('ToolSideNavigation', () => {
     renderWithSidebar(<ToolSideNavigation />)
 
     await waitFor(() => {
-      expect(screen.getByRole('menuitem', { name: /进制转换/ })).toBeVisible()
+      expect(screen.getByRole('menuitem', { name: /自动刷新/ })).toBeVisible()
       expect(screen.getByRole('menuitem', { name: /UUID 生成器/ })).toBeVisible()
       expect(screen.getByRole('menuitem', { name: /清除站点数据/ })).toBeVisible()
     })
@@ -95,9 +92,9 @@ describe('ToolSideNavigation', () => {
   it('navigates the whole page when rendered outside the tools SPA', () => {
     renderWithSidebar(<ToolSideNavigation />)
 
-    fireEvent.click(screen.getByRole('menuitem', { name: /进制转换/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /自动刷新/ }))
 
-    expect(getToolsSpaUrl).toHaveBeenCalledWith('trans-radix')
+    expect(getToolsSpaUrl).toHaveBeenCalledWith('auto-refresh')
   })
 
   it('changes only the React Router location when rendered inside the tools SPA', async () => {
@@ -107,7 +104,7 @@ describe('ToolSideNavigation', () => {
     }
 
     renderWithSidebar(
-      <MemoryRouter initialEntries={['/auto-refresh.html']}>
+      <MemoryRouter initialEntries={['/uuid.html']}>
         <ToolSideNavigation />
         <Routes>
           <Route path="/:toolFile" element={<LocationProbe />} />
@@ -115,11 +112,11 @@ describe('ToolSideNavigation', () => {
       </MemoryRouter>,
     )
 
-    fireEvent.click(screen.getByRole('menuitem', { name: /进制转换/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: /自动刷新/ }))
 
     await waitFor(() => {
       expect(screen.getByTestId('router-location')).toHaveTextContent(
-        '/trans-radix.html',
+        '/auto-refresh.html',
       )
     })
     expect(getToolsSpaUrl).not.toHaveBeenCalled()

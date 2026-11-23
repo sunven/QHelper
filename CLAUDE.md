@@ -53,7 +53,6 @@ pnpm format
 ```
 entrypoints/
 ├── popup/           # Extension popup (main menu)
-├── trans-radix/     # Number base converter
 └── background.ts    # Service worker (replaces background page from v2)
 ```
 
@@ -130,7 +129,7 @@ From `wxt.config.ts`:
 
 ## Tool Categories (Popup Menu)
 
-- **Common:** Radix conversion, Auto refresh
+- **Common:** Auto refresh
 - **Security:** UUID, Password generator, AES-GCM, Bcrypt hash
 - **Other:** Downloads cleanup, Clear site data
 

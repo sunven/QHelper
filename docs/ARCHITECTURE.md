@@ -499,20 +499,6 @@ export const tools: ToolMetadata[] = [
     status: ToolStatus.STABLE,
   },
 
-  {
-    id: 'trans-radix',
-    name: '进制转换',
-    nameEn: 'Radix Converter',
-    category: ToolCategory.COMMON,
-    icon: 'Calculator',
-    description: '二进制、八进制、十进制、十六进制转换',
-    keywords: ['进制', '转换', '二进制', '十六进制', 'radix', 'base'],
-    tags: ['convert', 'number', 'base'],
-    version: '1.0.0',
-    features: ['single_input', 'real_time'],
-    status: ToolStatus.STABLE,
-  },
-
   // ===== 编码转换 =====
   {
     id: 'convert',

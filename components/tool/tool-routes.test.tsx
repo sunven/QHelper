@@ -13,7 +13,7 @@ describe('toolRoutes', () => {
   })
 
   // 仅渲染轻量工具：其余工具挂载时会依赖额外的 Chrome API
-  it.each(['trans-radix', 'uuid'])(
+  it.each(['uuid', 'password'])(
     'applies the Tool Page Shell skeleton to %s',
     (toolId) => {
       const route = toolRoutes.find((candidate) => candidate.id === toolId)

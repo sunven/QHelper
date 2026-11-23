@@ -13,11 +13,11 @@ test('popup search and favorites are shared with the sidebar', async ({
   await expect(
     result.locator('..').getByRole('button', { name: /^取消收藏/ }),
   ).toHaveAttribute('aria-pressed', 'true');
-  await search.fill('trans-radix');
+  await search.fill('password');
   const newPage = context.waitForEvent('page');
   await search.press('Enter');
   const page = await newPage;
-  await expect(page).toHaveURL(/\/tools\/trans-radix\.html$/);
+  await expect(page).toHaveURL(/\/tools\/password\.html$/);
   await expect(page.getByTestId('discovery-favorites-uuid')).toBeVisible();
   await popupPage.reload();
   await expect(popupPage.getByTestId('discovery-favorites-uuid')).toBeVisible();

@@ -2,7 +2,6 @@ import type { Icon } from '@phosphor-icons/react'
 import {
   ArrowsClockwiseIcon,
   BookmarkSimpleIcon,
-  CalculatorIcon,
   GearSixIcon,
   HashIcon,
   ShieldCheckIcon,
@@ -18,7 +17,6 @@ import {
 const toolIconTokens = {
   ArrowsClockwise: ArrowsClockwiseIcon,
   BookmarkSimple: BookmarkSimpleIcon,
-  Calculator: CalculatorIcon,
   GearSix: GearSixIcon,
   Hash: HashIcon,
   ShieldCheck: ShieldCheckIcon,
