@@ -627,6 +627,7 @@ function BookmarksTool() {
     ReadonlySet<string>
   >(new Set())
   const linkCheckRunId = useRef(0)
+  const linkCheckAbortRef = useRef<AbortController | null>(null)
   // 搜索输入保持即时响应，过滤整树与高亮跟随延迟值。
   const deferredSearchQuery = useDeferredValue(searchQuery)
   const normalizedSearchQuery = normalizeSearchQuery(deferredSearchQuery)
@@ -744,6 +745,8 @@ function BookmarksTool() {
       )
 
       linkCheckRunId.current += 1
+      linkCheckAbortRef.current?.abort()
+      linkCheckAbortRef.current = null
 
       const removedIds = new Set(collectBookmarkIds(removedNodes))
 
@@ -856,6 +859,10 @@ function BookmarksTool() {
   )
 
   const handleCheckDeadLinks = useCallback(async () => {
+    linkCheckAbortRef.current?.abort()
+    const controller = new AbortController()
+    linkCheckAbortRef.current = controller
+
     const currentRunId = linkCheckRunId.current + 1
     linkCheckRunId.current = currentRunId
 
@@ -921,6 +928,7 @@ function BookmarksTool() {
 
     try {
       await checkBookmarkUrls(linkTargets, {
+        signal: controller.signal,
         onProgress(result) {
           if (linkCheckRunId.current !== currentRunId) {
             return
@@ -938,13 +946,15 @@ function BookmarksTool() {
       })
     } finally {
       flushProgress()
-    }
-
-    if (linkCheckRunId.current === currentRunId) {
-      setLinkCheck((current) => ({
-        ...current,
-        isChecking: false,
-      }))
+      if (linkCheckRunId.current === currentRunId) {
+        setLinkCheck((current) => ({
+          ...current,
+          isChecking: false,
+        }))
+      }
+      if (linkCheckAbortRef.current === controller) {
+        linkCheckAbortRef.current = null
+      }
     }
   }, [linkTargets])
 
@@ -969,6 +979,8 @@ function BookmarksTool() {
       mounted = false
       // 使进行中的死链检测回调与批量刷新失效，避免卸载后 setState。
       linkCheckRunId.current += 1
+      linkCheckAbortRef.current?.abort()
+      linkCheckAbortRef.current = null
     }
   }, [])
 

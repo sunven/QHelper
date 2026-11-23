@@ -115,6 +115,20 @@ describe('isGoogleWebSearchPage', () => {
     ).toBe(false)
     expect(
       isGoogleWebSearchPage({
+        hostname: 'google.evil.com',
+        pathname: '/search',
+        search: '?q=react',
+      }),
+    ).toBe(false)
+    expect(
+      isGoogleWebSearchPage({
+        hostname: 'www.google.com.evil.com',
+        pathname: '/search',
+        search: '?q=react',
+      }),
+    ).toBe(false)
+    expect(
+      isGoogleWebSearchPage({
         hostname: 'www.google.com',
         pathname: '/',
         search: '',

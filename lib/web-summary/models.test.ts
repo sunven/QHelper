@@ -17,6 +17,17 @@ describe('web-summary/models', () => {
     )
     expect(buildWebSummaryModelsUrl('notaurl')).toBe('')
     expect(buildWebSummaryModelsUrl('')).toBe('')
+
+    expect(
+      buildWebSummaryModelsUrl(
+        'https://example.com/v1/chat/completions?api-version=1',
+      ),
+    ).toBe('https://example.com/v1/models?api-version=1')
+    expect(
+      buildWebSummaryModelsUrl(
+        'https://res.openai.azure.com/openai/deployments/demo/chat/completions?api-version=2024-02-01',
+      ),
+    ).toBe('https://res.openai.azure.com/openai/models?api-version=2024-02-01')
   })
 
   it('fetches, dedupes and sorts model ids', async () => {
@@ -72,6 +83,19 @@ describe('web-summary/models', () => {
     await expect(
       fetchWebSummaryModels({ endpoint: 'notaurl' }),
     ).rejects.toThrow('请先填写正确的接口地址，再获取模型列表。')
+  })
+
+  it('rejects insecure endpoints before fetching', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      fetchWebSummaryModels({
+        endpoint: 'http://example.com/v1/chat/completions',
+      }),
+    ).rejects.toThrow('接口地址必须使用 https')
+
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('rejects empty model lists', async () => {

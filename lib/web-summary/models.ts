@@ -1,4 +1,5 @@
 import { getErrorMessage } from '@/lib/utils'
+import { getWebSummaryEndpointError } from './config'
 
 export function buildWebSummaryModelsUrl(endpoint: string): string {
   const trimmed = endpoint.trim()
@@ -13,13 +14,20 @@ export function buildWebSummaryModelsUrl(endpoint: string): string {
     return ''
   }
 
-  url.search = ''
   url.hash = ''
 
   const path = url.pathname.replace(/\/+$/, '')
-  url.pathname = /\/chat\/completions$/i.test(path)
-    ? path.replace(/\/chat\/completions$/i, '/models')
-    : `${path}/models`
+  const azureDeploymentMatch = path.match(
+    /^(.*)\/openai\/deployments\/[^/]+\/chat\/completions$/i,
+  )
+
+  if (azureDeploymentMatch) {
+    url.pathname = `${azureDeploymentMatch[1]}/openai/models`
+  } else {
+    url.pathname = /\/chat\/completions$/i.test(path)
+      ? path.replace(/\/chat\/completions$/i, '/models')
+      : `${path}/models`
+  }
 
   return url.toString()
 }
@@ -36,6 +44,11 @@ export async function fetchWebSummaryModels({
   const modelsUrl = buildWebSummaryModelsUrl(endpoint)
   if (!modelsUrl) {
     throw new Error('请先填写正确的接口地址，再获取模型列表。')
+  }
+
+  const endpointError = getWebSummaryEndpointError(endpoint)
+  if (endpointError) {
+    throw new Error(endpointError)
   }
 
   const headers: Record<string, string> = {}

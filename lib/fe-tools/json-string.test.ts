@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   JSON_STRING_SETTINGS_STORAGE_KEY,
-  isJsonString,
   jsonStringSettings,
   shouldCaptureJsonRequest,
   transformJsonStringToJson,
@@ -51,13 +50,6 @@ describe('fe-tools/json-string', () => {
     expect(transformJsonStringToJson(source)).toEqual(source)
   })
 
-  it('safely detects large json-looking strings', () => {
-    const large = `{"payload":"${'x'.repeat(120_000)}"}`
-
-    expect(isJsonString(large)).toBe(true)
-    expect(isJsonString(`{${'x'.repeat(120_000)}`)).toBe(false)
-  })
-
   it('captures local json requests', () => {
     const headers = [
       { name: 'content-type', value: 'Application/JSON; charset=utf-8' },
@@ -81,6 +73,30 @@ describe('fe-tools/json-string', () => {
         response: { headers },
       }),
     ).toBe(true)
+    expect(
+      shouldCaptureJsonRequest({
+        request: { url: 'http://10.0.0.8/api' },
+        response: { headers },
+      }),
+    ).toBe(true)
+    expect(
+      shouldCaptureJsonRequest({
+        request: { url: 'http://172.16.5.4/api' },
+        response: { headers },
+      }),
+    ).toBe(true)
+    expect(
+      shouldCaptureJsonRequest({
+        request: { url: 'http://192.168.attacker.com/api' },
+        response: { headers },
+      }),
+    ).toBe(false)
+    expect(
+      shouldCaptureJsonRequest({
+        request: { url: 'http://172.32.0.1/api' },
+        response: { headers },
+      }),
+    ).toBe(false)
   })
 
   it('rejects extension, remote, non-json, and malformed requests', () => {

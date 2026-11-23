@@ -1,3 +1,4 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   AUTO_REFRESH_MASTER_STORAGE_KEY,
   AUTO_REFRESH_PAUSED_STORAGE_KEY,
@@ -5,7 +6,6 @@ import {
   AUTO_REFRESH_SESSIONS_STORAGE_KEY,
   type AutoRefreshResponse,
 } from '@/types/auto-refresh'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createAutoRefreshController } from './background'
 import { getRuleAlarmName } from './url'
 
@@ -250,5 +250,76 @@ describe('auto-refresh/background', () => {
       error: '此标签页已暂停，请先恢复',
     })
     expect(sessionSet).not.toHaveBeenCalled()
+  })
+
+  it('keeps concurrent session starts for different tabs', async () => {
+    tabsGet.mockImplementation(async (tabId: number) =>
+      createTab({ id: tabId, url: `https://example.com/${tabId}` }),
+    )
+
+    const controller = createAutoRefreshController()
+    const [first, second] = await Promise.all([
+      callMessage(controller, {
+        type: 'AUTO_REFRESH_START_SESSION',
+        tabId: 1,
+        intervalSeconds: 10,
+      }),
+      callMessage(controller, {
+        type: 'AUTO_REFRESH_START_SESSION',
+        tabId: 2,
+        intervalSeconds: 10,
+      }),
+    ])
+
+    expect(first.ok).toBe(true)
+    expect(second.ok).toBe(true)
+    expect(sessionStore[AUTO_REFRESH_SESSIONS_STORAGE_KEY]).toMatchObject({
+      1: expect.objectContaining({ tabId: 1 }),
+      2: expect.objectContaining({ tabId: 2 }),
+    })
+  })
+
+  it('keeps concurrent rule updates from overwriting each other', async () => {
+    localStore[AUTO_REFRESH_RULES_STORAGE_KEY] = [
+      rule,
+      { ...rule, id: 'rule-2', url: 'https://example.com/b' },
+    ]
+
+    const controller = createAutoRefreshController()
+    await Promise.all([
+      callMessage(controller, {
+        type: 'AUTO_REFRESH_SET_RULE_ENABLED',
+        id: 'rule-1',
+        enabled: false,
+      }),
+      callMessage(controller, {
+        type: 'AUTO_REFRESH_SET_RULE_ENABLED',
+        id: 'rule-2',
+        enabled: false,
+      }),
+    ])
+
+    const rules = localStore[AUTO_REFRESH_RULES_STORAGE_KEY] as Array<{
+      id: string
+      enabled: boolean
+    }>
+    expect(rules.find((candidate) => candidate.id === 'rule-1')?.enabled).toBe(
+      false,
+    )
+    expect(rules.find((candidate) => candidate.id === 'rule-2')?.enabled).toBe(
+      false,
+    )
+  })
+
+  it('reports reconcile failures instead of claiming success', async () => {
+    alarmsGetAll.mockRejectedValue(new Error('alarms unavailable'))
+
+    const response = await callMessage(createAutoRefreshController(), {
+      type: 'AUTO_REFRESH_SET_RULE_ENABLED',
+      id: 'rule-1',
+      enabled: false,
+    })
+
+    expect(response).toEqual({ ok: false, error: 'alarms unavailable' })
   })
 })

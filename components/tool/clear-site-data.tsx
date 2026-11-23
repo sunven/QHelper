@@ -6,7 +6,7 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
@@ -16,11 +16,11 @@ import { clearSiteData } from '@/lib/site-data/clear'
 import { collectSiteDataCounts } from '@/lib/site-data/counts'
 import { parseLaunchTarget } from '@/lib/site-data/target'
 import {
-  SITE_DATA_TYPES,
-  SITE_DATA_TYPE_DESCRIPTIONS,
-  SITE_DATA_TYPE_LABELS,
   type ClearSiteDataOutcome,
   type CurrentSiteTarget,
+  SITE_DATA_TYPE_DESCRIPTIONS,
+  SITE_DATA_TYPE_LABELS,
+  SITE_DATA_TYPES,
   type SiteDataClearStatus,
   type SiteDataCountMap,
   type SiteDataType,
@@ -109,22 +109,36 @@ export function ClearSiteDataTool() {
         : { mode: 'all-sites' },
     [mode, launchTarget],
   )
+  const countsRequestIdRef = useRef(0)
 
   const loadCounts = useCallback(async () => {
+    const requestId = countsRequestIdRef.current + 1
+    countsRequestIdRef.current = requestId
     setCountsLoading(true)
     setCountsError('')
+
     try {
-      setCounts(await collectSiteDataCounts(target))
+      const nextCounts = await collectSiteDataCounts(target)
+      if (countsRequestIdRef.current === requestId) {
+        setCounts(nextCounts)
+      }
     } catch (error) {
-      setCounts(null)
-      setCountsError(getErrorMessage(error, '读取站点数据失败'))
+      if (countsRequestIdRef.current === requestId) {
+        setCounts(null)
+        setCountsError(getErrorMessage(error, '读取站点数据失败'))
+      }
     } finally {
-      setCountsLoading(false)
+      if (countsRequestIdRef.current === requestId) {
+        setCountsLoading(false)
+      }
     }
   }, [target])
 
   useEffect(() => {
     void loadCounts()
+    return () => {
+      countsRequestIdRef.current += 1
+    }
   }, [loadCounts])
 
   const selectedTypeList = useMemo(
@@ -219,7 +233,8 @@ export function ClearSiteDataTool() {
           >
             <AlertTriangle className="mt-0.5 size-4 shrink-0" />
             <span>
-              将清除所有网站的登录状态与站点数据，包含扩展自身的 Cookie，操作无法撤销。
+              将清除所有网站的登录状态与站点数据，包含扩展自身的
+              Cookie，操作无法撤销。
             </span>
           </div>
         ) : null}
@@ -253,7 +268,8 @@ export function ClearSiteDataTool() {
 
         {target.mode === 'all-sites' ? (
           <p className="border-b border-border px-3 py-2 text-xs text-muted-foreground">
-            全部站点模式下仅能统计 Cookie 数量；其余类型无法预览，但仍会随清理生效。
+            全部站点模式下仅能统计 Cookie
+            数量；其余类型无法预览，但仍会随清理生效。
           </p>
         ) : null}
 
@@ -310,7 +326,9 @@ export function ClearSiteDataTool() {
           <Checkbox
             id="clear-site-data-refresh-after"
             checked={refreshAfterClear}
-            onCheckedChange={(checked) => setRefreshAfterClear(checked === true)}
+            onCheckedChange={(checked) =>
+              setRefreshAfterClear(checked === true)
+            }
             disabled={busy}
             data-testid="clear-site-data-refresh-after"
           />

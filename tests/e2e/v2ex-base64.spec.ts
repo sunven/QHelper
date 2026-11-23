@@ -67,12 +67,18 @@ test.describe('V2EX Base64 content script', () => {
     await expect(page.locator(HOST_SELECTOR)).toHaveCount(1)
     await expect
       .poll(() =>
-        page.evaluate((source) => document.body.innerText.includes(source), 'user@example.com'),
+        page.evaluate(
+          (source) => document.body.innerText.includes(source),
+          'user@example.com',
+        ),
       )
       .toBe(false)
 
-    await page.mouse.click(854, 654)
-    await page.mouse.click(833, 592)
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(200)
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Enter')
 
     await expect
       .poll(() => page.evaluate(() => navigator.clipboard.readText()))
@@ -97,17 +103,24 @@ test.describe('V2EX Base64 content script', () => {
     await page.close()
   })
 
-  test('does not inject when empty', async ({ context, extensionId }) => {
+  test('removes the overlay when entries become empty', async ({
+    context,
+    extensionId,
+  }) => {
     await routeV2ex(context)
+    await configureV2exBase64Settings(context, extensionId, {
+      entries: ['user@example.com'],
+    })
+
+    const page = await context.newPage()
+    await page.goto(V2EX_URL)
+    await expect(page.locator(HOST_SELECTOR)).toHaveCount(1)
 
     await configureV2exBase64Settings(context, extensionId, {
       entries: [],
     })
 
-    const emptyPage = await context.newPage()
-    await emptyPage.goto(V2EX_URL)
-    await emptyPage.waitForTimeout(250)
-    await expect(emptyPage.locator(HOST_SELECTOR)).toHaveCount(0)
-    await emptyPage.close()
+    await expect(page.locator(HOST_SELECTOR)).toHaveCount(0)
+    await page.close()
   })
 })

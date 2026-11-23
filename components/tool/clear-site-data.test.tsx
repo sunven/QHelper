@@ -56,7 +56,9 @@ describe('clear-site-data tool', () => {
     })
 
     for (const type of allTypes) {
-      expect(await screen.findByTestId(`clear-site-data-type-${type}`)).toBeChecked()
+      expect(
+        await screen.findByTestId(`clear-site-data-type-${type}`),
+      ).toBeChecked()
     }
 
     expect(screen.getByTestId('clear-site-data-target-all')).toBeChecked()
@@ -92,7 +94,8 @@ describe('clear-site-data tool', () => {
     })
   })
 
-  it('shows the current site target when launched from the popup', async () => {    window.history.replaceState(
+  it('shows the current site target when launched from the popup', async () => {
+    window.history.replaceState(
       {},
       '',
       '/tools/clear-site-data.html?origin=https%3A%2F%2Fapp.example.com&tabId=9',
@@ -110,9 +113,45 @@ describe('clear-site-data tool', () => {
 
     expect(screen.getByTestId('clear-site-data-target-current')).toBeChecked()
     expect(screen.getByText('https://app.example.com')).toBeVisible()
-    expect(
-      screen.queryByText(/包含扩展自身的 Cookie/),
-    ).not.toBeInTheDocument()
+    expect(screen.queryByText(/包含扩展自身的 Cookie/)).not.toBeInTheDocument()
+  })
+
+  it('ignores a slower count request after switching targets', async () => {
+    window.history.replaceState(
+      {},
+      '',
+      '/tools/clear-site-data.html?origin=https%3A%2F%2Fapp.example.com&tabId=9',
+    )
+
+    let resolveCurrent: (value: typeof counts) => void = () => undefined
+    let resolveAll: (value: typeof counts) => void = () => undefined
+    collectSiteDataCounts
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveCurrent = resolve
+        }),
+      )
+      .mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolveAll = resolve
+        }),
+      )
+
+    render(<ClearSiteDataTool />)
+
+    fireEvent.click(screen.getByTestId('clear-site-data-target-all'))
+    await waitFor(() => {
+      expect(collectSiteDataCounts).toHaveBeenCalledTimes(2)
+    })
+
+    resolveAll({ ...counts, cookies: 99 })
+    expect(await screen.findByText('99')).toBeVisible()
+
+    resolveCurrent({ ...counts, cookies: 777 })
+    await waitFor(() => {
+      expect(screen.queryByText('777')).not.toBeInTheDocument()
+    })
+    expect(screen.getByText('99')).toBeVisible()
   })
 
   it('clears the selected types after confirmation and refreshes affected tabs', async () => {

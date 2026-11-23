@@ -1,8 +1,3 @@
-import {
-  getRepositoryCoordinates,
-  isRepositoryHomePath,
-  type RepoCoordinates,
-} from './repository'
 import { GITHUB_SITE_PROFILE } from '@/lib/github/site-profile'
 import {
   installPageHelpers,
@@ -12,6 +7,11 @@ import {
   INACTIVE_WARNING_MESSAGE,
   type InactiveWarningResponse,
 } from './inactive-warning-background'
+import {
+  getRepositoryCoordinates,
+  isRepositoryHomePath,
+  type RepoCoordinates,
+} from './repository'
 
 export const INACTIVE_WARNING_TIMESTAMP_CLASS =
   'qhelper-inactive-warning__timestamp'
@@ -146,43 +146,52 @@ function requestInactiveWarning(
   inflightWarningKeys.set(doc, key)
 
   const runtime = deps.runtime ?? chrome.runtime
-  runtime.sendMessage(
-    {
-      type: INACTIVE_WARNING_MESSAGE,
-      repo,
-    },
-    (response) => {
-      if (inflightWarningKeys.get(doc) === key) {
-        inflightWarningKeys.delete(doc)
-      }
-
-      if (!response?.ok) {
-        return
-      }
-
-      warningJudgements.set(doc, {
+  try {
+    runtime.sendMessage(
+      {
+        type: INACTIVE_WARNING_MESSAGE,
         repo,
-        inactive: response.inactive === true,
-        lastCommitDate: response.lastCommitDate,
-      })
+      },
+      (response) => {
+        if (inflightWarningKeys.get(doc) === key) {
+          inflightWarningKeys.delete(doc)
+        }
 
-      if (response.inactive !== true || response.lastCommitDate === undefined) {
-        return
-      }
+        if (!response?.ok) {
+          return
+        }
 
-      const pathname = doc.location.pathname
-      const currentRepo = getRepositoryCoordinates(doc, pathname)
-      if (
-        !currentRepo ||
-        !isRepositoryHomePath(pathname) ||
-        !isSameRepo(currentRepo, repo)
-      ) {
-        return
-      }
+        warningJudgements.set(doc, {
+          repo,
+          inactive: response.inactive === true,
+          lastCommitDate: response.lastCommitDate,
+        })
 
-      applyInactiveHighlight(doc, response.lastCommitDate)
-    },
-  )
+        if (
+          response.inactive !== true ||
+          response.lastCommitDate === undefined
+        ) {
+          return
+        }
+
+        const pathname = doc.location.pathname
+        const currentRepo = getRepositoryCoordinates(doc, pathname)
+        if (
+          !currentRepo ||
+          !isRepositoryHomePath(pathname) ||
+          !isSameRepo(currentRepo, repo)
+        ) {
+          return
+        }
+
+        applyInactiveHighlight(doc, response.lastCommitDate)
+      },
+    )
+  } catch {
+    if (inflightWarningKeys.get(doc) === key) {
+      inflightWarningKeys.delete(doc)
+    }
+  }
 }
 
 export function syncInactiveWarningView(

@@ -49,5 +49,9 @@ export async function verifyBcryptHash(
     throw new Error('Invalid bcrypt hash')
   }
 
+  if (getRounds(normalizedHash) > MAX_BCRYPT_ROUNDS) {
+    throw new Error('Bcrypt hash rounds exceed the verification limit')
+  }
+
   return compare(plainText, normalizedHash)
 }

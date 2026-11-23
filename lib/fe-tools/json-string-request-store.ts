@@ -8,6 +8,8 @@ import {
 export const REQUEST_DATA_STORAGE_KEY = 'qhelper.json-string.requestData.v1'
 export const LEGACY_REQUEST_DATA_STORAGE_KEY = 'requestData'
 export const MAX_CAPTURED_JSON_STRING_REQUESTS = 50
+export const MAX_CAPTURED_JSON_STRING_CONTENT_CHARS = 400_000
+export const MAX_CAPTURED_JSON_STRING_STORAGE_CHARS = 2_000_000
 
 export type CapturedJsonStringRequest = {
   request: {
@@ -17,14 +19,33 @@ export type CapturedJsonStringRequest = {
   content: string
 }
 
-function normalizeCapturedRequests(value: unknown): CapturedJsonStringRequest[] {
+function normalizeCapturedRequests(
+  value: unknown,
+): CapturedJsonStringRequest[] {
   return Array.isArray(value) ? (value as CapturedJsonStringRequest[]) : []
 }
 
 function limitCapturedRequests(
   requests: CapturedJsonStringRequest[],
 ): CapturedJsonStringRequest[] {
-  return requests.slice(-MAX_CAPTURED_JSON_STRING_REQUESTS)
+  const limited = requests.slice(-MAX_CAPTURED_JSON_STRING_REQUESTS)
+  const entrySizes = limited.map(
+    (request) => JSON.stringify(request).length + 1,
+  )
+  let totalChars =
+    entrySizes.reduce((total, size) => total + size, 0) +
+    (limited.length > 0 ? 1 : 0)
+  let start = 0
+
+  while (
+    start < limited.length &&
+    totalChars > MAX_CAPTURED_JSON_STRING_STORAGE_CHARS
+  ) {
+    totalChars -= entrySizes[start]
+    start += 1
+  }
+
+  return limited.slice(start)
 }
 
 export async function getCapturedJsonStringRequests(): Promise<
@@ -60,13 +81,27 @@ export async function setCapturedJsonStringRequests(
   )
 }
 
-export async function appendCapturedJsonStringRequest(
+let appendQueue: Promise<void> = Promise.resolve()
+
+export function appendCapturedJsonStringRequest(
   request: CapturedJsonStringRequest,
 ): Promise<void> {
-  const requests = await getCapturedJsonStringRequests()
-  await setCapturedJsonStringRequests(
-    limitCapturedRequests([...requests, request]),
-  )
+  if (
+    typeof request.content !== 'string' ||
+    request.content.length > MAX_CAPTURED_JSON_STRING_CONTENT_CHARS
+  ) {
+    return Promise.resolve()
+  }
+
+  const nextAppend = appendQueue.then(async () => {
+    const requests = await getCapturedJsonStringRequests()
+    await setCapturedJsonStringRequests(
+      limitCapturedRequests([...requests, request]),
+    )
+  })
+
+  appendQueue = nextAppend.catch(() => undefined)
+  return nextAppend
 }
 
 export async function clearCapturedJsonStringRequests(): Promise<void> {

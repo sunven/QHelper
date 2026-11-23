@@ -95,6 +95,30 @@ test('adds a persistent rule and shows the in-page indicator', async ({
       timeout: 15_000,
     })
 
+    const stateResponse = (await toolPage.evaluate(async (targetUrl) => {
+      const tabs = await chrome.tabs.query({})
+      const targetTab = tabs.find((tab) => tab.url === targetUrl)
+      if (!targetTab?.id) {
+        return { ok: false, error: '找不到目标标签页' }
+      }
+
+      return chrome.runtime.sendMessage({
+        type: 'AUTO_REFRESH_GET_TAB_STATE',
+        tabId: targetTab.id,
+      })
+    }, pageUrl)) as {
+      ok: boolean
+      data?: { session: unknown; effective: string }
+    }
+
+    expect(stateResponse.ok).toBe(true)
+    expect(stateResponse.data?.session).toBeNull()
+    expect(stateResponse.data?.effective).toBe('rule')
+
+    const requestsAtStop = requestCount
+    await page.waitForTimeout(6_000)
+    expect(requestCount).toBe(requestsAtStop)
+
     await toolPage.close()
     await page.close()
   } finally {

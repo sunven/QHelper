@@ -66,13 +66,79 @@ export function unwrapResultHref(href: string): string {
   }
 }
 
+const GOOGLE_SEARCH_TLDS = new Set([
+  'com',
+  'de',
+  'fr',
+  'co.uk',
+  'co.jp',
+  'com.au',
+  'com.br',
+  'com.mx',
+  'com.tr',
+  'com.tw',
+  'com.hk',
+  'com.sg',
+  'com.ar',
+  'com.co',
+  'com.pe',
+  'com.ph',
+  'com.pk',
+  'com.ng',
+  'com.eg',
+  'com.sa',
+  'com.ua',
+  'com.vn',
+  'co.in',
+  'co.id',
+  'co.kr',
+  'co.nz',
+  'co.za',
+  'co.il',
+  'co.th',
+  'co.ve',
+  'co.cr',
+  'co.ke',
+  'co.ug',
+  'ca',
+  'es',
+  'it',
+  'nl',
+  'pl',
+  'ru',
+  'se',
+  'ch',
+  'at',
+  'be',
+  'ie',
+  'pt',
+  'dk',
+  'fi',
+  'no',
+  'cz',
+  'gr',
+  'hu',
+  'ro',
+  'sk',
+  'si',
+  'hr',
+  'bg',
+  'lt',
+  'lv',
+  'ee',
+  'is',
+  'lu',
+  'cl',
+  'ar',
+  'mx',
+  'pe',
+  'ae',
+  'cat',
+])
+
 function isGoogleWebSearchHost(hostname: string): boolean {
-  const host = hostname.toLowerCase()
-  return (
-    host === 'google.com' ||
-    host.startsWith('google.') ||
-    host.startsWith('www.google.')
-  )
+  const match = /^(?:www\.)?google\.(.+)$/.exec(hostname.toLowerCase())
+  return match !== null && GOOGLE_SEARCH_TLDS.has(match[1])
 }
 
 function findMainResultsRoot(doc: Document): Element | null {

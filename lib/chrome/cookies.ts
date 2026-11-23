@@ -60,9 +60,7 @@ export async function getCookiesForHostname(
   hostname: string,
 ): Promise<chrome.cookies.Cookie[]> {
   const cookies = await getAll()
-  return cookies.filter((cookie) =>
-    isCookieVisibleToHostname(cookie, hostname),
-  )
+  return cookies.filter((cookie) => isCookieVisibleToHostname(cookie, hostname))
 }
 
 export function toRemovalDetails(
@@ -89,9 +87,16 @@ export async function removeCookies(
   const results = await Promise.allSettled(
     cookies.map((cookie) => remove(toRemovalDetails(cookie))),
   )
-  const failed = results.filter(
-    (result) => result.status === 'rejected',
-  ).length
+  let removed = 0
+  let failed = 0
 
-  return { removed: results.length - failed, failed }
+  for (const result of results) {
+    if (result.status === 'rejected') {
+      failed += 1
+    } else if (result.value !== null) {
+      removed += 1
+    }
+  }
+
+  return { removed, failed }
 }

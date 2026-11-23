@@ -12,7 +12,14 @@ import {
   SquareStop,
   X,
 } from 'lucide-react'
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -40,7 +47,10 @@ import {
   getRefreshHint,
   resolveSummarizableTab,
 } from '@/lib/web-summary/page-source'
-import type { WebSummaryPendingAction } from '@/types/web-summary'
+import type {
+  WebSummaryOpenRequestedMessage,
+  WebSummaryPendingAction,
+} from '@/types/web-summary'
 
 const SUMMARY_FLUSH_INTERVAL_MS = 100
 const COPY_FEEDBACK_MS = 1500
@@ -59,6 +69,26 @@ function getPageInfo(tab: chrome.tabs.Tab | undefined): PageInfo | null {
     title: tab.title?.trim() || tab.url,
     url: tab.url,
   }
+}
+
+function isOpenRequestedMessage(
+  message: unknown,
+): message is WebSummaryOpenRequestedMessage {
+  return (
+    typeof message === 'object' &&
+    message !== null &&
+    (message as { type?: unknown }).type === 'WEB_SUMMARY_OPEN_REQUESTED' &&
+    typeof (message as { tabId?: unknown }).tabId === 'number'
+  )
+}
+
+function isAbortError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    (error as { name?: unknown }).name === 'AbortError'
+  )
 }
 
 export function App() {
@@ -98,6 +128,7 @@ export function App() {
     async () => undefined,
   )
   const abortControllerRef = useRef<AbortController | null>(null)
+  const summarizingRef = useRef(false)
   const pendingSummaryRef = useRef('')
   const summaryFlushTimerRef = useRef<number | null>(null)
   const copyResetTimerRef = useRef<number | null>(null)
@@ -170,8 +201,23 @@ export function App() {
     setIsModelsOpen(false)
   }
 
+  const consumePendingAction = useCallback(async (tabId?: number) => {
+    try {
+      const pendingAction = (await chrome.runtime.sendMessage({
+        type: 'WEB_SUMMARY_SIDE_PANEL_READY',
+        tabId,
+      })) as WebSummaryPendingAction | null
+
+      if (pendingAction?.type === 'SUMMARIZE_ACTIVE_PAGE') {
+        await summarizeRef.current(pendingAction.tabId)
+      }
+    } catch {
+      // Background may be restarting; leave the panel idle.
+    }
+  }, [])
+
   const summarizePage = async (requestedTabId?: number) => {
-    if (isSummarizing) {
+    if (isSummarizing || summarizingRef.current) {
       return
     }
 
@@ -185,61 +231,67 @@ export function App() {
       return
     }
 
-    const targetTab = await resolveSummarizableTab(requestedTabId).catch(
-      (caughtError: unknown) => {
-        setError(getErrorMessage(caughtError))
-        return undefined
-      },
-    )
-    if (!targetTab) {
-      return
-    }
-
-    const targetPage = getPageInfo(targetTab)
-    setActivePage(targetPage)
-    setSummarySource(targetPage)
-
-    pendingSummaryRef.current = ''
-    if (summaryFlushTimerRef.current !== null) {
-      window.clearTimeout(summaryFlushTimerRef.current)
-      summaryFlushTimerRef.current = null
-    }
-    setStatusText('正在提取当前网页正文…')
-    setSummaryMarkdown('')
-    setIsSummarizing(true)
-
-    const controller = new AbortController()
-    abortControllerRef.current = controller
+    summarizingRef.current = true
 
     try {
-      const pageContent = await extractTabContent(targetTab.id)
-
-      setStatusText('正在生成摘要…')
-
-      await streamWebPageSummary({
-        pageContent,
-        config,
-        signal: controller.signal,
-        onDelta: (delta) => {
-          pendingSummaryRef.current += delta
-          scheduleSummaryFlush()
+      const targetTab = await resolveSummarizableTab(requestedTabId).catch(
+        (caughtError: unknown) => {
+          setError(getErrorMessage(caughtError))
+          return undefined
         },
-      })
+      )
+      if (!targetTab) {
+        return
+      }
 
-      setStatusText('摘要生成完成。')
-    } catch (caughtError) {
-      if (caughtError instanceof Error && caughtError.name === 'AbortError') {
-        setStatusText('已停止本次总结。')
-      } else {
-        setStatusText('总结失败，请检查当前网页和接口配置。')
-        setError(getRefreshHint(caughtError))
+      const targetPage = getPageInfo(targetTab)
+      setActivePage(targetPage)
+      setSummarySource(targetPage)
+
+      pendingSummaryRef.current = ''
+      if (summaryFlushTimerRef.current !== null) {
+        window.clearTimeout(summaryFlushTimerRef.current)
+        summaryFlushTimerRef.current = null
+      }
+      setStatusText('正在提取当前网页正文…')
+      setSummaryMarkdown('')
+      setIsSummarizing(true)
+
+      const controller = new AbortController()
+      abortControllerRef.current = controller
+
+      try {
+        const pageContent = await extractTabContent(targetTab.id)
+
+        setStatusText('正在生成摘要…')
+
+        await streamWebPageSummary({
+          pageContent,
+          config,
+          signal: controller.signal,
+          onDelta: (delta) => {
+            pendingSummaryRef.current += delta
+            scheduleSummaryFlush()
+          },
+        })
+
+        setStatusText('摘要生成完成。')
+      } catch (caughtError) {
+        if (isAbortError(caughtError)) {
+          setStatusText('已停止本次总结。')
+        } else {
+          setStatusText('总结失败，请检查当前网页和接口配置。')
+          setError(getRefreshHint(caughtError))
+        }
+      } finally {
+        flushSummary()
+        setIsSummarizing(false)
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null
+        }
       }
     } finally {
-      flushSummary()
-      setIsSummarizing(false)
-      if (abortControllerRef.current === controller) {
-        abortControllerRef.current = null
-      }
+      summarizingRef.current = false
     }
   }
 
@@ -263,13 +315,8 @@ export function App() {
         setActivePage(getPageInfo(currentTab))
       }
 
-      const pendingAction = (await chrome.runtime.sendMessage({
-        type: 'WEB_SUMMARY_SIDE_PANEL_READY',
-        tabId: currentTab?.id,
-      })) as WebSummaryPendingAction | null
-
-      if (active && pendingAction?.type === 'SUMMARIZE_ACTIVE_PAGE') {
-        await summarizeRef.current(pendingAction.tabId)
+      if (active) {
+        await consumePendingAction(currentTab?.id)
       }
     }
 
@@ -287,7 +334,23 @@ export function App() {
         copyResetTimerRef.current = null
       }
     }
-  }, [])
+  }, [consumePendingAction])
+
+  useEffect(() => {
+    const handleOpenRequested = (message: unknown) => {
+      if (!isOpenRequestedMessage(message)) {
+        return false
+      }
+
+      void consumePendingAction(message.tabId)
+      return false
+    }
+
+    chrome.runtime.onMessage.addListener(handleOpenRequested)
+    return () => {
+      chrome.runtime.onMessage.removeListener(handleOpenRequested)
+    }
+  }, [consumePendingAction])
 
   useEffect(() => {
     const refreshActivePage = async () => {

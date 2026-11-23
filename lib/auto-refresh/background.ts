@@ -11,9 +11,9 @@ import type {
 import {
   AUTO_REFRESH_ALARM_PREFIX,
   AUTO_REFRESH_MASTER_STORAGE_KEY,
+  AUTO_REFRESH_RULE_MIN_SECONDS,
   AUTO_REFRESH_RULES_STORAGE_KEY,
   AUTO_REFRESH_SESSION_MIN_SECONDS,
-  AUTO_REFRESH_RULE_MIN_SECONDS,
 } from '@/types/auto-refresh'
 import { getRefreshRules, setMasterEnabled, writeRefreshRules } from './rules'
 import {
@@ -41,6 +41,18 @@ const AUTO_REFRESH_MANAGER_PATH = 'tools/auto-refresh.html'
 const AUTO_REFRESH_BADGE_COLOR = '#2563eb'
 const AUTO_REFRESH_PING_RETRIES = 3
 const AUTO_REFRESH_PING_DELAY_MS = 120
+
+const MUTATING_MESSAGE_TYPES = new Set<AutoRefreshMessage['type']>([
+  'AUTO_REFRESH_SET_MASTER',
+  'AUTO_REFRESH_SAVE_RULE',
+  'AUTO_REFRESH_DELETE_RULE',
+  'AUTO_REFRESH_SET_RULE_ENABLED',
+  'AUTO_REFRESH_START_SESSION',
+  'AUTO_REFRESH_STOP_SESSION',
+  'AUTO_REFRESH_PAUSE_TAB',
+  'AUTO_REFRESH_RESUME_TAB',
+  'AUTO_REFRESH_PAUSE_SELF',
+])
 
 type AutoRefreshController = {
   initialize: () => Promise<void>
@@ -168,6 +180,16 @@ export function createAutoRefreshController(): AutoRefreshController {
   let initialized = false
   let reconcileRequested = false
   let reconcileQueue: Promise<void> = Promise.resolve()
+  let stateMutationQueue: Promise<unknown> = Promise.resolve()
+
+  function runExclusive<T>(task: () => Promise<T>): Promise<T> {
+    const run = stateMutationQueue.then(task)
+    stateMutationQueue = run.then(
+      () => undefined,
+      () => undefined,
+    )
+    return run
+  }
 
   async function updateBadge(
     tabs?: readonly chrome.tabs.Tab[],
@@ -279,9 +301,7 @@ export function createAutoRefreshController(): AutoRefreshController {
       .catch(() => undefined)
       .then(async () => {
         reconcileRequested = false
-        try {
-          await reconcile()
-        } catch {}
+        await reconcile()
       })
 
     return reconcileQueue
@@ -622,7 +642,7 @@ export function createAutoRefreshController(): AutoRefreshController {
   }
 
   async function handleTabRemoved(tabId: number): Promise<void> {
-    await removeTabRuntimeState(tabId)
+    await runExclusive(() => removeTabRuntimeState(tabId))
     await updateBadge()
   }
 
@@ -638,11 +658,22 @@ export function createAutoRefreshController(): AutoRefreshController {
       AUTO_REFRESH_RULES_STORAGE_KEY in changes ||
       AUTO_REFRESH_MASTER_STORAGE_KEY in changes
     ) {
-      void requestReconcile()
+      void requestReconcile().catch(() => undefined)
     }
   }
 
-  async function dispatch(
+  function dispatch(
+    message: AutoRefreshMessage,
+    sender: chrome.runtime.MessageSender,
+  ): Promise<AutoRefreshResponse<unknown>> {
+    if (MUTATING_MESSAGE_TYPES.has(message.type)) {
+      return runExclusive(() => dispatchMessage(message, sender))
+    }
+
+    return dispatchMessage(message, sender)
+  }
+
+  async function dispatchMessage(
     message: AutoRefreshMessage,
     sender: chrome.runtime.MessageSender,
   ): Promise<AutoRefreshResponse<unknown>> {
@@ -761,7 +792,7 @@ export function createAutoRefreshController(): AutoRefreshController {
 
   return {
     initialize,
-    reconcile: requestReconcile,
+    reconcile: () => requestReconcile().catch(() => undefined),
     handleMessage,
     handleAlarm,
     handleTabUpdated,

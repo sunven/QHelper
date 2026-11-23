@@ -1,3 +1,4 @@
+import { defineContentScript } from 'wxt/utils/define-content-script'
 import { normalizePageUrl } from '@/lib/auto-refresh/url'
 import type {
   AutoRefreshMessage,
@@ -5,9 +6,13 @@ import type {
   AutoRefreshTabState,
   SessionRefresh,
 } from '@/types/auto-refresh'
-import { defineContentScript } from 'wxt/utils/define-content-script'
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg'
+const AUTO_REFRESH_INSTALL_KEY = '__qhelperAutoRefreshContentCleanup'
+
+type AutoRefreshInstallGlobal = typeof globalThis & {
+  [AUTO_REFRESH_INSTALL_KEY]?: () => void
+}
 
 type IconElement = {
   tag: 'path' | 'rect'
@@ -233,6 +238,11 @@ class AutoRefreshIndicator {
 }
 
 function installAutoRefreshContent(): void {
+  const installState = globalThis as AutoRefreshInstallGlobal
+  if (installState[AUTO_REFRESH_INSTALL_KEY]) {
+    return
+  }
+
   document.querySelectorAll('qhelper-auto-refresh').forEach((element) => {
     element.remove()
   })
@@ -265,6 +275,9 @@ function installAutoRefreshContent(): void {
     window.clearInterval(urlPollId)
     document.removeEventListener('visibilitychange', handleVisibilityChange)
     window.removeEventListener('pageshow', handlePageShow)
+    if (installState[AUTO_REFRESH_INSTALL_KEY] === cleanup) {
+      delete installState[AUTO_REFRESH_INSTALL_KEY]
+    }
   }
 
   const sendRuntimeMessage = async <T>(
@@ -444,6 +457,7 @@ function installAutoRefreshContent(): void {
 
   document.addEventListener('visibilitychange', handleVisibilityChange)
   window.addEventListener('pageshow', handlePageShow)
+  installState[AUTO_REFRESH_INSTALL_KEY] = cleanup
   void requestState()
 }
 

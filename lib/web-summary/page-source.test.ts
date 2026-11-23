@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
+import type { WebSummaryPageContent } from '@/types/web-summary'
 import {
   extractTabContent,
   getRefreshHint,
   resolveSummarizableTab,
 } from './page-source'
-import type { WebSummaryPageContent } from '@/types/web-summary'
 
 type Tab = Partial<chrome.tabs.Tab> & { id?: number }
 
@@ -52,9 +52,9 @@ describe('resolveSummarizableTab', () => {
     const activeTab = { id: 3, url: 'https://example.com/b' }
     const deps = createDeps({ activeTab })
 
-    await expect(resolveSummarizableTab(undefined, deps)).resolves.toMatchObject(
-      { id: 3 },
-    )
+    await expect(
+      resolveSummarizableTab(undefined, deps),
+    ).resolves.toMatchObject({ id: 3 })
   })
 
   it('rejects with a readable error when no tab can be resolved', async () => {
@@ -93,6 +93,18 @@ describe('extractTabContent', () => {
 
   it('rejects when the page yields no content', async () => {
     const deps = createDeps({ injectionResults: [{ result: null }] })
+
+    await expect(extractTabContent(3, deps)).rejects.toThrow(
+      '未能从当前网页提取正文内容。',
+    )
+  })
+
+  it('rejects when the extracted content is empty', async () => {
+    const deps = createDeps({
+      injectionResults: [
+        { result: { ...PAGE_CONTENT, content: '   ', charCount: 3 } },
+      ],
+    })
 
     await expect(extractTabContent(3, deps)).rejects.toThrow(
       '未能从当前网页提取正文内容。',

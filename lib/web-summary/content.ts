@@ -49,6 +49,19 @@ export function extractPageContent(
       .join('\n\n')
       .trim()
 
+  const getSourcePriority = (element: Element): number => {
+    const tagName = element.tagName.toLowerCase()
+    if (tagName === 'article') {
+      return 0
+    }
+
+    if (tagName === 'main' || element.getAttribute('role') === 'main') {
+      return 1
+    }
+
+    return 2
+  }
+
   const getSourceType = (
     element: Element | null,
   ): WebSummaryPageContent['source'] => {
@@ -69,17 +82,25 @@ export function extractPageContent(
   }
 
   const candidates = Array.from(
-    new Set(primarySelectors.flatMap((selector) => Array.from(doc.querySelectorAll(selector)))),
+    new Set(
+      primarySelectors.flatMap((selector) =>
+        Array.from(doc.querySelectorAll(selector)),
+      ),
+    ),
   )
 
   const rankedCandidates = candidates
     .map((element) => ({
       element,
+      priority: getSourcePriority(element),
       source: getSourceType(element),
       text: normalizeText(getElementText(element)),
     }))
     .filter((candidate) => candidate.text.length > 0)
-    .sort((left, right) => right.text.length - left.text.length)
+    .sort(
+      (left, right) =>
+        left.priority - right.priority || right.text.length - left.text.length,
+    )
 
   const candidate = rankedCandidates.find(
     (rankedCandidate) => rankedCandidate.text.length >= 400,

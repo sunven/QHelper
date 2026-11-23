@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { V2exBase64Overlay } from './V2exBase64Overlay'
 
@@ -14,7 +20,9 @@ describe('V2exBase64Overlay', () => {
 
     fireEvent.click(screen.getByRole('button', { name: '打开 V2EX Base64' }))
 
-    expect(screen.getByRole('dialog', { name: 'V2EX Base64' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('dialog', { name: 'V2EX Base64' }),
+    ).toBeInTheDocument()
     expect(screen.getByText('user@example.com')).toBeInTheDocument()
   })
 
@@ -47,13 +55,35 @@ describe('V2exBase64Overlay', () => {
     expect(screen.getByText('第 1 行复制失败')).toBeInTheDocument()
   })
 
+  it('resets copy feedback when the panel closes', async () => {
+    const copyText = vi.fn().mockResolvedValue(undefined)
+    render(
+      <V2exBase64Overlay entries={['user@example.com']} copyText={copyText} />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: '打开 V2EX Base64' }))
+    fireEvent.click(screen.getByRole('button', { name: '复制第 1 行 Base64' }))
+    expect(await screen.findByText('已复制')).toBeInTheDocument()
+
+    const dialog = screen.getByRole('dialog', { name: 'V2EX Base64' })
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: '关闭 V2EX Base64' }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: '打开 V2EX Base64' }))
+
+    expect(screen.queryByText('已复制')).not.toBeInTheDocument()
+    expect(screen.queryByText('第 1 行已复制')).not.toBeInTheDocument()
+  })
+
   it('closes with Escape and returns focus to the trigger', async () => {
     render(<V2exBase64Overlay entries={['user@example.com']} />)
 
     const trigger = screen.getByRole('button', { name: '打开 V2EX Base64' })
     fireEvent.click(trigger)
 
-    expect(screen.getByRole('dialog', { name: 'V2EX Base64' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('dialog', { name: 'V2EX Base64' }),
+    ).toBeInTheDocument()
     fireEvent.keyDown(document, { key: 'Escape' })
 
     await waitFor(() => {
@@ -64,6 +94,42 @@ describe('V2exBase64Overlay', () => {
     await waitFor(() => {
       expect(trigger).toHaveFocus()
     })
+  })
+
+  it('wraps Tab focus inside a closed shadow root', () => {
+    const host = document.createElement('div')
+    document.body.append(host)
+    const shadowRoot = host.attachShadow({ mode: 'closed' })
+    const mount = document.createElement('div')
+    shadowRoot.append(mount)
+
+    render(
+      <V2exBase64Overlay
+        entries={['first@example.com', 'second@example.com']}
+      />,
+      { container: mount },
+    )
+
+    fireEvent.click(
+      within(mount).getByRole('button', { name: '打开 V2EX Base64' }),
+    )
+
+    const panel = within(mount).getByRole('dialog', { name: 'V2EX Base64' })
+    const closeButton = within(panel).getByRole('button', {
+      name: '关闭 V2EX Base64',
+    })
+    const copyButtons = within(panel).getAllByRole('button', {
+      name: /复制第/,
+    })
+    const lastCopyButton = copyButtons[copyButtons.length - 1]
+
+    lastCopyButton.focus()
+    expect(shadowRoot.activeElement).toBe(lastCopyButton)
+
+    fireEvent.keyDown(document, { key: 'Tab' })
+
+    expect(shadowRoot.activeElement).toBe(closeButton)
+    host.remove()
   })
 
   it('keeps the panel open when closed-shadow events are retargeted to the host', () => {

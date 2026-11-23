@@ -1,13 +1,13 @@
-import * as React from 'react';
-import { cn } from './utils';
+import type * as React from 'react'
+import { cn } from '@/lib/utils'
 
 export interface SliderProps extends React.HTMLAttributes<HTMLDivElement> {
-  value: number[];
-  onValueChange: (value: number[]) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-  disabled?: boolean;
+  value: number[]
+  onValueChange: (value: number[]) => void
+  min?: number
+  max?: number
+  step?: number
+  disabled?: boolean
 }
 
 export function Slider({
@@ -20,7 +20,7 @@ export function Slider({
   disabled = false,
   ...props
 }: SliderProps) {
-  const percentage = ((value[0] - min) / (max - min)) * 100;
+  const percentage = ((value[0] - min) / (max - min)) * 100
 
   return (
     <div
@@ -52,5 +52,5 @@ export function Slider({
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
       />
     </div>
-  );
+  )
 }

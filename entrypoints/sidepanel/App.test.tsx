@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { App } from './App'
 
@@ -76,11 +76,17 @@ describe('sidepanel/App', () => {
 
     expect(await screen.findByTestId('web-summary-panel')).toBeVisible()
     expect(screen.getByTestId('web-summary-config-toggle')).toBeVisible()
-    expect(screen.getByTestId('web-summary-config-drawer')).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByTestId('web-summary-config-drawer')).toHaveAttribute(
+      'aria-hidden',
+      'true',
+    )
 
     fireEvent.click(screen.getByTestId('web-summary-config-toggle'))
 
-    expect(screen.getByTestId('web-summary-config-drawer')).toHaveAttribute('aria-hidden', 'false')
+    expect(screen.getByTestId('web-summary-config-drawer')).toHaveAttribute(
+      'aria-hidden',
+      'false',
+    )
     expect(screen.getByTestId('web-summary-endpoint')).toBeVisible()
     expect(screen.getByTestId('web-summary-model')).toBeVisible()
     expect(screen.getByTestId('web-summary-api-key')).toBeVisible()
@@ -102,12 +108,78 @@ describe('sidepanel/App', () => {
     expect(screen.getAllByText('Article page')).toHaveLength(2)
   })
 
+  it('runs a pending action when the panel is already mounted', async () => {
+    streamWebPageSummary.mockResolvedValue('done')
+
+    render(<App />)
+
+    expect(await screen.findByText('Article page')).toBeVisible()
+
+    vi.mocked(chrome.runtime.sendMessage).mockImplementation(
+      async (message: unknown) => {
+        const typed = message as { type?: string; tabId?: number }
+        if (
+          typed?.type === 'WEB_SUMMARY_SIDE_PANEL_READY' &&
+          typed.tabId === 7
+        ) {
+          return { type: 'SUMMARIZE_ACTIVE_PAGE', tabId: 7 }
+        }
+        return null
+      },
+    )
+
+    const listenerCalls = vi.mocked(chrome.runtime.onMessage.addListener).mock
+      .calls
+    const listener = listenerCalls[listenerCalls.length - 1]?.[0] as
+      | ((message: unknown) => boolean)
+      | undefined
+
+    act(() => {
+      expect(listener?.({ type: 'WEB_SUMMARY_OPEN_REQUESTED', tabId: 7 })).toBe(
+        false,
+      )
+    })
+
+    await waitFor(() => {
+      expect(streamWebPageSummary).toHaveBeenCalledTimes(1)
+    })
+    expect(chrome.runtime.sendMessage).toHaveBeenCalledWith({
+      type: 'WEB_SUMMARY_SIDE_PANEL_READY',
+      tabId: 7,
+    })
+  })
+
+  it('ignores a second summarize request while the first is resolving the tab', async () => {
+    streamWebPageSummary.mockResolvedValue('done')
+
+    render(<App />)
+
+    expect(await screen.findByText('Article page')).toBeVisible()
+
+    let resolveTab: (tab: chrome.tabs.Tab) => void = () => undefined
+    resolveSummarizableTab.mockReturnValueOnce(
+      new Promise<chrome.tabs.Tab>((resolve) => {
+        resolveTab = resolve
+      }),
+    )
+
+    const button = await screen.findByTestId('web-summary-summarize')
+    fireEvent.click(button)
+    fireEvent.click(button)
+    resolveTab(ARTICLE_TAB)
+
+    await waitFor(() => {
+      expect(streamWebPageSummary).toHaveBeenCalledTimes(1)
+    })
+  })
+
   it('updates the current page label when switching tabs', async () => {
     render(<App />)
 
     expect(await screen.findByText('Article page')).toBeVisible()
 
-    const listener = vi.mocked(chrome.tabs.onActivated.addListener).mock.calls[0]?.[0]
+    const listener = vi.mocked(chrome.tabs.onActivated.addListener).mock
+      .calls[0]?.[0]
     resolveSummarizableTab.mockResolvedValueOnce({
       id: 2,
       title: 'Another page',
@@ -125,7 +197,9 @@ describe('sidepanel/App', () => {
     fireEvent.click(await screen.findByTestId('web-summary-config-toggle'))
 
     const apiKeyInput = screen.getByTestId('web-summary-api-key')
-    const visibilityToggle = screen.getByTestId('web-summary-api-key-visibility')
+    const visibilityToggle = screen.getByTestId(
+      'web-summary-api-key-visibility',
+    )
 
     expect(apiKeyInput).toHaveAttribute('type', 'password')
 
@@ -163,13 +237,19 @@ describe('sidepanel/App', () => {
     fireEvent.click(screen.getByText('gpt-4.1'))
 
     await waitFor(() => {
-      expect(setValue).toHaveBeenCalledWith(expect.objectContaining({ model: 'gpt-4.1' }))
+      expect(setValue).toHaveBeenCalledWith(
+        expect.objectContaining({ model: 'gpt-4.1' }),
+      )
     })
-    expect(screen.queryByTestId('web-summary-model-options')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('web-summary-model-options'),
+    ).not.toBeInTheDocument()
   })
 
   it('shows an inline error when fetching models fails', async () => {
-    fetchWebSummaryModels.mockRejectedValue(new Error('模型列表接口返回 401：unauthorized'))
+    fetchWebSummaryModels.mockRejectedValue(
+      new Error('模型列表接口返回 401：unauthorized'),
+    )
 
     render(<App />)
 
@@ -179,7 +259,9 @@ describe('sidepanel/App', () => {
     expect(
       await screen.findByText('模型列表接口返回 401：unauthorized'),
     ).toBeVisible()
-    expect(screen.queryByTestId('web-summary-model-options')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('web-summary-model-options'),
+    ).not.toBeInTheDocument()
   })
 
   it('clears the loading state after aborting an in-flight summary', async () => {
@@ -240,14 +322,18 @@ describe('sidepanel/App', () => {
   })
 
   it('shows a recoverable error when on-demand extraction fails', async () => {
-    extractTabContent.mockRejectedValueOnce(new Error('Cannot access contents of url'))
+    extractTabContent.mockRejectedValueOnce(
+      new Error('Cannot access contents of url'),
+    )
 
     render(<App />)
 
     fireEvent.click(await screen.findByTestId('web-summary-summarize'))
 
     expect(
-      await screen.findByText('无法访问当前网页内容，请确认这是普通网页，并从当前页面重新发起总结。'),
+      await screen.findByText(
+        '无法访问当前网页内容，请确认这是普通网页，并从当前页面重新发起总结。',
+      ),
     ).toBeVisible()
     expect(streamWebPageSummary).not.toHaveBeenCalled()
   })
@@ -262,7 +348,9 @@ describe('sidepanel/App', () => {
 
     fireEvent.click(await screen.findByTestId('web-summary-summarize'))
 
-    expect(await screen.findByText('当前页面不是普通网页，无法提取正文内容。')).toBeVisible()
+    expect(
+      await screen.findByText('当前页面不是普通网页，无法提取正文内容。'),
+    ).toBeVisible()
     expect(extractTabContent).not.toHaveBeenCalled()
   })
 })

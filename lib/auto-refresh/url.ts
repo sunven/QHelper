@@ -31,18 +31,6 @@ export function normalizePageUrl(
   }
 }
 
-export function isSupportedPageUrl(rawUrl: string | null | undefined): boolean {
-  return normalizePageUrl(rawUrl) !== null
-}
-
-export function isSamePageUrl(
-  left: string | null | undefined,
-  right: string | null | undefined,
-): boolean {
-  const normalizedLeft = normalizePageUrl(left)
-  return normalizedLeft !== null && normalizedLeft === normalizePageUrl(right)
-}
-
 export function normalizeIntervalSeconds(
   kind: RefreshIntervalKind,
   value: number,

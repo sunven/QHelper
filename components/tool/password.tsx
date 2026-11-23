@@ -21,6 +21,15 @@ const CHAR_SETS = {
 const SIMILAR_CHARS = new Set(CHAR_SETS.similar)
 const AMBIGUOUS_CHARS = new Set(CHAR_SETS.ambiguous)
 
+type PasswordOptions = {
+  uppercase: boolean
+  lowercase: boolean
+  numbers: boolean
+  symbols: boolean
+  excludeSimilar: boolean
+  excludeAmbiguous: boolean
+}
+
 function excludeChars(charset: string, excluded: ReadonlySet<string>): string {
   let result = ''
 
@@ -33,18 +42,97 @@ function excludeChars(charset: string, excluded: ReadonlySet<string>): string {
   return result
 }
 
+function getPasswordCharsetGroups(options: PasswordOptions): string[] {
+  const groups: string[] = []
+
+  if (options.uppercase) groups.push(CHAR_SETS.uppercase)
+  if (options.lowercase) groups.push(CHAR_SETS.lowercase)
+  if (options.numbers) groups.push(CHAR_SETS.numbers)
+  if (options.symbols) groups.push(CHAR_SETS.symbols)
+
+  return groups
+    .map((group) => {
+      let charset = group
+
+      if (options.excludeSimilar) {
+        charset = excludeChars(charset, SIMILAR_CHARS)
+      }
+
+      if (options.excludeAmbiguous) {
+        charset = excludeChars(charset, AMBIGUOUS_CHARS)
+      }
+
+      return charset
+    })
+    .filter(Boolean)
+}
+
+function randomIndex(maxExclusive: number): number {
+  if (maxExclusive <= 1) {
+    return 0
+  }
+
+  const buffer = new Uint32Array(1)
+  const limit = Math.floor(0x1_0000_0000 / maxExclusive) * maxExclusive
+  let value = 0
+
+  do {
+    crypto.getRandomValues(buffer)
+    value = buffer[0]
+  } while (value >= limit)
+
+  return value % maxExclusive
+}
+
+function shuffleChars(chars: string[]): string[] {
+  for (let index = chars.length - 1; index > 0; index -= 1) {
+    const swapIndex = randomIndex(index + 1)
+    ;[chars[index], chars[swapIndex]] = [chars[swapIndex], chars[index]]
+  }
+
+  return chars
+}
+
+export function generatePasswordValue(
+  options: PasswordOptions,
+  length: number,
+): string {
+  const targetLength = Number.isFinite(length)
+    ? Math.max(1, Math.trunc(length))
+    : 16
+  const selectedGroups = getPasswordCharsetGroups(options)
+  const groups =
+    selectedGroups.length > 0 ? selectedGroups : [CHAR_SETS.lowercase]
+  const chars: string[] = []
+
+  for (const group of groups.slice(0, targetLength)) {
+    chars.push(group[randomIndex(group.length)])
+  }
+
+  const charset = groups.join('')
+  while (chars.length < targetLength) {
+    chars.push(charset[randomIndex(charset.length)])
+  }
+
+  return shuffleChars(chars).join('')
+}
+
 export function PasswordGenerator() {
   // 使用持久化状态保存用户配置
   const [length, setLength] = useToolState('password', 'length', 16)
   const [password, setPassword] = useState('')
-  const [options, setOptions] = useToolState('password', 'options', {
-    uppercase: true,
-    lowercase: true,
-    numbers: true,
-    symbols: true,
-    excludeSimilar: false,
-    excludeAmbiguous: false,
-  })
+  const [options, setOptions] = useToolState<PasswordOptions>(
+    'password',
+    'options',
+    {
+      uppercase: true,
+      lowercase: true,
+      numbers: true,
+      symbols: true,
+      excludeSimilar: false,
+      excludeAmbiguous: false,
+    },
+  )
 
   // 计算密码强度
   const strength = useMemo(() => {
@@ -72,34 +160,7 @@ export function PasswordGenerator() {
 
   // 生成密码
   const generatePassword = useCallback(() => {
-    let charset = ''
-
-    if (options.uppercase) charset += CHAR_SETS.uppercase
-    if (options.lowercase) charset += CHAR_SETS.lowercase
-    if (options.numbers) charset += CHAR_SETS.numbers
-    if (options.symbols) charset += CHAR_SETS.symbols
-
-    if (options.excludeSimilar) {
-      charset = excludeChars(charset, SIMILAR_CHARS)
-    }
-
-    if (options.excludeAmbiguous) {
-      charset = excludeChars(charset, AMBIGUOUS_CHARS)
-    }
-
-    if (charset.length === 0) {
-      charset = CHAR_SETS.lowercase
-    }
-
-    let result = ''
-    const array = new Uint32Array(length)
-    crypto.getRandomValues(array)
-
-    for (let i = 0; i < length; i++) {
-      result += charset[array[i] % charset.length]
-    }
-
-    setPassword(result)
+    setPassword(generatePasswordValue(options, length))
   }, [length, options])
 
   useEffect(() => {
@@ -122,7 +183,12 @@ export function PasswordGenerator() {
                 className="font-mono text-base"
                 placeholder="点击生成按钮创建密码"
               />
-              <Button onClick={generatePassword} variant="outline" size="icon">
+              <Button
+                onClick={generatePassword}
+                variant="outline"
+                size="icon"
+                aria-label="重新生成密码"
+              >
                 <RefreshCw className="w-4 h-4" />
               </Button>
               <CopyButton
@@ -290,8 +356,8 @@ export function PasswordGenerator() {
                   }
                 />
                 <Label htmlFor="excludeAmbiguous" className="cursor-pointer">
-                  排除易混淆字符 (&123; &125; &91; &93; &40; &41; / \ ' " ~ , ;
-                  . &lt; &gt;)
+                  排除易混淆字符 (&#123; &#125; &#91; &#93; &#40; &#41; / \ ' "
+                  ~ , ; . &lt; &gt;)
                 </Label>
               </div>
             </div>

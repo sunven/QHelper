@@ -34,10 +34,18 @@ function createLocation(url: string): Pick<Location, 'protocol' | 'pathname'> {
 
 describe('markdown-file-preview/preview', () => {
   it('detects only local markdown file URLs', () => {
-    expect(isMarkdownFileUrl(createLocation('file:///Users/me/README.md'))).toBe(true)
-    expect(isMarkdownFileUrl(createLocation('file:///Users/me/notes.MARKDOWN'))).toBe(true)
-    expect(isMarkdownFileUrl(createLocation('file:///Users/me/notes.txt'))).toBe(false)
-    expect(isMarkdownFileUrl(createLocation('https://example.com/README.md'))).toBe(false)
+    expect(
+      isMarkdownFileUrl(createLocation('file:///Users/me/README.md')),
+    ).toBe(true)
+    expect(
+      isMarkdownFileUrl(createLocation('file:///Users/me/notes.MARKDOWN')),
+    ).toBe(true)
+    expect(
+      isMarkdownFileUrl(createLocation('file:///Users/me/notes.txt')),
+    ).toBe(false)
+    expect(
+      isMarkdownFileUrl(createLocation('https://example.com/README.md')),
+    ).toBe(false)
   })
 
   it('decodes the file name from the URL pathname', () => {
@@ -47,7 +55,7 @@ describe('markdown-file-preview/preview', () => {
 
   it('renders browser-opened markdown text as a preview page', () => {
     const doc = createDocument(
-      '# README\n\n- item\n\n<a href="javascript:alert(1)" onclick="alert(1)">bad</a>',
+      '# README\n\n- item\n\n<a href="javascript:alert(1)" onclick="alert(1)">bad</a>\n\n<a href="java&#9;script:alert(2)">bad obfuscated</a>',
     )
 
     const installed = installMarkdownFilePreview(
@@ -59,19 +67,29 @@ describe('markdown-file-preview/preview', () => {
     expect(doc.title).toBe('README.md - Markdown 预览')
     expect(doc.body.dataset.qhelperMarkdownPreview).toBe('true')
     expect(doc.querySelector('[role="tablist"]')).not.toBeNull()
-    expect(doc.querySelector('#qhelper-markdown-preview-tab')?.getAttribute('aria-selected')).toBe(
-      'true',
-    )
-    expect(doc.querySelector('#qhelper-markdown-source-tab')?.getAttribute('aria-selected')).toBe(
-      'false',
-    )
-    expect(doc.querySelector('.qhelper-markdown-preview__body h1')?.textContent).toBe('README')
-    expect(doc.querySelector('.qhelper-markdown-preview__body li')?.textContent).toBe('item')
-    expect(doc.querySelector('#qhelper-markdown-source-panel pre')?.textContent).toContain(
-      '# README',
-    )
-    const previewHtml = doc.querySelector('.qhelper-markdown-preview__body')?.innerHTML ?? ''
+    expect(
+      doc
+        .querySelector('#qhelper-markdown-preview-tab')
+        ?.getAttribute('aria-selected'),
+    ).toBe('true')
+    expect(
+      doc
+        .querySelector('#qhelper-markdown-source-tab')
+        ?.getAttribute('aria-selected'),
+    ).toBe('false')
+    expect(
+      doc.querySelector('.qhelper-markdown-preview__body h1')?.textContent,
+    ).toBe('README')
+    expect(
+      doc.querySelector('.qhelper-markdown-preview__body li')?.textContent,
+    ).toBe('item')
+    expect(
+      doc.querySelector('#qhelper-markdown-source-panel pre')?.textContent,
+    ).toContain('# README')
+    const previewHtml =
+      doc.querySelector('.qhelper-markdown-preview__body')?.innerHTML ?? ''
     expect(previewHtml).not.toContain('javascript:alert')
+    expect(previewHtml).not.toContain('script:alert')
     expect(previewHtml).not.toContain('onclick=')
   })
 
@@ -80,10 +98,18 @@ describe('markdown-file-preview/preview', () => {
 
     installMarkdownFilePreview(createWindow('file:///Users/me/README.md'), doc)
 
-    const previewTab = doc.querySelector<HTMLButtonElement>('#qhelper-markdown-preview-tab')
-    const sourceTab = doc.querySelector<HTMLButtonElement>('#qhelper-markdown-source-tab')
-    const previewPanel = doc.querySelector<HTMLElement>('#qhelper-markdown-preview-panel')
-    const sourcePanel = doc.querySelector<HTMLElement>('#qhelper-markdown-source-panel')
+    const previewTab = doc.querySelector<HTMLButtonElement>(
+      '#qhelper-markdown-preview-tab',
+    )
+    const sourceTab = doc.querySelector<HTMLButtonElement>(
+      '#qhelper-markdown-source-tab',
+    )
+    const previewPanel = doc.querySelector<HTMLElement>(
+      '#qhelper-markdown-preview-panel',
+    )
+    const sourcePanel = doc.querySelector<HTMLElement>(
+      '#qhelper-markdown-source-panel',
+    )
 
     expect(previewPanel?.hidden).toBe(false)
     expect(sourcePanel?.hidden).toBe(true)
@@ -94,7 +120,9 @@ describe('markdown-file-preview/preview', () => {
     expect(sourceTab?.getAttribute('aria-selected')).toBe('true')
     expect(previewPanel?.hidden).toBe(true)
     expect(sourcePanel?.hidden).toBe(false)
-    expect(sourcePanel?.querySelector('pre')?.textContent).toBe('# README\n\n- item')
+    expect(sourcePanel?.querySelector('pre')?.textContent).toBe(
+      '# README\n\n- item',
+    )
 
     previewTab?.click()
 
@@ -109,9 +137,15 @@ describe('markdown-file-preview/preview', () => {
 
     installMarkdownFilePreview(createWindow('file:///Users/me/README.md'), doc)
 
-    const systemButton = doc.querySelector<HTMLButtonElement>('[data-theme-value="system"]')
-    const lightButton = doc.querySelector<HTMLButtonElement>('[data-theme-value="light"]')
-    const darkButton = doc.querySelector<HTMLButtonElement>('[data-theme-value="dark"]')
+    const systemButton = doc.querySelector<HTMLButtonElement>(
+      '[data-theme-value="system"]',
+    )
+    const lightButton = doc.querySelector<HTMLButtonElement>(
+      '[data-theme-value="light"]',
+    )
+    const darkButton = doc.querySelector<HTMLButtonElement>(
+      '[data-theme-value="dark"]',
+    )
 
     expect(doc.documentElement.dataset.qhelperMarkdownTheme).toBe('system')
     expect(systemButton?.getAttribute('aria-pressed')).toBe('true')
@@ -143,17 +177,26 @@ describe('markdown-file-preview/preview', () => {
   it('does not replace non-markdown pages or an already-installed preview', () => {
     const txtDoc = createDocument('# plain text')
 
-    expect(installMarkdownFilePreview(createWindow('file:///Users/me/notes.txt'), txtDoc)).toBe(
-      false,
-    )
+    expect(
+      installMarkdownFilePreview(
+        createWindow('file:///Users/me/notes.txt'),
+        txtDoc,
+      ),
+    ).toBe(false)
     expect(txtDoc.querySelector('pre')?.textContent).toBe('# plain text')
 
     const mdDoc = createDocument('# markdown')
-    expect(installMarkdownFilePreview(createWindow('file:///Users/me/README.md'), mdDoc)).toBe(
-      true,
-    )
-    expect(installMarkdownFilePreview(createWindow('file:///Users/me/README.md'), mdDoc)).toBe(
-      false,
-    )
+    expect(
+      installMarkdownFilePreview(
+        createWindow('file:///Users/me/README.md'),
+        mdDoc,
+      ),
+    ).toBe(true)
+    expect(
+      installMarkdownFilePreview(
+        createWindow('file:///Users/me/README.md'),
+        mdDoc,
+      ),
+    ).toBe(false)
   })
 })

@@ -22,6 +22,7 @@ describe('downloads/DownloadsTool', () => {
         id: 1,
         filename: '/Users/example/Downloads/missing.zip',
         exists: false,
+        state: 'complete',
         totalBytes: 1024,
         startTime: '2026-05-08T00:00:00.000Z',
         url: 'https://example.com/missing.zip',
@@ -40,6 +41,33 @@ describe('downloads/DownloadsTool', () => {
     expect(screen.getByText('确认缺失').nextElementSibling).toHaveTextContent(
       '1',
     )
+    expect(eraseDownloadHistoryRecords).not.toHaveBeenCalled()
+  })
+
+  it('skips unfinished downloads instead of treating them as missing', async () => {
+    listDownloadsForCleanup.mockResolvedValue([
+      {
+        id: 2,
+        filename: '/Users/example/Downloads/active.zip',
+        exists: false,
+        state: 'in_progress',
+        totalBytes: 2048,
+        startTime: '2026-05-08T00:00:00.000Z',
+        url: 'https://example.com/active.zip',
+      },
+    ])
+
+    render(<DownloadsTool />)
+
+    await waitFor(() => {
+      expect(listDownloadsForCleanup).toHaveBeenCalledTimes(1)
+    })
+
+    expect(await screen.findByText('active.zip')).toBeVisible()
+    expect(screen.getByText('确认缺失').nextElementSibling).toHaveTextContent(
+      '0',
+    )
+    expect(screen.getByText('已跳过无法确认的记录')).toBeVisible()
     expect(eraseDownloadHistoryRecords).not.toHaveBeenCalled()
   })
 })

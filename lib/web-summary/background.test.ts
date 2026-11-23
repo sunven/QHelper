@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   createWebSummaryPanelProtocol,
   ensureWebSummaryContextMenu,
-  type WebSummaryBackgroundDeps,
   WEB_SUMMARY_CONTEXT_MENU_ID,
+  type WebSummaryBackgroundDeps,
 } from './background'
 
 function createDeps(overrides: Partial<WebSummaryBackgroundDeps> = {}) {
@@ -74,6 +74,94 @@ describe('web-summary/background', () => {
       type: 'SUMMARIZE_ACTIVE_PAGE',
       tabId: 3,
     })
+  })
+
+  it('can be consumed while the sidepanel open promise is still pending', async () => {
+    let resolveOpen: () => void = () => undefined
+    const deps = createDeps({
+      openSidePanel: vi.fn(
+        () =>
+          new Promise<void>((resolve) => {
+            resolveOpen = resolve
+          }),
+      ),
+    })
+    const protocol = createWebSummaryPanelProtocol(deps)
+
+    const opening = protocol.openPanel({
+      type: 'OPEN_WEB_SUMMARY',
+      tabId: 15,
+    })
+
+    expect(protocol.consumeReady(15)).toEqual({
+      type: 'SUMMARIZE_ACTIVE_PAGE',
+      tabId: 15,
+    })
+
+    resolveOpen()
+    await expect(opening).resolves.toEqual({
+      type: 'SUMMARIZE_ACTIVE_PAGE',
+      tabId: 15,
+    })
+  })
+
+  it('notifies an already-mounted sidepanel after opening', async () => {
+    const notifyPanel = vi.fn(() => Promise.resolve())
+    const protocol = createWebSummaryPanelProtocol(createDeps({ notifyPanel }))
+
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 21 })
+
+    expect(notifyPanel).toHaveBeenCalledWith(21)
+  })
+
+  it('keeps the pending action when notifying the panel fails', async () => {
+    const notifyPanel = vi.fn(() => Promise.reject(new Error('no receiver')))
+    const protocol = createWebSummaryPanelProtocol(createDeps({ notifyPanel }))
+
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 22 })
+
+    expect(protocol.consumeReady(22)).toEqual({
+      type: 'SUMMARIZE_ACTIVE_PAGE',
+      tabId: 22,
+    })
+  })
+
+  it('drops the pending action when the sidepanel cannot be opened', async () => {
+    const deps = createDeps({
+      openSidePanel: vi.fn(() => Promise.reject(new Error('denied'))),
+    })
+    const protocol = createWebSummaryPanelProtocol(deps)
+
+    await expect(
+      protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 9 }),
+    ).rejects.toThrow('denied')
+
+    expect(protocol.consumeReady(9)).toBeNull()
+  })
+
+  it('expires pending actions that are never consumed', async () => {
+    let currentTime = 1_000
+    const protocol = createWebSummaryPanelProtocol(createDeps(), {
+      now: () => currentTime,
+      pendingTtlMs: 5_000,
+    })
+
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 11 })
+    currentTime += 4_999
+    expect(protocol.consumeReady(11)).not.toBeNull()
+
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 12 })
+    currentTime += 5_000
+    expect(protocol.consumeReady(12)).toBeNull()
+  })
+
+  it('clears a pending action when its tab closes', async () => {
+    const protocol = createWebSummaryPanelProtocol(createDeps())
+
+    await protocol.openPanel({ type: 'OPEN_WEB_SUMMARY', tabId: 13 })
+    protocol.clearTab(13)
+
+    expect(protocol.consumeReady(13)).toBeNull()
   })
 
   it('registers a dedicated context-menu entry for opening the sidepanel', async () => {

@@ -1,6 +1,7 @@
 import { getCurrent } from '@/lib/chrome/tabs'
 import type {
   OpenWebSummaryMessage,
+  WebSummaryOpenRequestedMessage,
   WebSummaryPendingAction,
 } from '@/types/web-summary'
 
@@ -9,6 +10,7 @@ export const WEB_SUMMARY_CONTEXT_MENU_ID = 'web-summary-context-open'
 export type WebSummaryBackgroundDeps = {
   getActiveTabId: () => Promise<number | undefined>
   openSidePanel: (options: { tabId: number }) => Promise<void>
+  notifyPanel?: (tabId: number) => Promise<void>
 }
 
 export type WebSummaryContextMenuDeps = {
@@ -24,9 +26,21 @@ async function openSidePanel(options: { tabId: number }) {
   await chrome.sidePanel.open(options)
 }
 
+async function notifyPanelOpen(tabId: number): Promise<void> {
+  try {
+    await chrome.runtime.sendMessage({
+      type: 'WEB_SUMMARY_OPEN_REQUESTED',
+      tabId,
+    } satisfies WebSummaryOpenRequestedMessage)
+  } catch {
+    // The panel may still be mounting; its READY bootstrap consumes the action.
+  }
+}
+
 export const defaultWebSummaryBackgroundDeps: WebSummaryBackgroundDeps = {
   getActiveTabId: async () => (await getCurrent())?.id,
   openSidePanel,
+  notifyPanel: notifyPanelOpen,
 }
 
 export const defaultWebSummaryContextMenuDeps: WebSummaryContextMenuDeps = {
@@ -44,9 +58,26 @@ export const defaultWebSummaryContextMenuDeps: WebSummaryContextMenuDeps = {
 
 export type WebSummaryPanelProtocol = {
   /** 打开（或重新聚焦）某标签页的 Side Panel，并登记该页待执行的总结动作 */
-  openPanel: (message: OpenWebSummaryMessage) => Promise<WebSummaryPendingAction>
+  openPanel: (
+    message: OpenWebSummaryMessage,
+  ) => Promise<WebSummaryPendingAction>
   /** Side Panel 就绪后领取该标签页的待执行动作，领取即删除 */
   consumeReady: (tabId: number | undefined) => WebSummaryPendingAction | null
+  /** 标签页关闭时丢弃其待执行动作 */
+  clearTab: (tabId: number) => void
+}
+
+export type WebSummaryPanelProtocolOptions = {
+  now?: () => number
+  pendingTtlMs?: number
+}
+
+// 只允许面板刚被请求打开时消费，避免失败/关闭后的陈旧动作自动上传网页内容。
+const WEB_SUMMARY_PENDING_ACTION_TTL_MS = 30_000
+
+type PendingActionEntry = {
+  action: WebSummaryPendingAction
+  expiresAt: number
 }
 
 /**
@@ -55,8 +86,20 @@ export type WebSummaryPanelProtocol = {
  */
 export function createWebSummaryPanelProtocol(
   deps: WebSummaryBackgroundDeps = defaultWebSummaryBackgroundDeps,
+  options: WebSummaryPanelProtocolOptions = {},
 ): WebSummaryPanelProtocol {
-  const pendingActions = new Map<number, WebSummaryPendingAction>()
+  const now = options.now ?? Date.now
+  const pendingTtlMs = options.pendingTtlMs ?? WEB_SUMMARY_PENDING_ACTION_TTL_MS
+  const pendingActions = new Map<number, PendingActionEntry>()
+
+  const pruneExpired = () => {
+    const currentTime = now()
+    for (const [tabId, entry] of pendingActions) {
+      if (entry.expiresAt <= currentTime) {
+        pendingActions.delete(tabId)
+      }
+    }
+  }
 
   return {
     async openPanel(message) {
@@ -65,13 +108,28 @@ export function createWebSummaryPanelProtocol(
         throw new Error('未找到当前活动标签页。')
       }
 
+      pruneExpired()
+
       const pendingAction: WebSummaryPendingAction = {
         type: 'SUMMARIZE_ACTIVE_PAGE',
         tabId,
       }
+      const entry: PendingActionEntry = {
+        action: pendingAction,
+        expiresAt: now() + pendingTtlMs,
+      }
+      pendingActions.set(tabId, entry)
 
-      pendingActions.set(tabId, pendingAction)
-      await deps.openSidePanel({ tabId })
+      try {
+        await deps.openSidePanel({ tabId })
+      } catch (error) {
+        if (pendingActions.get(tabId) === entry) {
+          pendingActions.delete(tabId)
+        }
+        throw error
+      }
+
+      await deps.notifyPanel?.(tabId).catch(() => undefined)
 
       return pendingAction
     },
@@ -81,12 +139,19 @@ export function createWebSummaryPanelProtocol(
         return null
       }
 
-      const action = pendingActions.get(tabId) ?? null
-      if (action) {
-        pendingActions.delete(tabId)
+      pruneExpired()
+
+      const entry = pendingActions.get(tabId)
+      if (!entry) {
+        return null
       }
 
-      return action
+      pendingActions.delete(tabId)
+      return entry.action
+    },
+
+    clearTab(tabId) {
+      pendingActions.delete(tabId)
     },
   }
 }

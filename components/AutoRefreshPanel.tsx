@@ -5,7 +5,7 @@ import {
   PlayIcon,
   SpinnerGapIcon,
 } from '@phosphor-icons/react'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { IntervalInput } from '@/components/auto-refresh/IntervalInput'
 import { Button } from '@/components/ui/button'
 import { sendAutoRefreshMessage } from '@/lib/auto-refresh/client'
@@ -28,8 +28,11 @@ export function AutoRefreshPanel() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const loadIdRef = useRef(0)
 
   const load = useCallback(async () => {
+    const loadId = loadIdRef.current + 1
+    loadIdRef.current = loadId
     setLoading(true)
     setError('')
 
@@ -38,9 +41,12 @@ export function AutoRefreshPanel() {
         active: true,
         currentWindow: true,
       })
-      setTab(activeTab ?? null)
+      if (loadIdRef.current !== loadId) {
+        return
+      }
 
       if (!activeTab?.id) {
+        setTab(null)
         setState(null)
         return
       }
@@ -49,14 +55,24 @@ export function AutoRefreshPanel() {
         type: 'AUTO_REFRESH_GET_TAB_STATE',
         tabId: activeTab.id,
       })
+      if (loadIdRef.current !== loadId) {
+        return
+      }
+
+      setTab(activeTab)
       setState(nextState)
       if (nextState.session) {
         setSessionInterval(nextState.session.intervalSeconds)
       }
     } catch (loadError) {
+      if (loadIdRef.current !== loadId) {
+        return
+      }
       setError(getErrorMessage(loadError))
     } finally {
-      setLoading(false)
+      if (loadIdRef.current === loadId) {
+        setLoading(false)
+      }
     }
   }, [])
 

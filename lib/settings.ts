@@ -17,7 +17,11 @@ export type SettingDefinition<T> = {
 function getStorage(area: StorageArea) {
   try {
     const storage = globalThis.chrome?.storage?.[area]
-    if (storage && typeof storage.get === 'function' && typeof storage.set === 'function') {
+    if (
+      storage &&
+      typeof storage.get === 'function' &&
+      typeof storage.set === 'function'
+    ) {
       return storage
     }
   } catch {}
@@ -25,7 +29,10 @@ function getStorage(area: StorageArea) {
 }
 
 function hasStoredValue(result: Record<string, unknown>, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(result, key) && result[key] !== undefined
+  return (
+    Object.prototype.hasOwnProperty.call(result, key) &&
+    result[key] !== undefined
+  )
 }
 
 async function getLocal<T>(key: string): Promise<T | undefined> {
@@ -56,7 +63,11 @@ export function defineSetting<T extends object>(
   defaults: T,
   normalize?: (value: Partial<T> | undefined) => T,
 ): SettingDefinition<T> {
-  const norm = normalize || ((value: Partial<T> | undefined): T => ({ ...defaults, ...value }))
+  const norm =
+    normalize ||
+    ((value: Partial<T> | undefined): T => ({ ...defaults, ...value }))
+  const mirroredLocalValues = new Map<string, string>()
+  const serializeForMirror = (value: T) => JSON.stringify(value)
 
   const get = async (): Promise<T> => {
     const sync = getStorage('sync')
@@ -65,6 +76,7 @@ export function defineSetting<T extends object>(
         const result = await sync.get(key)
         if (hasStoredValue(result, key)) {
           const normalized = norm(result[key] as Partial<T>)
+          mirroredLocalValues.set(key, serializeForMirror(normalized))
           await setLocal(key, normalized)
           return normalized
         }
@@ -73,6 +85,7 @@ export function defineSetting<T extends object>(
         if (local !== undefined) {
           try {
             await sync.set({ [key]: normalized })
+            mirroredLocalValues.set(key, serializeForMirror(normalized))
             await setLocal(key, normalized)
           } catch {}
         }
@@ -88,6 +101,7 @@ export function defineSetting<T extends object>(
     if (sync) {
       try {
         await sync.set({ [key]: normalized })
+        mirroredLocalValues.set(key, serializeForMirror(normalized))
         await setLocal(key, normalized)
         return { settings: normalized, storageArea: 'sync' }
       } catch {}
@@ -97,18 +111,35 @@ export function defineSetting<T extends object>(
   }
 
   const subscribe = (listener: (value: T) => void): (() => void) => {
-    const handler = (changes: { [key: string]: chrome.storage.StorageChange }, area: string) => {
-      if ((area === 'sync' || area === 'local') && key in changes) {
-        const normalized = norm(changes[key].newValue as Partial<T>)
-        listener(normalized)
-        if (area === 'sync') void setLocal(key, normalized)
+    const handler = (
+      changes: { [key: string]: chrome.storage.StorageChange },
+      area: string,
+    ) => {
+      if ((area !== 'sync' && area !== 'local') || !(key in changes)) {
+        return
+      }
+
+      const normalized = norm(changes[key].newValue as Partial<T>)
+      const serialized = serializeForMirror(normalized)
+
+      if (area === 'local' && mirroredLocalValues.get(key) === serialized) {
+        mirroredLocalValues.delete(key)
+        return
+      }
+
+      listener(normalized)
+
+      if (area === 'sync') {
+        mirroredLocalValues.set(key, serialized)
+        void setLocal(key, normalized)
       }
     }
 
     try {
       if (globalThis.chrome?.storage?.onChanged) {
         globalThis.chrome.storage.onChanged.addListener(handler)
-        return () => globalThis.chrome?.storage?.onChanged?.removeListener(handler)
+        return () =>
+          globalThis.chrome?.storage?.onChanged?.removeListener(handler)
       }
     } catch {}
 
@@ -161,6 +192,7 @@ export function watchSetting<T>(
   const getSettings = deps.getSettings ?? setting.get
   const onSettingsChanged = deps.onSettingsChanged ?? setting.subscribe
   let disposed = false
+  let changeApplied = false
 
   const applySetting = (value: T) => {
     if (!disposed) {
@@ -169,12 +201,21 @@ export function watchSetting<T>(
   }
 
   void getSettings()
-    .then(applySetting)
+    .then((value) => {
+      if (!changeApplied) {
+        applySetting(value)
+      }
+    })
     .catch(() => {
-      applySetting(setting.defaults)
+      if (!changeApplied) {
+        applySetting(setting.defaults)
+      }
     })
 
-  const unsubscribe = onSettingsChanged(applySetting)
+  const unsubscribe = onSettingsChanged((value) => {
+    changeApplied = true
+    applySetting(value)
+  })
 
   return () => {
     disposed = true

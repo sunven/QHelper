@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -7,6 +6,7 @@ import {
   Loader2,
   XCircle,
 } from 'lucide-react'
+import { useState } from 'react'
 import { CopyButton } from '@/components/tool/CopyButton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -17,12 +17,12 @@ import { Slider } from '@/components/ui/slider'
 import { Textarea } from '@/components/ui/textarea'
 import { useToolState } from '@/hooks/useToolState'
 import {
-  DEFAULT_BCRYPT_ROUNDS,
-  MAX_BCRYPT_ROUNDS,
-  MIN_BCRYPT_ROUNDS,
   createBcryptHash,
+  DEFAULT_BCRYPT_ROUNDS,
   getBcryptHashRounds,
   isBcryptHash,
+  MAX_BCRYPT_ROUNDS,
+  MIN_BCRYPT_ROUNDS,
   normalizeBcryptRounds,
   verifyBcryptHash,
 } from '@/lib/utils/bcrypt'
@@ -222,6 +222,9 @@ export function BcryptHashTool() {
               {verifyHash && verifyHashRounds && (
                 <p className="text-xs text-muted-foreground">
                   Hash rounds: {verifyHashRounds}
+                  {verifyHashRounds > MAX_BCRYPT_ROUNDS
+                    ? `（超过校验上限 ${MAX_BCRYPT_ROUNDS}）`
+                    : ''}
                 </p>
               )}
             </div>
@@ -230,7 +233,13 @@ export function BcryptHashTool() {
               type="button"
               variant="outline"
               onClick={handleVerify}
-              disabled={isVerifying || !verifyText || !verifyHash}
+              disabled={
+                isVerifying ||
+                !verifyText ||
+                !verifyHash ||
+                (verifyHashRounds !== null &&
+                  verifyHashRounds > MAX_BCRYPT_ROUNDS)
+              }
               className="w-full gap-2"
             >
               {isVerifying ? (

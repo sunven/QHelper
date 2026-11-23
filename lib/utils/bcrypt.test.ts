@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
-  DEFAULT_BCRYPT_ROUNDS,
   createBcryptHash,
+  DEFAULT_BCRYPT_ROUNDS,
   getBcryptHashRounds,
   isBcryptHash,
   normalizeBcryptRounds,
@@ -24,16 +24,24 @@ describe('bcrypt utils', () => {
   it('rejects invalid bcrypt hash strings before comparison', async () => {
     expect(isBcryptHash('not-a-bcrypt-hash')).toBe(false)
     expect(getBcryptHashRounds('not-a-bcrypt-hash')).toBeNull()
-    await expect(verifyBcryptHash('secret', 'not-a-bcrypt-hash')).rejects.toThrow(
-      'Invalid bcrypt hash',
-    )
+    await expect(
+      verifyBcryptHash('secret', 'not-a-bcrypt-hash'),
+    ).rejects.toThrow('Invalid bcrypt hash')
   })
 
-  it('accepts bcrypt hashes above the browser generation limit for verification', () => {
+  it('parses bcrypt hashes above the browser generation limit', () => {
     const highCostHash = `$2b$31$${'a'.repeat(53)}`
 
     expect(isBcryptHash(highCostHash)).toBe(true)
     expect(getBcryptHashRounds(highCostHash)).toBe(31)
+  })
+
+  it('refuses to verify hashes above the supported rounds limit', async () => {
+    const highCostHash = `$2b$31$${'a'.repeat(53)}`
+
+    await expect(verifyBcryptHash('secret', highCostHash)).rejects.toThrow(
+      'verification limit',
+    )
   })
 
   it('normalizes rounds to the browser-safe supported range', () => {

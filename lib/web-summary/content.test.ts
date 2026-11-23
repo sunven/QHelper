@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import {
-  WEB_SUMMARY_MAX_CONTENT_CHARS,
   extractPageContent,
   normalizePageText,
+  WEB_SUMMARY_MAX_CONTENT_CHARS,
 } from './content'
 
 describe('web-summary/content', () => {
@@ -27,6 +27,21 @@ describe('web-summary/content', () => {
 
     expect(result.title).toBe('Article page')
     expect(result.url).toBe('https://example.com/article')
+    expect(result.source).toBe('article')
+    expect(result.content).toContain('正文')
+    expect(result.content).not.toContain('导航')
+  })
+
+  it('prefers an article inside a larger main container', () => {
+    document.body.innerHTML = `
+      <main>
+        <nav>${'导航 '.repeat(200)}</nav>
+        <article>${'正文 '.repeat(150)}</article>
+      </main>
+    `
+
+    const result = extractPageContent(window, document)
+
     expect(result.source).toBe('article')
     expect(result.content).toContain('正文')
     expect(result.content).not.toContain('导航')

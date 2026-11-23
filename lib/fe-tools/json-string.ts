@@ -47,10 +47,6 @@ function parseJsonString(value: string): unknown | false {
   }
 }
 
-export function isJsonString(value: string): boolean {
-  return parseJsonString(value) !== false
-}
-
 export function transformJsonStringToJson<T>(data: T): T {
   if (Array.isArray(data)) {
     return data.map((item) => transformJsonStringToJson(item)) as T
@@ -80,6 +76,36 @@ export function transformJsonStringToJson<T>(data: T): T {
   return data
 }
 
+function isPrivateIpv4(host: string): boolean {
+  const parts = host.split('.')
+  if (parts.length !== 4 || parts.some((part) => !/^\d{1,3}$/.test(part))) {
+    return false
+  }
+
+  const octets = parts.map(Number)
+  if (octets.some((octet) => octet > 255)) {
+    return false
+  }
+
+  return (
+    octets[0] === 10 ||
+    octets[0] === 127 ||
+    (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+    (octets[0] === 192 && octets[1] === 168)
+  )
+}
+
+function isLocalDevHost(hostname: string): boolean {
+  const host = hostname.toLowerCase()
+  return (
+    host === 'localhost' ||
+    host.endsWith('.localhost') ||
+    host === '[::1]' ||
+    host === '::1' ||
+    isPrivateIpv4(host)
+  )
+}
+
 export function shouldCaptureJsonRequest(
   requestLike: JsonRequestLike,
 ): boolean {
@@ -98,12 +124,7 @@ export function shouldCaptureJsonRequest(
   }
 
   try {
-    const url = new URL(requestUrl)
-    return (
-      url.hostname === 'localhost' ||
-      url.hostname === '127.0.0.1' ||
-      url.hostname.startsWith('192.168')
-    )
+    return isLocalDevHost(new URL(requestUrl).hostname)
   } catch {
     return false
   }

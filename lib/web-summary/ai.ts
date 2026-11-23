@@ -1,10 +1,16 @@
-import type { WebSummaryConfig, WebSummaryPageContent } from '@/types/web-summary'
 import { getErrorMessage } from '@/lib/utils'
+import type {
+  WebSummaryConfig,
+  WebSummaryPageContent,
+} from '@/types/web-summary'
+import { getWebSummaryEndpointError } from './config'
 
 export const WEB_SUMMARY_SYSTEM_PROMPT =
   '你是网页阅读助手。请基于用户提供的网页内容，输出 Markdown，总结为“总结”“关键要点”“建议行动”三个部分；信息不足时明确说明，不要编造。'
 
-export function buildWebSummaryPrompt(pageContent: WebSummaryPageContent): string {
+export function buildWebSummaryPrompt(
+  pageContent: WebSummaryPageContent,
+): string {
   return [
     `网页标题：${pageContent.title}`,
     `网页地址：${pageContent.url}`,
@@ -37,7 +43,9 @@ export function buildWebSummaryRequest(
   }
 }
 
-function extractContentFromChoice(choice: Record<string, any> | undefined): string {
+function extractContentFromChoice(
+  choice: Record<string, any> | undefined,
+): string {
   const deltaContent = choice?.delta?.content
   if (typeof deltaContent === 'string') {
     return deltaContent
@@ -114,6 +122,10 @@ export async function readWebSummaryStream(
       }
 
       if (event.done) {
+        if (!summary.trim()) {
+          throw new Error('AI 未返回任何摘要内容。')
+        }
+        await reader.cancel().catch(() => undefined)
         return summary
       }
 
@@ -164,6 +176,15 @@ async function readErrorBody(response: Response): Promise<string> {
   }
 }
 
+function isAbortError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'name' in error &&
+    (error as { name?: unknown }).name === 'AbortError'
+  )
+}
+
 export async function streamWebPageSummary({
   pageContent,
   config,
@@ -175,6 +196,11 @@ export async function streamWebPageSummary({
   signal?: AbortSignal
   onDelta?: (delta: string) => void
 }): Promise<string> {
+  const endpointError = getWebSummaryEndpointError(config.endpoint)
+  if (endpointError) {
+    throw new Error(endpointError)
+  }
+
   const response = await fetch(config.endpoint, {
     method: 'POST',
     headers: {
@@ -184,6 +210,10 @@ export async function streamWebPageSummary({
     body: JSON.stringify(buildWebSummaryRequest(config, pageContent)),
     signal,
   }).catch((error) => {
+    if (isAbortError(error)) {
+      throw error
+    }
+
     throw new Error(`调用总结接口失败：${getErrorMessage(error)}`)
   })
 

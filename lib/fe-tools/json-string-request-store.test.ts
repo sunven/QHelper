@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  LEGACY_REQUEST_DATA_STORAGE_KEY,
-  MAX_CAPTURED_JSON_STRING_REQUESTS,
-  REQUEST_DATA_STORAGE_KEY,
   appendCapturedJsonStringRequest,
+  type CapturedJsonStringRequest,
   clearCapturedJsonStringRequests,
   getCapturedJsonStringRequests,
+  LEGACY_REQUEST_DATA_STORAGE_KEY,
+  MAX_CAPTURED_JSON_STRING_CONTENT_CHARS,
+  MAX_CAPTURED_JSON_STRING_REQUESTS,
+  MAX_CAPTURED_JSON_STRING_STORAGE_CHARS,
+  REQUEST_DATA_STORAGE_KEY,
   setCapturedJsonStringRequests,
   subscribeCapturedJsonStringRequests,
-  type CapturedJsonStringRequest,
 } from './json-string-request-store'
 
 const capturedRequest: CapturedJsonStringRequest = {
@@ -100,6 +102,70 @@ describe('fe-tools/json-string-request-store', () => {
     })
   })
 
+  it('serializes concurrent appends without losing captures', async () => {
+    let stored: CapturedJsonStringRequest[] | undefined
+    vi.mocked(chrome.storage.local.get).mockImplementation(((key: string) =>
+      Promise.resolve(
+        key === REQUEST_DATA_STORAGE_KEY && stored !== undefined
+          ? { [REQUEST_DATA_STORAGE_KEY]: stored }
+          : {},
+      )) as never)
+    vi.mocked(chrome.storage.local.set).mockImplementation(((
+      items: Record<string, unknown>,
+    ) => {
+      stored = items[REQUEST_DATA_STORAGE_KEY] as CapturedJsonStringRequest[]
+      return Promise.resolve()
+    }) as never)
+
+    const first = {
+      ...capturedRequest,
+      request: { url: 'http://localhost:3000/first' },
+    }
+    const second = {
+      ...capturedRequest,
+      request: { url: 'http://localhost:3000/second' },
+    }
+
+    await Promise.all([
+      appendCapturedJsonStringRequest(first),
+      appendCapturedJsonStringRequest(second),
+    ])
+
+    expect(stored?.map((request) => request.request.url)).toEqual([
+      'http://localhost:3000/first',
+      'http://localhost:3000/second',
+    ])
+  })
+
+  it('skips captures larger than the per-entry limit', async () => {
+    await appendCapturedJsonStringRequest({
+      ...capturedRequest,
+      content: 'x'.repeat(MAX_CAPTURED_JSON_STRING_CONTENT_CHARS + 1),
+    })
+
+    expect(chrome.storage.local.get).not.toHaveBeenCalled()
+    expect(chrome.storage.local.set).not.toHaveBeenCalled()
+  })
+
+  it('trims stored history to the storage budget', async () => {
+    const largeRequests = Array.from({ length: 6 }, (_, index) => ({
+      ...capturedRequest,
+      request: { url: `http://localhost:3000/large-${index}` },
+      content: 'x'.repeat(MAX_CAPTURED_JSON_STRING_CONTENT_CHARS),
+    }))
+
+    await setCapturedJsonStringRequests(largeRequests)
+
+    const storedValue = vi.mocked(chrome.storage.local.set).mock
+      .calls[0]?.[0] as Record<string, CapturedJsonStringRequest[]>
+    const storedRequests = storedValue[REQUEST_DATA_STORAGE_KEY]
+
+    expect(storedRequests.length).toBeLessThan(largeRequests.length)
+    expect(JSON.stringify(storedRequests).length).toBeLessThanOrEqual(
+      MAX_CAPTURED_JSON_STRING_STORAGE_CHARS,
+    )
+  })
+
   it('keeps only the newest captured requests', async () => {
     const capturedRequests = Array.from(
       { length: MAX_CAPTURED_JSON_STRING_REQUESTS },
@@ -121,8 +187,8 @@ describe('fe-tools/json-string-request-store', () => {
 
     await appendCapturedJsonStringRequest(nextRequest)
 
-    const storedValue = vi.mocked(chrome.storage.local.set).mock.calls[0]
-      ?.[0] as Record<string, CapturedJsonStringRequest[]>
+    const storedValue = vi.mocked(chrome.storage.local.set).mock
+      .calls[0]?.[0] as Record<string, CapturedJsonStringRequest[]>
     const storedRequests = storedValue[REQUEST_DATA_STORAGE_KEY]
     expect(storedRequests).toHaveLength(MAX_CAPTURED_JSON_STRING_REQUESTS)
     expect(storedRequests[0].request.url).toBe('http://localhost:3000/1')

@@ -1,15 +1,11 @@
-import type { BrowserContext, Page } from '@playwright/test';
+import type { BrowserContext, Page } from '@playwright/test'
 
 export function toolUrl(extensionId: string, toolName: string): string {
-  return `chrome-extension://${extensionId}/tools/${toolName}.html`;
-}
-
-export function popupUrl(extensionId: string): string {
-  return `chrome-extension://${extensionId}/popup.html`;
+  return `chrome-extension://${extensionId}/tools/${toolName}.html`
 }
 
 export function sidepanelUrl(extensionId: string): string {
-  return `chrome-extension://${extensionId}/sidepanel.html`;
+  return `chrome-extension://${extensionId}/sidepanel.html`
 }
 
 export async function openToolPage(
@@ -17,7 +13,7 @@ export async function openToolPage(
   extensionId: string,
   toolName: string,
 ): Promise<Page> {
-  const page = await context.newPage();
-  await page.goto(toolUrl(extensionId, toolName));
-  return page;
+  const page = await context.newPage()
+  await page.goto(toolUrl(extensionId, toolName))
+  return page
 }

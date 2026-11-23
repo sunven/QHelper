@@ -110,34 +110,40 @@ describe('ToolActivityOutlet', () => {
     '/htmlformat.html',
     '/xmlformatter.html',
     '/csstool.html',
-  ])('redirects the removed formatter route %s to the default tool', async (path) => {
-    render(
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/:toolId" element={<ToolActivityOutlet />} />
-        </Routes>
-      </MemoryRouter>,
-    )
+  ])(
+    'redirects the removed formatter route %s to the default tool',
+    async (path) => {
+      render(
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path="/:toolId" element={<ToolActivityOutlet />} />
+          </Routes>
+        </MemoryRouter>,
+      )
 
-    expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
-  })
+      expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
+    },
+  )
 
   it.each([
     '/markdown.html',
     '/urlparser.html',
     '/filemerge.html',
     '/svgoptimizer.html',
-  ])('redirects the removed Web 格式 route %s to the default tool', async (path) => {
-    render(
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/:toolId" element={<ToolActivityOutlet />} />
-        </Routes>
-      </MemoryRouter>,
-    )
+  ])(
+    'redirects the removed Web 格式 route %s to the default tool',
+    async (path) => {
+      render(
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path="/:toolId" element={<ToolActivityOutlet />} />
+          </Routes>
+        </MemoryRouter>,
+      )
 
-    expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
-  })
+      expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
+    },
+  )
 
   it.each([
     '/cron.html',
@@ -145,16 +151,33 @@ describe('ToolActivityOutlet', () => {
     '/yaml.html',
     '/toml.html',
     '/jsonschema.html',
-  ])('redirects the removed 数据格式 route %s to the default tool', async (path) => {
+  ])(
+    'redirects the removed 数据格式 route %s to the default tool',
+    async (path) => {
+      render(
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path="/:toolId" element={<ToolActivityOutlet />} />
+          </Routes>
+        </MemoryRouter>,
+      )
+
+      expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
+    },
+  )
+
+  it('renders the real settings page for the settings route', async () => {
     render(
-      <MemoryRouter initialEntries={[path]}>
+      <MemoryRouter initialEntries={['/settings.html']}>
         <Routes>
           <Route path="/:toolId" element={<ToolActivityOutlet />} />
         </Routes>
       </MemoryRouter>,
     )
 
-    expect(await screen.findByText('Auto Refresh Mock')).toBeVisible()
+    expect(
+      await screen.findByRole('checkbox', { name: '启用字典划词翻译' }),
+    ).toBeInTheDocument()
   })
 
   it('keeps React and DOM state when switching visited tools', async () => {

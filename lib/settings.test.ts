@@ -174,6 +174,38 @@ describe('settings/defineSetting', () => {
     )
   })
 
+  it('does not notify twice for a mirrored sync write', () => {
+    const setting = defineSetting(
+      'testSetting',
+      { enabled: true },
+      normalizeTestSetting,
+    )
+    const listener = vi.fn()
+    setting.subscribe(listener)
+    const calls = vi.mocked(chrome.storage.onChanged.addListener).mock.calls
+    const handleChange = calls[calls.length - 1]?.[0]
+
+    handleChange?.(
+      {
+        testSetting: {
+          newValue: { enabled: false },
+        },
+      },
+      'sync',
+    )
+    handleChange?.(
+      {
+        testSetting: {
+          newValue: { enabled: false },
+        },
+      },
+      'local',
+    )
+
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(listener).toHaveBeenCalledWith({ enabled: false })
+  })
+
   it('resets to defaults through the same save path', async () => {
     const setting = defineSetting(
       'testSetting',
@@ -265,16 +297,33 @@ describe('settings/watchSetting', () => {
     expect(apply).not.toHaveBeenCalled()
   })
 
+  it('ignores the initial read when a change arrives first', async () => {
+    let resolveInitial: (value: WatchedSetting) => void = () => undefined
+    const initial = new Promise<WatchedSetting>((resolve) => {
+      resolveInitial = resolve
+    })
+    const setting = createFakeSetting(initial, { enabled: false })
+    const apply = vi.fn()
+
+    watchSetting(setting, apply)
+    setting.notify({ enabled: true })
+    resolveInitial({ enabled: false })
+
+    await Promise.resolve()
+    await Promise.resolve()
+
+    expect(apply).toHaveBeenCalledTimes(1)
+    expect(apply).toHaveBeenCalledWith({ enabled: true })
+  })
+
   it('lets deps override the setting read and subscription', async () => {
     const apply = vi.fn()
     const setting = createFakeSetting(Promise.resolve({ enabled: true }))
     let listener: ((value: WatchedSetting) => void) | undefined
-    const onSettingsChanged = vi.fn(
-      (next: (value: WatchedSetting) => void) => {
-        listener = next
-        return () => undefined
-      },
-    )
+    const onSettingsChanged = vi.fn((next: (value: WatchedSetting) => void) => {
+      listener = next
+      return () => undefined
+    })
 
     watchSetting(setting, apply, {
       getSettings: () => Promise.resolve({ enabled: false }),

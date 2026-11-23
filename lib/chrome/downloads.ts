@@ -5,24 +5,24 @@ export type DownloadHistoryItem = CleanupDownloadItem & {
   danger?: string
   endTime?: string
   error?: string
-  exists?: boolean
   filename: string
-  finalUrl?: string
   mime?: string
   paused?: boolean
-  state?: string
-  url: string
 }
 
 function downloadsApi() {
   if (typeof chrome === 'undefined' || !chrome.downloads) {
-    throw new Error('下载 API 不可用。请重新加载扩展，并确认已授予 downloads 权限。')
+    throw new Error(
+      '下载 API 不可用。请重新加载扩展，并确认已授予 downloads 权限。',
+    )
   }
 
   return chrome.downloads
 }
 
-export async function listDownloadsForCleanup(): Promise<DownloadHistoryItem[]> {
+export async function listDownloadsForCleanup(): Promise<
+  DownloadHistoryItem[]
+> {
   const items = await downloadsApi().search({
     orderBy: ['-startTime'],
   })
@@ -44,7 +44,9 @@ export async function listDownloadsForCleanup(): Promise<DownloadHistoryItem[]> 
   }))
 }
 
-export async function eraseDownloadHistoryRecords(ids: number[]): Promise<number[]> {
+export async function eraseDownloadHistoryRecords(
+  ids: number[],
+): Promise<number[]> {
   if (ids.length === 0) {
     return []
   }

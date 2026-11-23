@@ -28,9 +28,15 @@ export type WebSummarySidePanelReadyMessage = {
   tabId?: number
 }
 
+export type WebSummaryOpenRequestedMessage = {
+  type: 'WEB_SUMMARY_OPEN_REQUESTED'
+  tabId: number
+}
+
 export type WebSummaryMessage =
   | OpenWebSummaryMessage
   | WebSummarySidePanelReadyMessage
+  | WebSummaryOpenRequestedMessage
 
 export interface OpenWebSummaryResponse {
   ok: boolean

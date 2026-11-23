@@ -31,10 +31,7 @@ describe('web-summary/ai', () => {
       model: 'gpt-4.1-mini',
       stream: true,
       temperature: 0.2,
-      messages: [
-        { role: 'system' },
-        { role: 'user' },
-      ],
+      messages: [{ role: 'system' }, { role: 'user' }],
     })
   })
 
@@ -44,7 +41,10 @@ describe('web-summary/ai', () => {
         'data: {"choices":[{"delta":{"content":"hello"}}]}',
       ),
     ).toEqual({ done: false, delta: 'hello' })
-    expect(parseWebSummaryEventBlock('data: [DONE]')).toEqual({ done: true, delta: '' })
+    expect(parseWebSummaryEventBlock('data: [DONE]')).toEqual({
+      done: true,
+      delta: '',
+    })
   })
 
   it('reads SSE responses and ignores malformed chunks', async () => {
@@ -71,11 +71,27 @@ describe('web-summary/ai', () => {
     )
 
     const deltas: string[] = []
-    await expect(readWebSummaryStream(response, (delta) => deltas.push(delta))).resolves.toBe(
-      'Hello world',
-    )
+    await expect(
+      readWebSummaryStream(response, (delta) => deltas.push(delta)),
+    ).resolves.toBe('Hello world')
     expect(deltas).toEqual(['Hello ', 'world'])
     expect(warn).toHaveBeenCalled()
+  })
+
+  it('rejects a stream that ends without content', async () => {
+    const response = new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('data: [DONE]\n\n'))
+          controller.close()
+        },
+      }),
+      { headers: { 'Content-Type': 'text/event-stream' } },
+    )
+
+    await expect(readWebSummaryStream(response)).rejects.toThrow(
+      'AI 未返回任何摘要内容。',
+    )
   })
 
   it('surfaces non-200 responses with the response body', async () => {
@@ -95,6 +111,36 @@ describe('web-summary/ai', () => {
     await expect(streamWebPageSummary({ pageContent, config })).rejects.toThrow(
       '总结接口返回 400：bad request',
     )
+  })
+
+  it('preserves abort errors from fetch', async () => {
+    const abortError = new Error('aborted')
+    abortError.name = 'AbortError'
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(abortError)),
+    )
+
+    await expect(
+      streamWebPageSummary({ pageContent, config }),
+    ).rejects.toMatchObject({ name: 'AbortError' })
+  })
+
+  it('rejects insecure endpoints before fetching', async () => {
+    const fetchMock = vi.fn()
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(
+      streamWebPageSummary({
+        pageContent,
+        config: {
+          ...config,
+          endpoint: 'http://example.com/v1/chat/completions',
+        },
+      }),
+    ).rejects.toThrow('接口地址必须使用 https')
+
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   it('supports non-stream JSON responses as a fallback', async () => {

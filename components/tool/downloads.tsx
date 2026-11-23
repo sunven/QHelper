@@ -1,16 +1,3 @@
-import { Button } from '@/components/ui/button'
-import {
-  eraseDownloadHistoryRecords,
-  listDownloadsForCleanup,
-  type DownloadHistoryItem,
-} from '@/lib/chrome/downloads'
-import {
-  classifyDownloadsForCleanup,
-  getCleanupIds,
-  type ClassifiedDownloadItem,
-  type DownloadCleanupSummary,
-} from '@/lib/downloads/cleanup'
-import { cn } from '@/lib/utils'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -21,6 +8,19 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import {
+  type DownloadHistoryItem,
+  eraseDownloadHistoryRecords,
+  listDownloadsForCleanup,
+} from '@/lib/chrome/downloads'
+import {
+  type ClassifiedDownloadItem,
+  classifyDownloadsForCleanup,
+  type DownloadCleanupSummary,
+  getCleanupIds,
+} from '@/lib/downloads/cleanup'
+import { cn } from '@/lib/utils'
 
 type ScanState = 'idle' | 'loading' | 'ready' | 'cleaning' | 'error'
 
@@ -221,7 +221,7 @@ export function DownloadsTool() {
               失效下载记录
             </h2>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              仅清理确认原始文件不存在的下载历史记录。无法确认的记录会跳过，不会进入批量清理。
+              仅清理确认原始文件不存在的下载历史记录。进行中或已中断的下载会被跳过，无法确认的记录也不会进入批量清理。
             </p>
           </div>
 

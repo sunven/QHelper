@@ -115,7 +115,7 @@ describe('bookmark dead-link checker', () => {
     expect(result.statusCode).toBe(404)
   })
 
-  it('marks fetch TypeError failures as blocked', async () => {
+  it('marks fetch TypeError failures as broken links', async () => {
     const fetcher = vi.fn<typeof fetch>(async () => {
       throw new TypeError('Failed to fetch')
     })
@@ -129,8 +129,73 @@ describe('bookmark dead-link checker', () => {
       { fetcher },
     )
 
-    expect(result.status).toBe('blocked')
+    expect(result.status).toBe('broken')
     expect(result.reason).toBe('Failed to fetch')
+  })
+
+  it('does not retry with GET after a HEAD timeout', async () => {
+    const fetcher = vi.fn<typeof fetch>((_url, init) => {
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () => {
+          const error = new Error('aborted')
+          error.name = 'AbortError'
+          reject(error)
+        })
+      })
+    })
+
+    const result = await checkBookmarkUrl(
+      {
+        id: 'timeout',
+        title: 'Timeout',
+        url: 'https://example.com/slow',
+      },
+      { fetcher, timeoutMs: 5 },
+    )
+
+    expect(result.status).toBe('error')
+    expect(result.reason).toBe('Request timed out')
+    expect(fetcher).toHaveBeenCalledTimes(1)
+  })
+
+  it('deduplicates network checks for repeated URLs', async () => {
+    const fetcher = vi.fn<typeof fetch>(
+      async () => new Response(null, { status: 200 }),
+    )
+    const onProgress = vi.fn()
+
+    const results = await checkBookmarkUrls(
+      [
+        { id: 'a', title: 'A', url: 'https://example.com/shared' },
+        { id: 'b', title: 'B', url: 'https://example.com/shared' },
+        { id: 'c', title: 'C', url: 'https://example.com/other' },
+      ],
+      { fetcher, onProgress },
+    )
+
+    expect(fetcher).toHaveBeenCalledTimes(2)
+    expect(results.map((result) => result.id)).toEqual(['a', 'b', 'c'])
+    expect(onProgress).toHaveBeenCalledTimes(3)
+  })
+
+  it('stops checking remaining targets after abort', async () => {
+    const controller = new AbortController()
+    const fetcher = vi.fn<typeof fetch>(async () => {
+      controller.abort()
+      return new Response(null, { status: 200 })
+    })
+
+    const results = await checkBookmarkUrls(
+      [
+        { id: 'a', title: 'A', url: 'https://example.com/a' },
+        { id: 'b', title: 'B', url: 'https://example.com/b' },
+      ],
+      { concurrency: 1, fetcher, signal: controller.signal },
+    )
+
+    expect(fetcher).toHaveBeenCalledTimes(1)
+    expect(results).toHaveLength(2)
+    expect(results[1].reason).toBe('Request cancelled')
   })
 
   it('checks batches with bounded concurrency and progress updates', async () => {

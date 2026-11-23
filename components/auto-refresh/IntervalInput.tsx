@@ -37,11 +37,7 @@ export function IntervalInput({
   const commitDraft = (raw: string) => {
     setDraft(raw)
     const parsed = Number.parseInt(raw, 10)
-    if (
-      Number.isFinite(parsed) &&
-      parsed >= minSeconds &&
-      parsed <= maxSeconds
-    ) {
+    if (Number.isFinite(parsed)) {
       onChange(parsed)
     }
   }

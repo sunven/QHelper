@@ -1,12 +1,12 @@
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import {
+  type Dispatch,
+  type ReactNode,
+  type SetStateAction,
   useEffect,
   useMemo,
   useRef,
   useState,
-  type Dispatch,
-  type ReactNode,
-  type SetStateAction,
 } from 'react'
 
 export type TreeData = {
@@ -19,7 +19,12 @@ export type TreeColumn = {
   key: string
   header: string
   width?: string | number
-  render?: (value: unknown, data: TreeData, index: number, level: number) => ReactNode
+  render?: (
+    value: unknown,
+    data: TreeData,
+    index: number,
+    level: number,
+  ) => ReactNode
 }
 
 export type TreeTableProps = {
@@ -92,7 +97,9 @@ function renderCell(
   level: number,
 ) {
   const value = item[column.key]
-  return column.render ? column.render(value, item, index, level) : String(value ?? '')
+  return column.render
+    ? column.render(value, item, index, level)
+    : String(value ?? '')
 }
 
 function TreeNode({
@@ -126,8 +133,13 @@ function TreeNode({
   const rowLabel = String(item[columns[0]?.key] ?? item.id)
   const isSelectable = selectableIds.has(item.id)
   const subtreeIds = subtreeIdsByNode.get(item.id) ?? [item.id]
-  const checkedCount = subtreeIds.filter((id) => checkedIds?.has(id)).length
-  const isChecked = checkedCount === subtreeIds.length
+  const selectableSubtreeIds = subtreeIds.filter((id) => selectableIds.has(id))
+  const checkedCount = selectableSubtreeIds.filter((id) =>
+    checkedIds?.has(id),
+  ).length
+  const isChecked =
+    selectableSubtreeIds.length > 0 &&
+    checkedCount === selectableSubtreeIds.length
   const isIndeterminate = checkedCount > 0 && !isChecked
 
   return (
@@ -156,25 +168,35 @@ function TreeNode({
             <div className="flex min-w-0 items-center">
               {index === 0 && (
                 <>
-                  <div className="shrink-0" style={{ width: `${level * 18}px` }} />
+                  <div
+                    className="shrink-0"
+                    style={{ width: `${level * 18}px` }}
+                  />
                   {hasChildren && (
                     <button
                       type="button"
                       aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
-                      onClick={() =>
+                      onClick={(event) => {
+                        event.stopPropagation()
                         setExpandedRows((current) => ({
                           ...current,
                           [item.id]: !isExpanded,
                         }))
-                      }
+                      }}
                       className="mr-1 flex h-5 w-5 cursor-pointer items-center justify-center rounded-none text-slate-500 hover:bg-slate-100 hover:text-slate-900"
                     >
-                      {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                      {isExpanded ? (
+                        <ChevronDown className="h-3.5 w-3.5" />
+                      ) : (
+                        <ChevronRight className="h-3.5 w-3.5" />
+                      )}
                     </button>
                   )}
                 </>
               )}
-              <div className="truncate">{renderCell(column, item, index, level)}</div>
+              <div className="truncate">
+                {renderCell(column, item, index, level)}
+              </div>
             </div>
           </td>
         ))}
@@ -200,7 +222,10 @@ function TreeNode({
   )
 }
 
-function collectExpansionState(items: TreeData[] | undefined, expanded: boolean): Record<string, boolean> {
+function collectExpansionState(
+  items: TreeData[] | undefined,
+  expanded: boolean,
+): Record<string, boolean> {
   const state: Record<string, boolean> = {}
 
   function visit(nodes: TreeData[] | undefined) {
@@ -296,20 +321,30 @@ export function TreeTable({
    */
   function isFullyCovered(id: string, ids: ReadonlySet<string>) {
     return (subtreeIdsByNode.get(id) ?? []).every(
-      (subtreeId) => subtreeId === id || ids.has(subtreeId),
+      (subtreeId) =>
+        subtreeId === id || !selectableIds.has(subtreeId) || ids.has(subtreeId),
     )
   }
 
+  const lastExpandSignal = useRef(expandSignal)
+  const lastCollapseSignal = useRef(collapseSignal)
+
   useEffect(() => {
-    if (expandSignal) {
-      setExpandedRows(collectExpansionState(data, true))
+    if (!expandSignal || expandSignal === lastExpandSignal.current) {
+      return
     }
+
+    lastExpandSignal.current = expandSignal
+    setExpandedRows(collectExpansionState(data, true))
   }, [data, expandSignal])
 
   useEffect(() => {
-    if (collapseSignal) {
-      setExpandedRows(collectExpansionState(data, false))
+    if (!collapseSignal || collapseSignal === lastCollapseSignal.current) {
+      return
     }
+
+    lastCollapseSignal.current = collapseSignal
+    setExpandedRows(collectExpansionState(data, false))
   }, [data, collapseSignal])
 
   function applyChecked(
@@ -318,6 +353,10 @@ export function TreeTable({
     checked: boolean,
   ) {
     for (const subtreeId of subtreeIds) {
+      if (!selectableIds.has(subtreeId)) {
+        continue
+      }
+
       if (checked) {
         ids.add(subtreeId)
       } else {
@@ -336,7 +375,10 @@ export function TreeTable({
     // leaves again as soon as one of them is unchecked. Innermost first, so a
     // folder that just joined can complete its own parent.
     for (const ancestor of findNodePath(data, id).slice(0, -1).reverse()) {
-      if (selectableIds.has(ancestor.id) && isFullyCovered(ancestor.id, nextIds)) {
+      if (
+        selectableIds.has(ancestor.id) &&
+        isFullyCovered(ancestor.id, nextIds)
+      ) {
         nextIds.add(ancestor.id)
       } else {
         nextIds.delete(ancestor.id)

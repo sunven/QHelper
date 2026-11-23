@@ -1,18 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
-import * as localPersistedData from '@/lib/chrome/local-persisted-data'
+import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_WEB_SUMMARY_CONFIG,
-  WEB_SUMMARY_CONFIG_KEY,
-  getWebSummaryConfig,
   normalizeWebSummaryConfig,
-  setWebSummaryConfig,
   validateWebSummaryConfig,
 } from './config'
-
-vi.mock('@/lib/chrome/local-persisted-data', () => ({
-  getLocalPersistedData: vi.fn(),
-  setLocalPersistedData: vi.fn(),
-}))
 
 describe('web-summary/config', () => {
   it('normalizes and trims config values', () => {
@@ -37,6 +28,35 @@ describe('web-summary/config', () => {
     ])
   })
 
+  it('requires https except for loopback endpoints', () => {
+    const base = { model: 'gpt-4.1-mini', apiKey: 'secret' }
+
+    expect(
+      validateWebSummaryConfig({
+        ...base,
+        endpoint: 'http://example.com/v1/chat/completions',
+      }),
+    ).toContain('接口地址必须使用 https（localhost 例外）。')
+    expect(
+      validateWebSummaryConfig({
+        ...base,
+        endpoint: 'http://localhost:11434/v1/chat/completions',
+      }),
+    ).toEqual([])
+    expect(
+      validateWebSummaryConfig({
+        ...base,
+        endpoint: 'http://127.0.0.1:11434/v1/chat/completions',
+      }),
+    ).toEqual([])
+    expect(
+      validateWebSummaryConfig({
+        ...base,
+        endpoint: 'https://example.com/v1/chat/completions',
+      }),
+    ).toEqual([])
+  })
+
   it('rejects invalid endpoint URLs', () => {
     expect(
       validateWebSummaryConfig({
@@ -45,37 +65,5 @@ describe('web-summary/config', () => {
         apiKey: 'secret',
       }),
     ).toContain('接口地址格式不正确，请输入完整 URL。')
-  })
-
-  it('persists the normalized config to dedicated storage', async () => {
-    await setWebSummaryConfig({
-      endpoint: ' https://example.com/v1/chat/completions ',
-      model: ' gpt-4.1-mini ',
-      apiKey: ' secret ',
-    })
-
-    expect(localPersistedData.setLocalPersistedData).toHaveBeenCalledWith(WEB_SUMMARY_CONFIG_KEY, {
-      endpoint: 'https://example.com/v1/chat/completions',
-      model: 'gpt-4.1-mini',
-      apiKey: 'secret',
-    })
-  })
-
-  it('loads and normalizes the dedicated summary config', async () => {
-    vi.mocked(localPersistedData.getLocalPersistedData).mockResolvedValue({
-      endpoint: ' https://example.com/v1/chat/completions ',
-      model: ' test-model ',
-      apiKey: ' test-key ',
-    })
-
-    await expect(getWebSummaryConfig()).resolves.toEqual({
-      endpoint: 'https://example.com/v1/chat/completions',
-      model: 'test-model',
-      apiKey: 'test-key',
-    })
-    expect(localPersistedData.getLocalPersistedData).toHaveBeenCalledWith(
-      WEB_SUMMARY_CONFIG_KEY,
-      DEFAULT_WEB_SUMMARY_CONFIG,
-    )
   })
 })

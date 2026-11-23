@@ -1,11 +1,11 @@
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type {
   AutoRefreshMessage,
   AutoRefreshRuleView,
   AutoRefreshSnapshot,
 } from '@/types/auto-refresh'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AutoRefreshTool } from './auto-refresh'
 
 const { sendAutoRefreshMessage } = vi.hoisted(() => ({
@@ -96,6 +96,29 @@ describe('auto-refresh/AutoRefreshTool', () => {
     })
     expect(await screen.findByText('规则已添加')).toBeVisible()
     expect(await screen.findByText(rule.url)).toBeVisible()
+  })
+
+  it('rejects an out-of-range interval instead of saving the previous value', async () => {
+    const user = userEvent.setup()
+    mockMessages(snapshotWith([]))
+
+    render(<AutoRefreshTool />)
+    await screen.findByText('还没有持久规则')
+
+    await user.type(screen.getByLabelText('网页 URL'), 'https://example.com')
+    const intervalInput = screen.getByLabelText('自定义刷新间隔（秒）')
+    await user.clear(intervalInput)
+    await user.type(intervalInput, '10')
+    expect(intervalInput).toHaveValue(10)
+    await user.click(screen.getByRole('button', { name: '添加规则' }))
+
+    expect(
+      await screen.findByText('间隔需在 30 秒 到 24 小时 之间'),
+    ).toBeVisible()
+    expect(intervalInput).toHaveValue(10)
+    expect(sendAutoRefreshMessage).not.toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'AUTO_REFRESH_SAVE_RULE' }),
+    )
   })
 
   it('toggles an existing rule', async () => {

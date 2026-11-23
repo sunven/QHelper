@@ -1,7 +1,7 @@
 import {
+  type JsonRequestLike,
   jsonStringSettings,
   shouldCaptureJsonRequest,
-  type JsonRequestLike,
 } from '@/lib/fe-tools/json-string'
 import {
   appendCapturedJsonStringRequest,
@@ -54,6 +54,6 @@ chrome.devtools.network.onRequestFinished.addListener((request) => {
       request: request.request,
       response: request.response,
       content,
-    })
+    }).catch(() => undefined)
   })
 })

@@ -13,6 +13,7 @@ import {
   TOOL_SETTINGS_ID,
   type ToolCatalogLaunchEntry,
 } from '@/lib/tool-catalog'
+import type { OpenWebSummaryResponse } from '@/types/web-summary'
 import '@fontsource-variable/jetbrains-mono'
 import '../../index.css'
 import './popup.css'
@@ -53,9 +54,15 @@ async function handleLaunchEntryClick(entry: ToolCatalogLaunchEntry) {
       case 'extension-page':
         await create(entry.intent.extensionPath)
         return
-      case 'side-panel-action':
-        await chrome.runtime.sendMessage({ type: 'OPEN_WEB_SUMMARY' })
+      case 'side-panel-action': {
+        const response = (await chrome.runtime.sendMessage({
+          type: 'OPEN_WEB_SUMMARY',
+        })) as OpenWebSummaryResponse | undefined
+        if (!response?.ok) {
+          throw new Error(response?.error ?? '打开网页总结失败')
+        }
         return
+      }
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : '操作失败'

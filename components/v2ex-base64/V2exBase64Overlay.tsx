@@ -41,13 +41,14 @@ export function V2exBase64Overlay({
   const triggerRef = useRef<HTMLButtonElement>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)
-  const resetTimersRef = useRef<number[]>([])
+  const resetTimersRef = useRef<Set<number>>(new Set())
 
   useEffect(() => {
     return () => {
       for (const timer of resetTimersRef.current) {
         window.clearTimeout(timer)
       }
+      resetTimersRef.current.clear()
     }
   }, [])
 
@@ -105,7 +106,11 @@ export function V2exBase64Overlay({
 
       const first = focusable[0]
       const last = focusable[focusable.length - 1]
-      const current = document.activeElement
+      const rootNode = panelRef.current?.getRootNode()
+      const current =
+        rootNode instanceof Document || rootNode instanceof ShadowRoot
+          ? rootNode.activeElement
+          : document.activeElement
 
       if (event.shiftKey && current === first) {
         event.preventDefault()
@@ -130,6 +135,12 @@ export function V2exBase64Overlay({
 
   function closePanel() {
     setOpen(false)
+    setCopyStates({})
+    setStatusMessage('')
+    for (const timer of resetTimersRef.current) {
+      window.clearTimeout(timer)
+    }
+    resetTimersRef.current.clear()
     window.requestAnimationFrame(() => {
       triggerRef.current?.focus()
     })
@@ -149,8 +160,9 @@ export function V2exBase64Overlay({
 
     const timer = window.setTimeout(() => {
       setCopyStates((current) => ({ ...current, [index]: 'idle' }))
+      resetTimersRef.current.delete(timer)
     }, COPY_RESET_DELAY_MS)
-    resetTimersRef.current.push(timer)
+    resetTimersRef.current.add(timer)
   }
 
   return (
@@ -194,7 +206,10 @@ export function V2exBase64Overlay({
                 const failed = state === 'failed'
 
                 return (
-                  <div className="qhelper-v2ex-base64__row" key={`${entry}-${index}`}>
+                  <div
+                    className="qhelper-v2ex-base64__row"
+                    key={`${entry}-${index}`}
+                  >
                     <span className="qhelper-v2ex-base64__source" title={entry}>
                       {entry}
                     </span>
@@ -211,17 +226,13 @@ export function V2exBase64Overlay({
                       ) : (
                         <Copy aria-hidden="true" />
                       )}
-                      <span>
-                        {getCopyButtonLabel(state)}
-                      </span>
+                      <span>{getCopyButtonLabel(state)}</span>
                     </button>
                   </div>
                 )
               })
             ) : (
-              <p className="qhelper-v2ex-base64__empty">
-                没有可复制的字符串
-              </p>
+              <p className="qhelper-v2ex-base64__empty">没有可复制的字符串</p>
             )}
           </div>
 

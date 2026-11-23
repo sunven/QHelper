@@ -1,3 +1,5 @@
+import { Loader2, Pencil, Plus, RefreshCw, Save, Trash2 } from 'lucide-react'
+import { type FormEvent, useCallback, useEffect, useState } from 'react'
 import { IntervalInput } from '@/components/auto-refresh/IntervalInput'
 import { Button } from '@/components/ui/button'
 import {
@@ -23,8 +25,6 @@ import {
   AUTO_REFRESH_RULE_MIN_SECONDS,
   AUTO_REFRESH_RULE_PRESETS,
 } from '@/types/auto-refresh'
-import { Loader2, Pencil, Plus, RefreshCw, Save, Trash2 } from 'lucide-react'
-import { useCallback, useEffect, useState, type FormEvent } from 'react'
 
 function readInitialUrl(): string {
   if (typeof window === 'undefined') {
@@ -287,7 +287,11 @@ export function AutoRefreshTool() {
           </p>
         </div>
 
-        <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           <div className="flex flex-col gap-1">
             <Label htmlFor="auto-refresh-url">网页 URL</Label>
             <Input

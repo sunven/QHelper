@@ -28,6 +28,7 @@ describe('chrome/downloads', () => {
         finalUrl: 'https://example.com/missing.zip',
         id: 10,
         startTime: '2026-05-06T01:00:00.000Z',
+        state: 'complete',
         totalBytes: 123,
         url: 'https://example.com/missing.zip',
       },
@@ -38,6 +39,7 @@ describe('chrome/downloads', () => {
         exists: false,
         filename: '/tmp/missing.zip',
         id: 10,
+        state: 'complete',
       }),
     ])
     expect(mockChrome.downloads.search).toHaveBeenCalledWith({
@@ -46,9 +48,13 @@ describe('chrome/downloads', () => {
   })
 
   it('surfaces search failures', async () => {
-    mockChrome.downloads.search.mockRejectedValue(new Error('downloads unavailable'))
+    mockChrome.downloads.search.mockRejectedValue(
+      new Error('downloads unavailable'),
+    )
 
-    await expect(listDownloadsForCleanup()).rejects.toThrow('downloads unavailable')
+    await expect(listDownloadsForCleanup()).rejects.toThrow(
+      'downloads unavailable',
+    )
   })
 
   it('explains when the downloads API is unavailable', async () => {
@@ -82,7 +88,9 @@ describe('chrome/downloads', () => {
       value: {},
     })
 
-    await expect(eraseDownloadHistoryRecords([1])).rejects.toThrow('下载 API 不可用')
+    await expect(eraseDownloadHistoryRecords([1])).rejects.toThrow(
+      '下载 API 不可用',
+    )
   })
 
   it('does not expose local-file deletion behavior', () => {

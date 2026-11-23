@@ -2,11 +2,11 @@ import { expect, test } from '../support/fixtures'
 import { openToolPage, toolUrl } from '../support/helpers/extension'
 
 const toolPages = [
-  'uuid',
-  'password',
-  'aes-gcm',
-  'bcrypt-hash',
-  'clear-site-data',
+  { id: 'uuid', expectedText: '生成结果' },
+  { id: 'password', expectedText: '生成的密码' },
+  { id: 'aes-gcm', expectedText: 'Payload JSON' },
+  { id: 'bcrypt-hash', expectedText: '生成 Bcrypt Hash' },
+  { id: 'clear-site-data', expectedText: '清理目标' },
 ]
 
 test('tool shell uses breadcrumb title without a duplicated body title', async ({
@@ -150,12 +150,13 @@ test('tool settings button opens the settings page', async ({
   await page.close()
 })
 
-for (const toolId of toolPages) {
-  test.describe(`${toolId} tool page`, () => {
-    test('loads successfully', async ({ context, extensionId }) => {
-      const page = await openToolPage(context, extensionId, toolId)
+for (const toolPage of toolPages) {
+  test.describe(`${toolPage.id} tool page`, () => {
+    test('loads its tool content', async ({ context, extensionId }) => {
+      const page = await openToolPage(context, extensionId, toolPage.id)
 
       await expect(page.locator('#app').first()).toBeVisible()
+      await expect(page.getByText(toolPage.expectedText).first()).toBeVisible()
 
       await page.close()
     })

@@ -2,9 +2,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { defineConfig } from 'wxt'
 import {
+  getToolsSpaAliases,
   TOOLS_ROUTE_BASE,
   TOOLS_SPA_ENTRY,
-  getToolsSpaAliases,
 } from './lib/tool-catalog'
 
 function writeToolsRouteAliases(outDir: string) {
@@ -42,8 +42,7 @@ export default defineConfig({
 
   manifest: {
     name: 'QHelper前端助手',
-    description: 'json解析',
-    version: '1.2',
+    description: '前端开发者工具箱：自动刷新、站点数据清理、网页总结等。',
     permissions: [
       'cookies',
       'browsingData',
@@ -55,7 +54,6 @@ export default defineConfig({
       'bookmarks',
       'scripting',
       'downloads',
-      'videoCapture',
       'alarms',
     ],
     host_permissions: ['<all_urls>'],

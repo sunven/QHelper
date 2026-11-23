@@ -9,9 +9,13 @@
  */
 function isChromeStorageAvailable(): boolean {
   try {
-    return typeof chrome !== 'undefined' && chrome.storage !== undefined && 'local' in chrome.storage;
+    return (
+      typeof chrome !== 'undefined' &&
+      chrome.storage !== undefined &&
+      'local' in chrome.storage
+    )
   } catch {
-    return false;
+    return false
   }
 }
 
@@ -20,9 +24,9 @@ function isChromeStorageAvailable(): boolean {
  */
 function getChromeStorage() {
   if (!isChromeStorageAvailable()) {
-    throw new Error('chrome.storage.local is not available');
+    throw new Error('chrome.storage.local is not available')
   }
-  return chrome.storage.local;
+  return chrome.storage.local
 }
 
 /**
@@ -30,54 +34,109 @@ function getChromeStorage() {
  */
 function getLocalStorage() {
   if (typeof localStorage === 'undefined') {
-    throw new Error('localStorage is not available');
+    throw new Error('localStorage is not available')
   }
-  return localStorage;
+  return localStorage
 }
 
-export async function get<T>(key: string): Promise<T | undefined>;
-export async function get<T>(key: string, defaultValue: T): Promise<T>;
-export async function get<T>(key: string, defaultValue?: T): Promise<T | undefined> {
+const FALLBACK_MARKER_PREFIX = '__qhelper_storage_fallback__:'
+
+function getFallbackMarkerKey(key: string): string {
+  return `${FALLBACK_MARKER_PREFIX}${key}`
+}
+
+function hasFallbackValue(key: string): boolean {
+  try {
+    return localStorage.getItem(getFallbackMarkerKey(key)) === '1'
+  } catch {
+    return false
+  }
+}
+
+function markFallbackValue(key: string): void {
+  try {
+    localStorage.setItem(getFallbackMarkerKey(key), '1')
+  } catch {}
+}
+
+function clearFallbackValue(key: string): void {
+  try {
+    localStorage.removeItem(getFallbackMarkerKey(key))
+  } catch {}
+}
+
+function clearAllFallbackMarkers(): void {
+  try {
+    for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+      const key = localStorage.key(index)
+      if (key?.startsWith(FALLBACK_MARKER_PREFIX)) {
+        localStorage.removeItem(key)
+      }
+    }
+  } catch {}
+}
+
+function getLocalValue<T>(key: string, defaultValue?: T): T | undefined {
+  try {
+    const storage = getLocalStorage()
+    const value = storage.getItem(key)
+    return value ? (JSON.parse(value) as T) : defaultValue
+  } catch (error) {
+    console.warn('localStorage get failed:', error)
+    return defaultValue
+  }
+}
+
+export async function get<T>(key: string): Promise<T | undefined>
+export async function get<T>(key: string, defaultValue: T): Promise<T>
+export async function get<T>(
+  key: string,
+  defaultValue?: T,
+): Promise<T | undefined> {
   // 优先使用 chrome.storage.local
   if (isChromeStorageAvailable()) {
     try {
-      const storage = getChromeStorage();
-      const result = await storage.get(key);
-      return (result[key] ?? defaultValue) as T | undefined;
+      const storage = getChromeStorage()
+      const result = await storage.get(key)
+      if (hasFallbackValue(key)) {
+        return getLocalValue(key, defaultValue)
+      }
+      return (result[key] ?? defaultValue) as T | undefined
     } catch (e) {
-      console.warn('chrome.storage.local get failed, falling back to localStorage:', e);
+      console.warn(
+        'chrome.storage.local get failed, falling back to localStorage:',
+        e,
+      )
     }
   }
 
   // 备用方案：localStorage
-  try {
-    const storage = getLocalStorage();
-    const value = storage.getItem(key);
-    return value ? (JSON.parse(value) as T) : defaultValue;
-  } catch (e) {
-    console.warn('localStorage get failed:', e);
-    return defaultValue;
-  }
+  return getLocalValue(key, defaultValue)
 }
 
 export async function set<T>(key: string, value: T): Promise<void> {
   // 优先使用 chrome.storage.local
   if (isChromeStorageAvailable()) {
     try {
-      const storage = getChromeStorage();
-      await storage.set({ [key]: value });
-      return;
+      const storage = getChromeStorage()
+      await storage.set({ [key]: value })
+      clearFallbackValue(key)
+      return
     } catch (e) {
-      console.warn('chrome.storage.local set failed, falling back to localStorage:', e);
+      console.warn(
+        'chrome.storage.local set failed, falling back to localStorage:',
+        e,
+      )
     }
   }
 
   // 备用方案：localStorage
   try {
-    const storage = getLocalStorage();
-    storage.setItem(key, JSON.stringify(value));
+    const storage = getLocalStorage()
+    storage.setItem(key, JSON.stringify(value))
+    markFallbackValue(key)
   } catch (e) {
-    console.warn('localStorage set failed:', e);
+    console.warn('localStorage set failed:', e)
   }
 }
 
@@ -85,20 +144,25 @@ export async function remove(key: string): Promise<void> {
   // 优先使用 chrome.storage.local
   if (isChromeStorageAvailable()) {
     try {
-      const storage = getChromeStorage();
-      await storage.remove(key);
-      return;
+      const storage = getChromeStorage()
+      await storage.remove(key)
+      clearFallbackValue(key)
+      return
     } catch (e) {
-      console.warn('chrome.storage.local remove failed, falling back to localStorage:', e);
+      console.warn(
+        'chrome.storage.local remove failed, falling back to localStorage:',
+        e,
+      )
     }
   }
 
   // 备用方案：localStorage
   try {
-    const storage = getLocalStorage();
-    storage.removeItem(key);
+    const storage = getLocalStorage()
+    storage.removeItem(key)
+    markFallbackValue(key)
   } catch (e) {
-    console.warn('localStorage remove failed:', e);
+    console.warn('localStorage remove failed:', e)
   }
 }
 
@@ -106,29 +170,37 @@ export async function clear(): Promise<void> {
   // 优先使用 chrome.storage.local
   if (isChromeStorageAvailable()) {
     try {
-      const storage = getChromeStorage();
-      await storage.clear();
-      return;
+      const storage = getChromeStorage()
+      await storage.clear()
+      clearAllFallbackMarkers()
+      return
     } catch (e) {
-      console.warn('chrome.storage.local clear failed, falling back to localStorage:', e);
+      console.warn(
+        'chrome.storage.local clear failed, falling back to localStorage:',
+        e,
+      )
     }
   }
 
   // 备用方案：localStorage
   try {
-    const storage = getLocalStorage();
-    storage.clear();
+    const storage = getLocalStorage()
+    storage.clear()
   } catch (e) {
-    console.warn('localStorage clear failed:', e);
+    console.warn('localStorage clear failed:', e)
   }
 }
 
 export function onChanged(
-  callback: (changes: { [key: string]: chrome.storage.StorageChange },
-  areaName: string) => void,
+  callback: (
+    changes: { [key: string]: chrome.storage.StorageChange },
+    areaName: string,
+  ) => void,
 ): void {
   if (!isChromeStorageAvailable()) {
-    console.warn('chrome.storage is not available, using storage event listener as fallback');
+    console.warn(
+      'chrome.storage is not available, using storage event listener as fallback',
+    )
     // 使用 window 的 storage 事件作为备用
     window.addEventListener('storage', (event) => {
       if (event.key && event.newValue !== event.oldValue) {
@@ -137,11 +209,11 @@ export function onChanged(
             oldValue: event.oldValue ? JSON.parse(event.oldValue) : undefined,
             newValue: event.newValue ? JSON.parse(event.newValue) : undefined,
           },
-        };
-        callback(changes, 'local');
+        }
+        callback(changes, 'local')
       }
-    });
-    return;
+    })
+    return
   }
-  chrome.storage.onChanged.addListener(callback);
+  chrome.storage.onChanged.addListener(callback)
 }

@@ -1,11 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { ToolPageShell } from './ToolPageShell';
-import { ToolWorkspaceShell } from './ToolWorkspaceShell';
+import { render, screen } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ToolPageShell } from './ToolPageShell'
+import { ToolWorkspaceShell } from './ToolWorkspaceShell'
 
 vi.mock('@/components/ToolSideNavigation', () => ({
-  ToolSideNavigation: () => <nav data-testid="tool-side-navigation">Side navigation</nav>,
-}));
+  ToolSideNavigation: () => (
+    <nav data-testid="tool-side-navigation">Side navigation</nav>
+  ),
+}))
 
 describe('ToolPageShell', () => {
   it('renders one tool view without owning the shared navigation layout', () => {
@@ -13,17 +15,24 @@ describe('ToolPageShell', () => {
       <ToolPageShell toolId="auto-refresh">
         <div>Tool body</div>
       </ToolPageShell>,
-    );
+    )
 
-    expect(screen.getByText('Tool body')).toBeVisible();
-    expect(screen.getByRole('heading', { name: '自动刷新' })).toHaveClass('sr-only');
-    expect(screen.getByText('Tool body').closest('.tool-page-view')).toHaveAttribute('data-tool-id', 'auto-refresh');
-    expect(screen.getByText('Tool body').closest('.tool-page-view')).toHaveAccessibleName('自动刷新');
-    expect(document.querySelector('.tool-hero-title')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('tool-side-navigation-region')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('tool-page-main')).not.toBeInTheDocument();
-  });
-});
+    expect(screen.getByText('Tool body')).toBeVisible()
+    expect(screen.getByRole('heading', { name: '自动刷新' })).toHaveClass(
+      'sr-only',
+    )
+    expect(
+      screen.getByText('Tool body').closest('.tool-page-view'),
+    ).toHaveAttribute('data-tool-id', 'auto-refresh')
+    expect(
+      screen.getByText('Tool body').closest('.tool-page-view'),
+    ).toHaveAccessibleName('自动刷新')
+    expect(
+      screen.queryByTestId('tool-side-navigation-region'),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByTestId('tool-page-main')).not.toBeInTheDocument()
+  })
+})
 
 describe('ToolWorkspaceShell', () => {
   beforeEach(() => {
@@ -36,8 +45,8 @@ describe('ToolWorkspaceShell', () => {
       onchange: null,
       removeEventListener: vi.fn(),
       removeListener: vi.fn(),
-    }));
-  });
+    }))
+  })
 
   it('renders side navigation and reserves shared shell width for it', () => {
     render(
@@ -46,28 +55,44 @@ describe('ToolWorkspaceShell', () => {
           <div>Tool body</div>
         </ToolPageShell>
       </ToolWorkspaceShell>,
-    );
+    )
 
-    expect(screen.getByTestId('tool-page-main').closest('.tool-page-shell')).toHaveClass('h-screen', 'overflow-hidden');
-    expect(screen.getByTestId('tool-workspace-navbar')).toBeVisible();
-    expect(screen.getByText('QHelper Tools')).toBeVisible();
-    expect(screen.getByText('QHelper Tools').closest('li')).toHaveClass('md:flex');
-    expect(screen.getByRole('link', { name: '打开设置' })).toHaveAttribute('href', '/tools/settings.html');
-    expect(screen.getByTestId('tool-side-navigation-region')).toBeVisible();
-    expect(screen.getByTestId('tool-side-navigation')).toBeVisible();
-    expect(screen.getByTestId('tool-page-main')).toHaveClass('min-h-0', 'min-w-0', 'flex-1', 'overflow-y-auto', 'p-4', 'pt-px');
-    expect(screen.getByText('Tool body')).toBeVisible();
-    expect(screen.queryByText('tool-category-chevron-common')).not.toBeInTheDocument();
-  });
+    expect(
+      screen.getByTestId('tool-page-main').closest('.tool-page-shell'),
+    ).toHaveClass('h-screen', 'overflow-hidden')
+    expect(screen.getByTestId('tool-workspace-navbar')).toBeVisible()
+    expect(screen.getByText('QHelper Tools')).toBeVisible()
+    expect(screen.getByText('QHelper Tools').closest('li')).toHaveClass(
+      'md:flex',
+    )
+    expect(screen.getByRole('link', { name: '打开设置' })).toHaveAttribute(
+      'href',
+      '/tools/settings.html',
+    )
+    expect(screen.getByTestId('tool-side-navigation-region')).toBeVisible()
+    expect(screen.getByTestId('tool-side-navigation')).toBeVisible()
+    expect(screen.getByTestId('tool-page-main')).toHaveClass(
+      'min-h-0',
+      'min-w-0',
+      'flex-1',
+      'overflow-y-auto',
+      'p-4',
+      'pt-px',
+    )
+    expect(screen.getByText('Tool body')).toBeVisible()
+    expect(
+      screen.queryByText('tool-category-chevron-common'),
+    ).not.toBeInTheDocument()
+  })
 
   it('renders a non-tool page title in the shared shell', () => {
     render(
       <ToolWorkspaceShell pageTitle="设置">
         <div>Settings body</div>
       </ToolWorkspaceShell>,
-    );
+    )
 
-    expect(screen.getByText('设置')).toBeVisible();
-    expect(screen.getByText('Settings body')).toBeVisible();
-  });
-});
+    expect(screen.getByText('设置')).toBeVisible()
+    expect(screen.getByText('Settings body')).toBeVisible()
+  })
+})

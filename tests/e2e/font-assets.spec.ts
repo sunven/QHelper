@@ -18,19 +18,35 @@ test('extension pages load JetBrains Mono font assets without missing-resource e
 
     page.on('requestfailed', (request) => {
       if (request.url().includes('jetbrains-mono')) {
-        fontFailures.push(`${request.url()} ${request.failure()?.errorText ?? ''}`)
+        fontFailures.push(
+          `${request.url()} ${request.failure()?.errorText ?? ''}`,
+        )
       }
     })
     page.on('response', (response) => {
-      if (response.url().includes('jetbrains-mono') && response.status() >= 400) {
+      if (
+        response.url().includes('jetbrains-mono') &&
+        response.status() >= 400
+      ) {
         fontFailures.push(`${response.url()} HTTP ${response.status()}`)
       }
     })
 
     await page.goto(`chrome-extension://${extensionId}/${pagePath}`)
-    await page.evaluate(async () => {
-      await document.fonts.ready
+    const fontLoaded = await page.evaluate(async () => {
+      try {
+        const faces = await document.fonts.load(
+          '16px "JetBrains Mono Variable"',
+        )
+        await document.fonts.ready
+        return faces.length > 0
+      } catch {
+        return false
+      }
     })
+    if (!fontLoaded) {
+      fontFailures.push(`${pagePath} JetBrains Mono was not loaded`)
+    }
     await page.close()
   }
 

@@ -5,9 +5,7 @@ import type { WebSummaryPageContent } from '@/types/web-summary'
 
 export type PageSourceDeps = {
   getTab?: (tabId: number) => Promise<chrome.tabs.Tab | undefined>
-  queryTabs?: (
-    queryInfo: chrome.tabs.QueryInfo,
-  ) => Promise<chrome.tabs.Tab[]>
+  queryTabs?: (queryInfo: chrome.tabs.QueryInfo) => Promise<chrome.tabs.Tab[]>
   executeScript?: (injection: {
     target: { tabId: number }
     func: (win: Window, doc: Document, maxChars: number) => unknown
@@ -28,7 +26,9 @@ function isUnsupportedUrl(url?: string | null): boolean {
     return true
   }
 
-  return /^(about:|chrome:|chrome-extension:|edge:|moz-extension:|opera:|vivaldi:)/.test(url)
+  return /^(about:|chrome:|chrome-extension:|edge:|moz-extension:|opera:|vivaldi:)/.test(
+    url,
+  )
 }
 
 /**
@@ -52,7 +52,10 @@ export async function resolveSummarizableTab(
   }
 
   if (!tab) {
-    const [activeTab] = await queryTabsDep({ active: true, currentWindow: true })
+    const [activeTab] = await queryTabsDep({
+      active: true,
+      currentWindow: true,
+    })
     tab = activeTab
   }
 
@@ -88,7 +91,11 @@ export async function extractTabContent(
   })
   const pageContent = injectionResult?.result
 
-  if (!pageContent) {
+  if (
+    !pageContent ||
+    typeof (pageContent as WebSummaryPageContent).content !== 'string' ||
+    !(pageContent as WebSummaryPageContent).content.trim()
+  ) {
     throw new Error('未能从当前网页提取正文内容。')
   }
 
@@ -100,7 +107,11 @@ export async function extractTabContent(
  */
 export function getRefreshHint(error: unknown): string {
   const message = getErrorMessage(error)
-  if (/Cannot access|Extension manifest must request permission|activeTab|Cannot load contents/i.test(message)) {
+  if (
+    /Cannot access|Extension manifest must request permission|activeTab|Cannot load contents/i.test(
+      message,
+    )
+  ) {
     return '无法访问当前网页内容，请确认这是普通网页，并从当前页面重新发起总结。'
   }
 
