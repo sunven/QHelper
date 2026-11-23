@@ -53,7 +53,6 @@ pnpm format
 ```
 entrypoints/
 ├── popup/           # Extension popup (main menu)
-├── imagebase64/     # Image to Base64 converter
 ├── trans-radix/     # Number base converter
 └── background.ts    # Service worker (replaces background page from v2)
 ```
@@ -132,7 +131,7 @@ From `wxt.config.ts`:
 ## Tool Categories (Popup Menu)
 
 - **Common:** Radix conversion, Auto refresh
-- **Image:** Base64 converter, QR code
+- **Image:** QR code
 - **Security:** UUID, Password generator, AES-GCM, Bcrypt hash
 - **Other:** Downloads cleanup, Clear site data
 

@@ -28,14 +28,6 @@ export const tools = [
 
   // ===== 图片工具 =====
   {
-    id: 'imagebase64',
-    name: '图片 Base64',
-    category: ToolCategory.IMAGE,
-    icon: 'Image',
-    description: '图片转 Base64 编码',
-  },
-
-  {
     id: 'qrcode',
     keywords: ['qr', '二维码扫描'],
     name: '二维码',

@@ -2,7 +2,6 @@ import { expect, test } from '../support/fixtures'
 import { openToolPage, toolUrl } from '../support/helpers/extension'
 
 const toolPages = [
-  'imagebase64',
   'trans-radix',
   'uuid',
   'password',

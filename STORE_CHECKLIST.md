@@ -122,7 +122,7 @@ pnpm build
 | 字段 | 内容 |
 |------|------|
 | **Name** | QHelper前端助手 |
-| **Short description (最多 132 字符)** | 前端开发必备工具箱：进制转换、Base64图片、二维码等10+实用工具 |
+| **Short description (最多 132 字符)** | 前端开发必备工具箱：进制转换、密码生成、二维码等10+实用工具 |
 | **Long description** | 使用 `STORE_LISTING.md` 中的详细描述 |
 | **Category** | Developer Tools |
 | **Language** | 中文 (简体) |
@@ -173,7 +173,7 @@ host_permissions: 用于网页总结内容提取；在 GitHub 仓库首页注入
 ### 简短描述
 
 ```
-前端开发必备工具箱：进制转换、Base64图片、二维码等10+实用工具
+前端开发必备工具箱：进制转换、密码生成、二维码等10+实用工具
 ```
 
 ### 详细描述
@@ -185,9 +185,6 @@ QHelper 前端助手是一款专为前端开发者设计的 Chrome/Chromium 浏�
 
 ### 常用工具
 - 进制转换：快速在 2/8/10/16 进制之间转换
-
-### 图片工具
-- 图片转 Base64：快速将图片转换为 Base64 编码
 
 ### 其他工具
 - 清除站点数据：按站点清理 Cookie、localStorage、sessionStorage、IndexedDB、Cache Storage 与 Service Worker，可显式切换到全部站点模式

@@ -19,11 +19,6 @@ const AutoRefreshTool = lazy(() =>
     default: module.AutoRefreshTool,
   })),
 )
-const ImageBase64Tool = lazy(() =>
-  import('@/components/tool/imagebase64').then((module) => ({
-    default: module.ImageBase64Tool,
-  })),
-)
 const QrCodeTool = lazy(() =>
   import('@/components/tool/qrcode').then((module) => ({
     default: module.QrCodeTool,
@@ -63,7 +58,6 @@ const ClearSiteDataTool = lazy(() =>
 const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   'trans-radix': TransRadixTool,
   'auto-refresh': AutoRefreshTool,
-  imagebase64: ImageBase64Tool,
   qrcode: QrCodeTool,
   uuid: UUIDGenerator,
   password: PasswordGenerator,

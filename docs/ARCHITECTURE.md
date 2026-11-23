@@ -528,21 +528,6 @@ export const tools: ToolMetadata[] = [
     status: ToolStatus.STABLE,
   },
 
-  // ===== 图片工具 =====
-  {
-    id: 'imagebase64',
-    name: '图片 Base64',
-    nameEn: 'Image to Base64',
-    category: ToolCategory.IMAGE,
-    icon: 'Image',
-    description: '图片转 Base64 编码',
-    keywords: ['图片', 'base64', '转换', 'image', 'base64'],
-    tags: ['image', 'base64', 'convert'],
-    version: '1.0.0',
-    features: ['file_input', 'drag_drop', 'copy_result'],
-    status: ToolStatus.STABLE,
-  },
-
   // ===== 其他工具 =====
   {
     id: 'timestamp',

@@ -67,6 +67,10 @@ describe('tool-catalog', () => {
     expectToolAbsent('ocr')
   })
 
+  it('excludes the removed Image Base64 tool from tools, launches and generated aliases', () => {
+    expectToolAbsent('imagebase64')
+  })
+
   it('derives ordinary tool ids from registered tools', () => {
     expect(new Set(ORDINARY_TOOL_IDS)).toEqual(
       new Set(tools.map((tool) => tool.id)),
@@ -79,7 +83,7 @@ describe('tool-catalog', () => {
     for (const id of ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']) {
       expectToolAbsent(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(10)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(9)
     expect(
       TOOL_CATEGORIES.map((category) => String(category.key)),
     ).not.toContain('encoding')
@@ -136,8 +140,8 @@ describe('tool-catalog', () => {
   })
 
   it('derives paths from tool ids', () => {
-    expect(getToolsSpaPath('imagebase64')).toBe('tools/imagebase64.html')
-    expect(getToolNavigationPath('imagebase64')).toBe('/tools/imagebase64.html')
+    expect(getToolsSpaPath('qrcode')).toBe('tools/qrcode.html')
+    expect(getToolNavigationPath('qrcode')).toBe('/tools/qrcode.html')
   })
 
   it('builds the popup main Launch Entry directory from the Tool Catalog', () => {
@@ -230,7 +234,7 @@ describe('tool catalog routing helpers', () => {
     expect(DEFAULT_TOOL_ID).toBe('trans-radix')
     expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html')
     expect(getToolsSpaPath('uuid')).toBe('tools/uuid.html')
-    expect(getToolRoutePath('imagebase64')).toBe('/imagebase64.html')
+    expect(getToolRoutePath('qrcode')).toBe('/qrcode.html')
     expect(getToolRoutePath('settings')).toBe('/settings.html')
   })
 
