@@ -132,7 +132,7 @@ From `wxt.config.ts`:
 ## Tool Categories (Popup Menu)
 
 - **Common:** Radix conversion, Auto refresh
-- **Image:** Base64 converter, OCR, QR code
+- **Image:** Base64 converter, QR code
 - **Security:** UUID, Password generator, AES-GCM, Bcrypt hash
 - **Other:** Downloads cleanup, Clear site data
 

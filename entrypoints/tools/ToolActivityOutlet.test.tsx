@@ -35,21 +35,21 @@ vi.mock('@/components/tool/tool-routes', () => ({
       ),
     },
     {
-      id: 'ocr',
+      id: 'qrcode',
       preserveActivity: false,
       Component: () => {
         useEffect(() => {
-          window.dispatchEvent(new CustomEvent('ocr-mounted'))
+          window.dispatchEvent(new CustomEvent('qrcode-mounted'))
 
           return () => {
-            window.dispatchEvent(new CustomEvent('ocr-unmounted'))
+            window.dispatchEvent(new CustomEvent('qrcode-unmounted'))
           }
         }, [])
 
         return (
           <section>
-            <h1>OCR Mock</h1>
-            <p>OCR results</p>
+            <h1>QR Code Mock</h1>
+            <p>QR Code results</p>
           </section>
         )
       },
@@ -72,8 +72,8 @@ function RouteControls() {
       <button type="button" onClick={() => void navigate('/trans-radix.html')}>
         Go trans-radix
       </button>
-      <button type="button" onClick={() => void navigate('/ocr.html')}>
-        Go OCR
+      <button type="button" onClick={() => void navigate('/qrcode.html')}>
+        Go QR Code
       </button>
     </div>
   )
@@ -189,11 +189,11 @@ describe('ToolActivityOutlet', () => {
   it('unmounts tools that opt out of hidden activity preservation', async () => {
     const mounted = vi.fn()
     const unmounted = vi.fn()
-    window.addEventListener('ocr-mounted', mounted)
-    window.addEventListener('ocr-unmounted', unmounted)
+    window.addEventListener('qrcode-mounted', mounted)
+    window.addEventListener('qrcode-unmounted', unmounted)
 
     render(
-      <MemoryRouter initialEntries={['/ocr.html']}>
+      <MemoryRouter initialEntries={['/qrcode.html']}>
         <RouteControls />
         <Routes>
           <Route path="/:toolId" element={<ToolActivityOutlet />} />
@@ -202,7 +202,7 @@ describe('ToolActivityOutlet', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('OCR Mock')).toBeVisible()
+      expect(screen.getByText('QR Code Mock')).toBeVisible()
     })
     expect(mounted).toHaveBeenCalledTimes(1)
 
@@ -214,9 +214,9 @@ describe('ToolActivityOutlet', () => {
     await waitFor(() => {
       expect(unmounted).toHaveBeenCalledTimes(1)
     })
-    expect(screen.queryByText('OCR Mock')).toBeNull()
+    expect(screen.queryByText('QR Code Mock')).toBeNull()
 
-    window.removeEventListener('ocr-mounted', mounted)
-    window.removeEventListener('ocr-unmounted', unmounted)
+    window.removeEventListener('qrcode-mounted', mounted)
+    window.removeEventListener('qrcode-unmounted', unmounted)
   })
 })

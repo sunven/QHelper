@@ -36,15 +36,6 @@ export const tools = [
   },
 
   {
-    id: 'ocr',
-    name: 'OCR 文字识别',
-    category: ToolCategory.IMAGE,
-    icon: 'ScanText',
-    description: '从图片中提取可复制文本',
-    preserveActivity: false,
-  },
-
-  {
     id: 'qrcode',
     keywords: ['qr', '二维码扫描'],
     name: '二维码',

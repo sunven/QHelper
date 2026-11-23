@@ -63,6 +63,10 @@ describe('tool-catalog', () => {
     }
   })
 
+  it('excludes the removed OCR tool from tools, launches and generated aliases', () => {
+    expectToolAbsent('ocr')
+  })
+
   it('derives ordinary tool ids from registered tools', () => {
     expect(new Set(ORDINARY_TOOL_IDS)).toEqual(
       new Set(tools.map((tool) => tool.id)),
@@ -75,7 +79,7 @@ describe('tool-catalog', () => {
     for (const id of ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']) {
       expectToolAbsent(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(11)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(10)
     expect(
       TOOL_CATEGORIES.map((category) => String(category.key)),
     ).not.toContain('encoding')

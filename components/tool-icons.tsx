@@ -9,7 +9,6 @@ import {
   QrCodeIcon,
   ShieldCheckIcon,
   SparkleIcon,
-  TextAaIcon,
   TrashIcon,
 } from '@phosphor-icons/react'
 
@@ -26,9 +25,6 @@ const toolIconTokens = {
   Hash: HashIcon,
   Image: ImageIcon,
   QrCode: QrCodeIcon,
-  // ScanText 是 OCR 工具的稳定 token；@phosphor-icons 无此图标，
-  // 此前静默回落到 Wrench（旧 popup map 未登记），现解析为 TextAa
-  ScanText: TextAaIcon,
   ShieldCheck: ShieldCheckIcon,
   Sparkle: SparkleIcon,
   Trash: TrashIcon,
