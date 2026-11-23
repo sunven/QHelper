@@ -4,7 +4,6 @@ import {
   setLocalPersistedData,
   subscribeLocalPersistedDataKey,
 } from '@/lib/chrome/local-persisted-data'
-import type { DataStore } from '@/lib/tool-data/storage'
 
 export type PersistedValueOptions = {
   /**
@@ -25,7 +24,6 @@ export type PersistedValueOptions = {
 export function usePersistedValue<T>(
   key: string,
   initialValue: T,
-  storage?: DataStore,
   options: PersistedValueOptions = {},
 ): {
   value: T
@@ -52,9 +50,7 @@ export function usePersistedValue<T>(
 
     const loadValue = async () => {
       try {
-        const storedValue = await (storage
-          ? storage.get<T>(key)
-          : getLocalPersistedData<T>(key))
+        const storedValue = await getLocalPersistedData<T>(key)
         if (
           active &&
           edits.current === initialEdits &&
@@ -74,9 +70,7 @@ export function usePersistedValue<T>(
 
     void loadValue()
 
-    const unsubscribe = (
-      storage?.subscribe ?? subscribeLocalPersistedDataKey
-    )<T>(key, (nextValue) => {
+    const unsubscribe = subscribeLocalPersistedDataKey<T>(key, (nextValue) => {
       if (active) {
         const next = (nextValue ?? initialValueRef.current) as T
         valueRef.current = next
@@ -88,19 +82,17 @@ export function usePersistedValue<T>(
       active = false
       unsubscribe()
     }
-  }, [key, storage])
+  }, [key])
 
   const writeThrough = useCallback(
     async (nextValue: T) => {
       try {
-        await (storage
-          ? storage.set(key, nextValue)
-          : setLocalPersistedData(key, nextValue))
+        await setLocalPersistedData(key, nextValue)
       } catch (error) {
         console.error(`Failed to save persisted value for ${key}:`, error)
       }
     },
-    [key, storage],
+    [key],
   )
 
   // 卸载或换 key 时把待写入值落盘，避免 Activity 隐藏后丢失最后一次输入。

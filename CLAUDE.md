@@ -79,7 +79,7 @@ Entrypoints may call extension APIs directly when the call is tightly coupled to
 
 Use `defineSetting(key, defaults)` from `lib/settings.ts` for low-sensitivity synced Tool Settings. It handles sync storage, local fallback, subscriptions, and reset behavior.
 
-Use local persisted data for captured content, snapshots, API credentials, and large local workspaces. Examples:
+Use local persisted data for captured content, API credentials, and large local workspaces. Examples:
 
 - `lib/chrome/local-persisted-data.ts` for device-local extension storage.
 - `hooks/useToolState.ts` for tool state.
@@ -131,7 +131,6 @@ From `wxt.config.ts`:
 ## Tool Categories (Popup Menu)
 
 - **Common:** Radix conversion, Auto refresh
-- **Image:** QR code
 - **Security:** UUID, Password generator, AES-GCM, Bcrypt hash
 - **Other:** Downloads cleanup, Clear site data
 

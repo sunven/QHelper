@@ -573,20 +573,6 @@ export const tools: ToolMetadata[] = [
   },
 
   {
-    id: 'qrcode',
-    name: '二维码工具',
-    nameEn: 'QR Code',
-    category: ToolCategory.SECURITY,
-    icon: 'QrCode',
-    description: '二维码生成和扫描',
-    keywords: ['二维码', 'qr', '生成', '扫描'],
-    tags: ['qr', 'qrcode', 'barcode'],
-    version: '1.0.0',
-    features: ['single_input', 'file_input', 'export'],
-    status: ToolStatus.BETA,
-  },
-
-  {
     id: 'uuid',
     name: 'UUID 工具',
     nameEn: 'UUID Generator',

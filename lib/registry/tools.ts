@@ -26,17 +26,6 @@ export const tools = [
     description: '按固定间隔自动刷新指定网页',
   },
 
-  // ===== 图片工具 =====
-  {
-    id: 'qrcode',
-    keywords: ['qr', '二维码扫描'],
-    name: '二维码',
-    category: ToolCategory.IMAGE,
-    icon: 'QrCode',
-    description: '生成二维码并从图片或摄像头识别二维码',
-    preserveActivity: false,
-  },
-
   // ===== 其他工具 =====
   {
     id: 'downloads',

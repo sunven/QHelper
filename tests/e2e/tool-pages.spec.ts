@@ -7,7 +7,6 @@ const toolPages = [
   'password',
   'aes-gcm',
   'bcrypt-hash',
-  'qrcode',
   'clear-site-data',
 ]
 

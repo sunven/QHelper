@@ -98,9 +98,7 @@ describe('usePersistedValue', () => {
 
   it('debounces persisted writes and keeps the latest value', async () => {
     const { result } = renderHook(() =>
-      usePersistedValue('myKey', { count: 0 }, undefined, {
-        writeDelayMs: 100,
-      }),
+      usePersistedValue('myKey', { count: 0 }, { writeDelayMs: 100 }),
     )
     await waitFor(() => {
       expect(result.current.loading).toBe(false)

@@ -1,11 +1,8 @@
-import { useLayoutEffect } from 'react'
-import { useCurrentToolSession } from '@/components/tool/ToolSessionContext'
 import {
   type PersistedValueOptions,
   usePersistedValue,
 } from '@/hooks/usePersistedValue'
 import { getToolStateStorageKey } from '@/lib/chrome/local-persisted-data'
-import { isContentKey } from '@/lib/tool-data/catalog'
 
 /**
  * 工具页状态管理 Hook：Persisted Tool Data 的工具入口。
@@ -19,8 +16,7 @@ import { isContentKey } from '@/lib/tool-data/catalog'
  *
  * @example
  * ```tsx
- * const [text, setText] = useToolState('qrcode', 'text', '')
- * const [size, setSize] = useToolState('qrcode', 'size', 280)
+ * const [length, setLength] = useToolState('password', 'length', 16)
  * ```
  */
 export function useToolState<T>(
@@ -29,27 +25,12 @@ export function useToolState<T>(
   initialState: T,
   options?: PersistedValueOptions,
 ): [state: T, setState: (value: T | ((prev: T) => T)) => void] {
-  const session = useCurrentToolSession()
   const storageKey = getToolStateStorageKey(toolId, key)
-  const initial =
-    session && key in session.values
-      ? (session.values[key] as T)
-      : session?.temporary && isContentKey(storageKey)
-        ? ('' as T)
-        : initialState
   const { value, setValue } = usePersistedValue(
     storageKey,
-    initial,
-    session?.storage,
+    initialState,
     options,
   )
-
-  // 会话快照读取 session.values；在提交后同步，避免渲染期写外部对象。
-  useLayoutEffect(() => {
-    if (session) {
-      session.values[key] = value
-    }
-  }, [session, key, value])
 
   return [value, setValue]
 }

@@ -7,7 +7,7 @@ test.describe('Extension Popup', () => {
     const popup = new PopupPage(popupPage);
 
     await expect(popup.getToolButton('trans-radix')).toBeVisible();
-    await expect(popup.getToolButton('qrcode')).toBeVisible();
+    await expect(popup.getToolButton('password')).toBeVisible();
     await expect(popup.getToolButton('web-summary-launch')).toBeVisible();
     await expect(popup.getToolButton('clear-site-data')).toBeVisible();
   });

@@ -122,7 +122,7 @@ pnpm build
 | 字段 | 内容 |
 |------|------|
 | **Name** | QHelper前端助手 |
-| **Short description (最多 132 字符)** | 前端开发必备工具箱：进制转换、密码生成、二维码等10+实用工具 |
+| **Short description (最多 132 字符)** | 前端开发必备工具箱：进制转换、密码生成、UUID等10+实用工具 |
 | **Long description** | 使用 `STORE_LISTING.md` 中的详细描述 |
 | **Category** | Developer Tools |
 | **Language** | 中文 (简体) |
@@ -173,7 +173,7 @@ host_permissions: 用于网页总结内容提取；在 GitHub 仓库首页注入
 ### 简短描述
 
 ```
-前端开发必备工具箱：进制转换、密码生成、二维码等10+实用工具
+前端开发必备工具箱：进制转换、密码生成、UUID等10+实用工具
 ```
 
 ### 详细描述

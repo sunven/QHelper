@@ -35,21 +35,21 @@ vi.mock('@/components/tool/tool-routes', () => ({
       ),
     },
     {
-      id: 'qrcode',
+      id: 'auto-refresh',
       preserveActivity: false,
       Component: () => {
         useEffect(() => {
-          window.dispatchEvent(new CustomEvent('qrcode-mounted'))
+          window.dispatchEvent(new CustomEvent('auto-refresh-mounted'))
 
           return () => {
-            window.dispatchEvent(new CustomEvent('qrcode-unmounted'))
+            window.dispatchEvent(new CustomEvent('auto-refresh-unmounted'))
           }
         }, [])
 
         return (
           <section>
-            <h1>QR Code Mock</h1>
-            <p>QR Code results</p>
+            <h1>Auto Refresh Mock</h1>
+            <p>Auto Refresh results</p>
           </section>
         )
       },
@@ -72,8 +72,8 @@ function RouteControls() {
       <button type="button" onClick={() => void navigate('/trans-radix.html')}>
         Go trans-radix
       </button>
-      <button type="button" onClick={() => void navigate('/qrcode.html')}>
-        Go QR Code
+      <button type="button" onClick={() => void navigate('/auto-refresh.html')}>
+        Go auto-refresh
       </button>
     </div>
   )
@@ -189,11 +189,11 @@ describe('ToolActivityOutlet', () => {
   it('unmounts tools that opt out of hidden activity preservation', async () => {
     const mounted = vi.fn()
     const unmounted = vi.fn()
-    window.addEventListener('qrcode-mounted', mounted)
-    window.addEventListener('qrcode-unmounted', unmounted)
+    window.addEventListener('auto-refresh-mounted', mounted)
+    window.addEventListener('auto-refresh-unmounted', unmounted)
 
     render(
-      <MemoryRouter initialEntries={['/qrcode.html']}>
+      <MemoryRouter initialEntries={['/auto-refresh.html']}>
         <RouteControls />
         <Routes>
           <Route path="/:toolId" element={<ToolActivityOutlet />} />
@@ -202,7 +202,7 @@ describe('ToolActivityOutlet', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText('QR Code Mock')).toBeVisible()
+      expect(screen.getByText('Auto Refresh Mock')).toBeVisible()
     })
     expect(mounted).toHaveBeenCalledTimes(1)
 
@@ -214,9 +214,9 @@ describe('ToolActivityOutlet', () => {
     await waitFor(() => {
       expect(unmounted).toHaveBeenCalledTimes(1)
     })
-    expect(screen.queryByText('QR Code Mock')).toBeNull()
+    expect(screen.queryByText('Auto Refresh Mock')).toBeNull()
 
-    window.removeEventListener('qrcode-mounted', mounted)
-    window.removeEventListener('qrcode-unmounted', unmounted)
+    window.removeEventListener('auto-refresh-mounted', mounted)
+    window.removeEventListener('auto-refresh-unmounted', unmounted)
   })
 })

@@ -71,6 +71,10 @@ describe('tool-catalog', () => {
     expectToolAbsent('imagebase64')
   })
 
+  it('excludes the removed QR code tool from tools, launches and generated aliases', () => {
+    expectToolAbsent('qrcode')
+  })
+
   it('derives ordinary tool ids from registered tools', () => {
     expect(new Set(ORDINARY_TOOL_IDS)).toEqual(
       new Set(tools.map((tool) => tool.id)),
@@ -83,7 +87,7 @@ describe('tool-catalog', () => {
     for (const id of ['cron', 'csv2json', 'yaml', 'toml', 'jsonschema']) {
       expectToolAbsent(id)
     }
-    expect(ORDINARY_TOOL_IDS).toHaveLength(9)
+    expect(ORDINARY_TOOL_IDS).toHaveLength(8)
     expect(
       TOOL_CATEGORIES.map((category) => String(category.key)),
     ).not.toContain('encoding')
@@ -140,8 +144,10 @@ describe('tool-catalog', () => {
   })
 
   it('derives paths from tool ids', () => {
-    expect(getToolsSpaPath('qrcode')).toBe('tools/qrcode.html')
-    expect(getToolNavigationPath('qrcode')).toBe('/tools/qrcode.html')
+    expect(getToolsSpaPath('auto-refresh')).toBe('tools/auto-refresh.html')
+    expect(getToolNavigationPath('auto-refresh')).toBe(
+      '/tools/auto-refresh.html',
+    )
   })
 
   it('builds the popup main Launch Entry directory from the Tool Catalog', () => {
@@ -234,7 +240,7 @@ describe('tool catalog routing helpers', () => {
     expect(DEFAULT_TOOL_ID).toBe('trans-radix')
     expect(getToolsSpaPath('trans-radix')).toBe('tools/trans-radix.html')
     expect(getToolsSpaPath('uuid')).toBe('tools/uuid.html')
-    expect(getToolRoutePath('qrcode')).toBe('/qrcode.html')
+    expect(getToolRoutePath('auto-refresh')).toBe('/auto-refresh.html')
     expect(getToolRoutePath('settings')).toBe('/settings.html')
   })
 

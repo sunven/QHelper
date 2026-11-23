@@ -2,7 +2,6 @@ import {
   BracketsCurlyIcon,
   CaretRightIcon,
   ClockIcon,
-  ImageIcon,
   LockKeyIcon,
   RobotIcon,
   ToolboxIcon,
@@ -50,7 +49,6 @@ type ToolMenuItem = {
 
 const categoryIcons: Record<ToolCategory, React.ReactNode> = {
   [ToolCategory.COMMON]: <BracketsCurlyIcon />,
-  [ToolCategory.IMAGE]: <ImageIcon />,
   [ToolCategory.SECURITY]: <LockKeyIcon />,
   [ToolCategory.AI]: <RobotIcon />,
   [ToolCategory.OTHER]: <ClockIcon />,

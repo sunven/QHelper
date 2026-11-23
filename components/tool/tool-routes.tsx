@@ -19,11 +19,6 @@ const AutoRefreshTool = lazy(() =>
     default: module.AutoRefreshTool,
   })),
 )
-const QrCodeTool = lazy(() =>
-  import('@/components/tool/qrcode').then((module) => ({
-    default: module.QrCodeTool,
-  })),
-)
 const UUIDGenerator = lazy(() =>
   import('@/components/tool/uuid').then((module) => ({
     default: module.UUIDGenerator,
@@ -58,7 +53,6 @@ const ClearSiteDataTool = lazy(() =>
 const toolComponentsByToolId: Record<OrdinaryToolId, ComponentType> = {
   'trans-radix': TransRadixTool,
   'auto-refresh': AutoRefreshTool,
-  qrcode: QrCodeTool,
   uuid: UUIDGenerator,
   password: PasswordGenerator,
   'aes-gcm': AesGcmTool,
