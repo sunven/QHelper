@@ -8,7 +8,7 @@ export type PageSourceDeps = {
   queryTabs?: (queryInfo: chrome.tabs.QueryInfo) => Promise<chrome.tabs.Tab[]>
   executeScript?: (injection: {
     target: { tabId: number }
-    func: (win: Window, doc: Document, maxChars: number) => unknown
+    func: (win?: Window, doc?: Document) => unknown
   }) => Promise<Array<{ result?: unknown } | null>>
 }
 

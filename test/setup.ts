@@ -88,7 +88,13 @@ const mockChrome = {
       removeListener: vi.fn(),
     },
   },
+  windows: {
+    getCurrent: vi.fn(() => Promise.resolve({ id: 1 })),
+    get: vi.fn((id: number) => Promise.resolve({ id })),
+    onRemoved: { addListener: vi.fn(), removeListener: vi.fn() },
+  },
   sidePanel: {
+    onClosed: { addListener: vi.fn(), removeListener: vi.fn() },
     open: vi.fn(() => Promise.resolve()),
   },
 };

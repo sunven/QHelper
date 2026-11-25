@@ -13,6 +13,7 @@ import {
   ensureWebSummaryContextMenu,
   WEB_SUMMARY_CONTEXT_MENU_ID,
 } from '@/lib/web-summary/background'
+import { clearWindowConversation } from '@/lib/web-summary/session'
 import type {
   OpenWebSummaryMessage,
   OpenWebSummaryResponse,
@@ -22,6 +23,10 @@ import type {
 export default defineBackground(() => {
   const panelProtocol = createWebSummaryPanelProtocol()
   const autoRefresh = createAutoRefreshController()
+
+  chrome.windows.onRemoved.addListener((windowId) => {
+    void clearWindowConversation(windowId).catch(console.error)
+  })
 
   void autoRefresh.initialize()
 

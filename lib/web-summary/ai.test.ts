@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import {
-  buildWebSummaryRequest,
+  buildWebSummaryPrompt,
   parseWebSummaryEventBlock,
   readWebSummaryStream,
-  streamWebPageSummary,
+  streamWebSummaryMessages,
 } from './ai'
 
 const pageContent = {
@@ -14,6 +14,8 @@ const pageContent = {
   truncated: false,
   charCount: 20,
 }
+
+const messages = [{ role: 'user' as const, content: 'Read the page' }]
 
 const config = {
   endpoint: 'https://example.com/v1/chat/completions',
@@ -26,13 +28,9 @@ describe('web-summary/ai', () => {
     vi.restoreAllMocks()
   })
 
-  it('builds an OpenAI-compatible request payload', () => {
-    expect(buildWebSummaryRequest(config, pageContent)).toMatchObject({
-      model: 'gpt-4.1-mini',
-      stream: true,
-      temperature: 0.2,
-      messages: [{ role: 'system' }, { role: 'user' }],
-    })
+  it('includes the page identity and complete original text in its prompt', () => {
+    expect(buildWebSummaryPrompt(pageContent)).toContain(pageContent.content)
+    expect(buildWebSummaryPrompt(pageContent)).toContain(pageContent.url)
   })
 
   it('parses streaming event blocks and done sentinels', () => {
@@ -108,9 +106,9 @@ describe('web-summary/ai', () => {
       ),
     )
 
-    await expect(streamWebPageSummary({ pageContent, config })).rejects.toThrow(
-      '总结接口返回 400：bad request',
-    )
+    await expect(
+      streamWebSummaryMessages({ messages, config }),
+    ).rejects.toThrow('总结接口返回 400：bad request')
   })
 
   it('preserves abort errors from fetch', async () => {
@@ -122,7 +120,7 @@ describe('web-summary/ai', () => {
     )
 
     await expect(
-      streamWebPageSummary({ pageContent, config }),
+      streamWebSummaryMessages({ messages, config }),
     ).rejects.toMatchObject({ name: 'AbortError' })
   })
 
@@ -131,8 +129,8 @@ describe('web-summary/ai', () => {
     vi.stubGlobal('fetch', fetchMock)
 
     await expect(
-      streamWebPageSummary({
-        pageContent,
+      streamWebSummaryMessages({
+        messages,
         config: {
           ...config,
           endpoint: 'http://example.com/v1/chat/completions',
@@ -163,12 +161,36 @@ describe('web-summary/ai', () => {
 
     const deltas: string[] = []
     await expect(
-      streamWebPageSummary({
-        pageContent,
+      streamWebSummaryMessages({
+        messages,
         config,
         onDelta: (delta) => deltas.push(delta),
       }),
     ).resolves.toBe('# 总结\n\n- 完成')
     expect(deltas).toEqual(['# 总结\n\n- 完成'])
+  })
+  it('marks an abruptly ended stream as incomplete while retaining its deltas', async () => {
+    const onDelta = vi.fn()
+    const response = new Response(
+      'data: {"choices":[{"delta":{"content":"partial"}}]}\n\n',
+      { headers: { 'Content-Type': 'text/event-stream' } },
+    )
+    await expect(readWebSummaryStream(response, onDelta)).rejects.toThrow(
+      '中断',
+    )
+    expect(onDelta).toHaveBeenCalledWith('partial')
+  })
+
+  it('surfaces SSE errors and output limits instead of marking partial answers complete', async () => {
+    const error = new Response(
+      'data: {"error":{"message":"quota exceeded"}}\n\n',
+    )
+    await expect(readWebSummaryStream(error)).rejects.toThrow('quota exceeded')
+    const onDelta = vi.fn()
+    const limit = new Response(
+      'data: {"choices":[{"delta":{"content":"half"},"finish_reason":"length"}]}\n\n',
+    )
+    await expect(readWebSummaryStream(limit, onDelta)).rejects.toThrow('未完成')
+    expect(onDelta).toHaveBeenCalledWith('half')
   })
 })

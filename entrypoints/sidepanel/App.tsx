@@ -6,13 +6,15 @@ import {
   EyeOff,
   FileText,
   LoaderCircle,
-  PanelsTopLeft,
   RefreshCw,
+  Send,
   Settings2,
   SquareStop,
+  Trash2,
   X,
 } from 'lucide-react'
 import {
+  memo,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -31,65 +33,59 @@ import {
 import { ErrorMessage } from '@/components/ui/error-message'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { usePersistedValue } from '@/hooks/usePersistedValue'
 import { cn, copyToClipboard, getErrorMessage } from '@/lib/utils'
-import { streamWebPageSummary } from '@/lib/web-summary/ai'
 import {
   DEFAULT_WEB_SUMMARY_CONFIG,
   normalizeWebSummaryConfig,
   validateWebSummaryConfig,
   WEB_SUMMARY_CONFIG_KEY,
 } from '@/lib/web-summary/config'
+import { HISTORY_CHARS } from '@/lib/web-summary/conversation'
 import { renderSafeMarkdown } from '@/lib/web-summary/markdown'
 import { fetchWebSummaryModels } from '@/lib/web-summary/models'
-import {
-  extractTabContent,
-  getRefreshHint,
-  resolveSummarizableTab,
-} from '@/lib/web-summary/page-source'
+import { resolveSummarizableTab } from '@/lib/web-summary/page-source'
 import type {
-  WebSummaryOpenRequestedMessage,
+  WebSummaryChatMessage,
   WebSummaryPendingAction,
 } from '@/types/web-summary'
+import { useConversation } from './useConversation'
 
-const SUMMARY_FLUSH_INTERVAL_MS = 100
-const COPY_FEEDBACK_MS = 1500
-
-type PageInfo = {
-  title: string
-  url: string
-}
-
-function getPageInfo(tab: chrome.tabs.Tab | undefined): PageInfo | null {
-  if (!tab?.url) {
-    return null
-  }
-
-  return {
-    title: tab.title?.trim() || tab.url,
-    url: tab.url,
-  }
-}
-
-function isOpenRequestedMessage(
-  message: unknown,
-): message is WebSummaryOpenRequestedMessage {
+const ChatMessage = memo(function ChatMessage({
+  message,
+}: {
+  message: WebSummaryChatMessage
+}) {
+  const text = useDeferredValue(message.content)
+  const html = useMemo(() => renderSafeMarkdown(text), [text])
   return (
-    typeof message === 'object' &&
-    message !== null &&
-    (message as { type?: unknown }).type === 'WEB_SUMMARY_OPEN_REQUESTED' &&
-    typeof (message as { tabId?: unknown }).tabId === 'number'
+    <section
+      className={cn(
+        'space-y-1 border-b border-slate-100 py-3 last:border-0',
+        message.role === 'user' && 'rounded-md bg-slate-50 px-2',
+      )}
+      data-testid="web-summary-message"
+    >
+      <div className="text-xs font-medium text-slate-500">
+        {message.role === 'user' ? '你' : '网页助手'}
+        {message.status === 'stopped' && ' · 已停止（未完成）'}
+        {message.status === 'error' && ' · 失败（未完成）'}
+      </div>
+      {message.role === 'user' ? (
+        <p className="whitespace-pre-wrap break-words text-sm">
+          {message.content}
+        </p>
+      ) : (
+        <article
+          data-testid="web-summary-output"
+          className="prose prose-slate max-w-none break-words text-[13px] leading-5 [overflow-wrap:anywhere] prose-headings:mb-1.5 prose-p:my-1.5 prose-li:my-0.5 [&_pre]:whitespace-pre-wrap [&_pre]:break-words"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      )}
+    </section>
   )
-}
-
-function isAbortError(error: unknown): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    'name' in error &&
-    (error as { name?: unknown }).name === 'AbortError'
-  )
-}
+})
 
 export function App() {
   const {
@@ -102,62 +98,30 @@ export function App() {
     [storedConfig],
   )
   const configErrors = useMemo(() => validateWebSummaryConfig(config), [config])
-
-  const [summaryMarkdown, setSummaryMarkdown] = useState('')
-  const [isSummarizing, setIsSummarizing] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [statusText, setStatusText] = useState(
-    '打开网页后点击“开始总结”，摘要会显示在当前页面旁边。',
-  )
-  const [copySuccess, setCopySuccess] = useState(false)
+  const chat = useConversation()
+  const [question, setQuestion] = useState('')
   const [isConfigOpen, setIsConfigOpen] = useState(false)
   const [isApiKeyVisible, setIsApiKeyVisible] = useState(false)
   const [models, setModels] = useState<string[]>([])
   const [isModelsOpen, setIsModelsOpen] = useState(false)
   const [isFetchingModels, setIsFetchingModels] = useState(false)
   const [modelsError, setModelsError] = useState<string | null>(null)
-  const [activePage, setActivePage] = useState<PageInfo | null>(null)
-  const [summarySource, setSummarySource] = useState<PageInfo | null>(null)
-
-  const deferredSummaryMarkdown = useDeferredValue(summaryMarkdown)
-  const summaryHtml = useMemo(
-    () => renderSafeMarkdown(deferredSummaryMarkdown),
-    [deferredSummaryMarkdown],
+  const [activePage, setActivePage] = useState<chrome.tabs.Tab | null>(null)
+  const [replacement, setReplacement] = useState<
+    (chrome.tabs.Tab & { id: number }) | null
+  >(null)
+  const [copySuccess, setCopySuccess] = useState(false)
+  const [resolving, setResolving] = useState(false)
+  const resolvingRef = useRef(false)
+  const requestVersion = useRef(0)
+  const startRef = useRef<(tabId?: number, force?: boolean) => Promise<void>>(
+    async () => {},
   )
-  const summarizeRef = useRef<(tabId?: number) => Promise<void>>(
-    async () => undefined,
-  )
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const summarizingRef = useRef(false)
-  const pendingSummaryRef = useRef('')
-  const summaryFlushTimerRef = useRef<number | null>(null)
-  const copyResetTimerRef = useRef<number | null>(null)
-
-  // 流式增量先累积到 ref，按固定间隔批量落到 state，避免逐 token
-  // 触发整篇 Markdown 的 parse + sanitize。
-  function flushSummary() {
-    if (summaryFlushTimerRef.current !== null) {
-      window.clearTimeout(summaryFlushTimerRef.current)
-      summaryFlushTimerRef.current = null
-    }
-
-    const pending = pendingSummaryRef.current
-    pendingSummaryRef.current = ''
-    if (pending) {
-      setSummaryMarkdown((previous) => previous + pending)
-    }
-  }
-
-  function scheduleSummaryFlush() {
-    if (summaryFlushTimerRef.current !== null) {
-      return
-    }
-
-    summaryFlushTimerRef.current = window.setTimeout(() => {
-      summaryFlushTimerRef.current = null
-      flushSummary()
-    }, SUMMARY_FLUSH_INTERVAL_MS)
-  }
+  const ready = !chat.loading && !configLoading && chat.windowId !== null
+  const busy = chat.busy || resolving
+  const readyRef = useRef(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const followOutput = useRef(true)
 
   const updateConfigField = (field: keyof typeof config, value: string) => {
     if (field === 'endpoint' || field === 'apiKey') {
@@ -201,361 +165,438 @@ export function App() {
     setIsModelsOpen(false)
   }
 
-  const consumePendingAction = useCallback(async (tabId?: number) => {
+  function validConfig() {
+    if (!configErrors.length) return true
+    setIsConfigOpen(true)
+    chat.setError(configErrors[0])
+    return false
+  }
+
+  async function requestStart(tabId?: number, force = false) {
+    const windowId = chat.windowId
+    if (!ready || busy || resolvingRef.current || windowId === null) return
+    resolvingRef.current = true
+    const version = ++requestVersion.current
+    setResolving(true)
     try {
-      const pendingAction = (await chrome.runtime.sendMessage({
-        type: 'WEB_SUMMARY_SIDE_PANEL_READY',
-        tabId,
-      })) as WebSummaryPendingAction | null
-
-      if (pendingAction?.type === 'SUMMARIZE_ACTIVE_PAGE') {
-        await summarizeRef.current(pendingAction.tabId)
-      }
-    } catch {
-      // Background may be restarting; leave the panel idle.
-    }
-  }, [])
-
-  const summarizePage = async (requestedTabId?: number) => {
-    if (isSummarizing || summarizingRef.current) {
-      return
-    }
-
-    setCopySuccess(false)
-    setError(null)
-
-    if (configErrors.length > 0) {
-      setIsConfigOpen(true)
-      setStatusText('点击右上角设置打开联网配置抽屉，补全配置后即可开始总结。')
-      setError(configErrors[0])
-      return
-    }
-
-    summarizingRef.current = true
-
-    try {
-      const targetTab = await resolveSummarizableTab(requestedTabId).catch(
-        (caughtError: unknown) => {
-          setError(getErrorMessage(caughtError))
-          return undefined
-        },
+      const tab =
+        tabId === undefined
+          ? await resolveSummarizableTab(undefined, {
+              queryTabs: () => chrome.tabs.query({ active: true, windowId }),
+            })
+          : await chrome.tabs.get(tabId)
+      if (version !== requestVersion.current || !readyRef.current) return
+      if (!tab?.id || tab.windowId !== chat.windowId) return
+      if (
+        !force &&
+        chat.conversation?.tabId === tab.id &&
+        chat.conversation.page.url === tab.url
       )
-      if (!targetTab) {
         return
-      }
-
-      const targetPage = getPageInfo(targetTab)
-      setActivePage(targetPage)
-      setSummarySource(targetPage)
-
-      pendingSummaryRef.current = ''
-      if (summaryFlushTimerRef.current !== null) {
-        window.clearTimeout(summaryFlushTimerRef.current)
-        summaryFlushTimerRef.current = null
-      }
-      setStatusText('正在提取当前网页正文…')
-      setSummaryMarkdown('')
-      setIsSummarizing(true)
-
-      const controller = new AbortController()
-      abortControllerRef.current = controller
-
-      try {
-        const pageContent = await extractTabContent(targetTab.id)
-
-        setStatusText('正在生成摘要…')
-
-        await streamWebPageSummary({
-          pageContent,
-          config,
-          signal: controller.signal,
-          onDelta: (delta) => {
-            pendingSummaryRef.current += delta
-            scheduleSummaryFlush()
-          },
-        })
-
-        setStatusText('摘要生成完成。')
-      } catch (caughtError) {
-        if (isAbortError(caughtError)) {
-          setStatusText('已停止本次总结。')
-        } else {
-          setStatusText('总结失败，请检查当前网页和接口配置。')
-          setError(getRefreshHint(caughtError))
-        }
-      } finally {
-        flushSummary()
-        setIsSummarizing(false)
-        if (abortControllerRef.current === controller) {
-          abortControllerRef.current = null
-        }
-      }
+      if (!validConfig()) return
+      if (chat.conversation)
+        setReplacement(tab as chrome.tabs.Tab & { id: number })
+      else await chat.start(tab as chrome.tabs.Tab & { id: number }, config)
+    } catch (caught) {
+      if (version === requestVersion.current)
+        chat.setError(getErrorMessage(caught))
     } finally {
-      summarizingRef.current = false
+      if (version === requestVersion.current) {
+        resolvingRef.current = false
+        setResolving(false)
+      }
     }
   }
 
-  // 在提交后同步最新回调，避免渲染期赋值。
+  const stopRequest = useCallback(() => {
+    requestVersion.current++
+    resolvingRef.current = false
+    setResolving(false)
+    chat.stop()
+  }, [chat.stop])
+
   useEffect(() => {
-    summarizeRef.current = summarizePage
+    const stop = (info: chrome.sidePanel.PanelClosedInfo) => {
+      if (info.windowId === chat.windowId) stopRequest()
+    }
+    chrome.sidePanel.onClosed?.addListener(stop)
+    window.addEventListener('pagehide', stopRequest)
+    return () => {
+      requestVersion.current++
+      readyRef.current = false
+      chrome.sidePanel.onClosed?.removeListener(stop)
+      window.removeEventListener('pagehide', stopRequest)
+    }
+  }, [chat.windowId, stopRequest])
+
+  useEffect(() => {
+    startRef.current = requestStart
+    readyRef.current = ready
   })
 
   useEffect(() => {
+    const windowId = chat.windowId
+    if (!ready || windowId === null) return
     let active = true
-
-    const bootstrap = async () => {
-      let currentTab: chrome.tabs.Tab | undefined
+    const refreshPage = async () => {
       try {
-        currentTab = await resolveSummarizableTab()
+        const tab = await resolveSummarizableTab(undefined, {
+          queryTabs: () => chrome.tabs.query({ active: true, windowId }),
+        })
+        if (active) setActivePage(tab)
+        return tab
       } catch {
-        currentTab = undefined
-      }
-
-      if (active) {
-        setActivePage(getPageInfo(currentTab))
-      }
-
-      if (active) {
-        await consumePendingAction(currentTab?.id)
+        if (active) setActivePage(null)
       }
     }
-
-    void bootstrap()
-
-    return () => {
-      active = false
-      abortControllerRef.current?.abort()
-      if (summaryFlushTimerRef.current !== null) {
-        window.clearTimeout(summaryFlushTimerRef.current)
-        summaryFlushTimerRef.current = null
-      }
-      if (copyResetTimerRef.current !== null) {
-        window.clearTimeout(copyResetTimerRef.current)
-        copyResetTimerRef.current = null
+    const consume = async (tabId?: number) => {
+      if (!active || !readyRef.current || tabId === undefined) return
+      try {
+        const tab = await chrome.tabs.get(tabId)
+        if (tab.windowId !== windowId) return
+        const action = (await chrome.runtime.sendMessage({
+          type: 'WEB_SUMMARY_SIDE_PANEL_READY',
+          tabId,
+        })) as WebSummaryPendingAction | null
+        if (active && action?.type === 'SUMMARIZE_ACTIVE_PAGE')
+          await startRef.current(action.tabId)
+      } catch (caught) {
+        if (active) chat.setError(getErrorMessage(caught))
       }
     }
-  }, [consumePendingAction])
-
-  useEffect(() => {
-    const handleOpenRequested = (message: unknown) => {
-      if (!isOpenRequestedMessage(message)) {
-        return false
-      }
-
-      void consumePendingAction(message.tabId)
+    void refreshPage().then((tab) => consume(tab?.id))
+    const onMessage = (message: { type?: string; tabId?: number } | null) => {
+      if (message?.type === 'WEB_SUMMARY_OPEN_REQUESTED')
+        void consume(message.tabId)
       return false
     }
-
-    chrome.runtime.onMessage.addListener(handleOpenRequested)
-    return () => {
-      chrome.runtime.onMessage.removeListener(handleOpenRequested)
+    const onActivated = (info: chrome.tabs.OnActivatedInfo) => {
+      if (info.windowId === windowId) void refreshPage()
     }
-  }, [consumePendingAction])
-
-  useEffect(() => {
-    const refreshActivePage = async () => {
-      try {
-        const tab = await resolveSummarizableTab()
-        setActivePage(getPageInfo(tab))
-      } catch {
-        setActivePage(null)
-      }
-    }
-
-    const handleTabActivated = () => {
-      void refreshActivePage()
-    }
-
-    const handleTabUpdated = (
-      _tabId: number,
-      changeInfo: chrome.tabs.OnUpdatedInfo,
+    const onUpdated = (
+      _id: number,
+      change: chrome.tabs.OnUpdatedInfo,
       tab: chrome.tabs.Tab,
     ) => {
       if (
+        tab.windowId === windowId &&
         tab.active &&
-        (changeInfo.url || changeInfo.title || changeInfo.status === 'complete')
-      ) {
-        void refreshActivePage()
-      }
+        (change.url || change.title || change.status === 'complete')
+      )
+        void refreshPage()
     }
-
-    chrome.tabs.onActivated?.addListener(handleTabActivated)
-    chrome.tabs.onUpdated?.addListener(handleTabUpdated)
-
+    chrome.runtime.onMessage.addListener(onMessage)
+    chrome.tabs.onActivated.addListener(onActivated)
+    chrome.tabs.onUpdated.addListener(onUpdated)
     return () => {
-      chrome.tabs.onActivated?.removeListener(handleTabActivated)
-      chrome.tabs.onUpdated?.removeListener(handleTabUpdated)
+      active = false
+      chrome.runtime.onMessage.removeListener(onMessage)
+      chrome.tabs.onActivated.removeListener(onActivated)
+      chrome.tabs.onUpdated.removeListener(onUpdated)
     }
-  }, [])
+  }, [ready, chat.windowId, chat.setError])
 
-  const handleCopySummary = async () => {
-    if (!summaryMarkdown.trim()) {
+  useEffect(() => {
+    if (chat.conversation && followOutput.current && scrollRef.current)
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [chat.conversation])
+
+  useEffect(() => {
+    if (!copySuccess) return
+    const timer = setTimeout(() => setCopySuccess(false), 1500)
+    return () => clearTimeout(timer)
+  }, [copySuccess])
+
+  function submitQuestion() {
+    if (!question.trim() || busy || !validConfig()) return
+    if (question.length > HISTORY_CHARS) {
+      chat.setError(
+        `本次问题过长，请缩短至 ${HISTORY_CHARS.toLocaleString()} 字符以内再发送。`,
+      )
       return
     }
-
-    await copyToClipboard(summaryMarkdown)
-    setCopySuccess(true)
-    if (copyResetTimerRef.current !== null) {
-      window.clearTimeout(copyResetTimerRef.current)
-    }
-    copyResetTimerRef.current = window.setTimeout(() => {
-      copyResetTimerRef.current = null
-      setCopySuccess(false)
-    }, COPY_FEEDBACK_MS)
+    followOutput.current = true
+    void chat.send(question, config)
+    setQuestion('')
   }
+
+  const lastMessage =
+    chat.conversation?.messages[chat.conversation.messages.length - 1]
+  const canChat = !!chat.conversation?.messages[0]?.content
+  const displayedConfig = chat.activeConfig ?? config
 
   return (
     <div
       data-testid="web-summary-panel"
-      className="h-screen overflow-hidden bg-[linear-gradient(180deg,#f8fafc_0%,#f1f5f9_100%)] text-slate-900"
-      style={{
-        fontFamily: '"IBM Plex Sans", "SF Pro Text", "Segoe UI", sans-serif',
-      }}
+      className="h-screen overflow-hidden bg-slate-50 text-slate-900"
     >
       <div className="mx-auto flex h-full max-w-[1040px] flex-col p-1.5">
-        <Card className="relative h-full gap-1.5 overflow-hidden rounded-lg border-slate-200/80 bg-white/92 py-2">
+        <Card className="relative h-full gap-1.5 overflow-hidden rounded-lg border-slate-200 bg-white py-2">
           <CardHeader className="gap-1 border-b border-slate-100 px-2.5 !pb-1.5">
             <div className="flex items-center justify-between gap-2">
-              <div className="min-w-0 flex items-center gap-2">
-                <div className="flex h-5 shrink-0 items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-1.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-emerald-700">
-                  <PanelsTopLeft className="h-2.5 w-2.5" />
-                  <span>Side Panel</span>
-                </div>
-                <CardTitle className="truncate pt-0.5 text-base">
-                  网页总结
-                </CardTitle>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  data-testid="web-summary-config-toggle"
-                  aria-label="打开联网配置抽屉"
-                  onClick={() => setIsConfigOpen(true)}
-                  className="h-7 w-7 rounded-md border border-slate-200 bg-white/90"
-                >
-                  <Settings2 className="h-3.5 w-3.5" />
-                </Button>
-                <div className="shrink-0 rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
-                  可选联网 AI
-                </div>
-              </div>
+              <CardTitle className="text-base">网页总结与对话</CardTitle>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                data-testid="web-summary-config-toggle"
+                aria-label="打开联网配置抽屉"
+                onClick={() => setIsConfigOpen(true)}
+                className="h-7 w-7"
+              >
+                <Settings2 className="h-4 w-4" />
+              </Button>
             </div>
-            <p className="text-[11px] leading-4 text-slate-500">
-              边看边读：在当前网页旁边生成摘要。
-            </p>
+            <p className="text-xs text-slate-500">读完总结，继续问这篇文章。</p>
           </CardHeader>
-          <CardContent className="flex min-h-0 flex-1 flex-col gap-1.5 px-2.5 pt-1.5">
-            <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-              <div className="flex min-w-0 items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50/80 px-2 py-1 text-[11px] leading-4 text-slate-500">
-                <FileText className="h-3 w-3 shrink-0 text-slate-400" />
-                <span className="shrink-0">当前页面</span>
-                <span
-                  className="truncate font-medium text-slate-700"
-                  title={activePage?.url ?? ''}
-                >
-                  {activePage?.title ?? '未找到可总结的网页'}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden">
+          <CardContent className="flex min-h-0 flex-1 flex-col gap-2 px-2.5 pt-1.5">
+            <div className="flex min-w-0 items-center gap-1.5 text-xs text-slate-500">
+              <FileText className="h-3 w-3 shrink-0" />
+              <span className="shrink-0">当前页面</span>
+              <span className="truncate" title={activePage?.url}>
+                {activePage?.title ?? '未找到可总结的网页'}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Button
+                data-testid="web-summary-summarize"
+                onClick={() => void requestStart(undefined, true)}
+                disabled={!ready || busy}
+                size="sm"
+                className="flex-1 text-xs"
+              >
+                <Bot className="h-4 w-4" />
+                {chat.conversation
+                  ? chat.conversation.tabId === activePage?.id &&
+                    chat.conversation.page.url === activePage?.url
+                    ? '重新读取本页'
+                    : '总结当前页'
+                  : '开始总结'}
+              </Button>
+              {busy && (
                 <Button
-                  data-testid="web-summary-summarize"
-                  onClick={() => void summarizePage()}
-                  disabled={configLoading || isSummarizing}
+                  data-testid="web-summary-stop"
+                  variant="outline"
                   size="sm"
-                  className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
+                  onClick={stopRequest}
                 >
-                  {isSummarizing ? (
-                    <>
-                      <LoaderCircle className="h-4 w-4 animate-spin" />
-                      总结中…
-                    </>
-                  ) : (
-                    <>
-                      <Bot className="h-4 w-4" />
-                      开始总结
-                    </>
-                  )}
+                  <SquareStop className="h-4 w-4" />
+                  停止
                 </Button>
-
-                {isSummarizing && (
+              )}
+              {chat.conversation && (
+                <>
                   <Button
-                    data-testid="web-summary-stop"
+                    variant="ghost"
+                    size="sm"
+                    aria-label="复制对话"
+                    onClick={() => {
+                      if (!chat.conversation) return
+                      void copyToClipboard(
+                        chat.conversation.messages
+                          .map(
+                            (message) =>
+                              `${message.role === 'user' ? '你' : '网页助手'}${message.status !== 'complete' ? '（未完成）' : ''}\n${message.content}`,
+                          )
+                          .join('\n\n'),
+                      )
+                        .then(() => setCopySuccess(true))
+                        .catch((caught) =>
+                          chat.setError(getErrorMessage(caught)),
+                        )
+                    }}
+                  >
+                    <Copy className="h-4 w-4" />
+                    {copySuccess ? '已复制' : '复制'}
+                  </Button>
+                  <Button
+                    data-testid="web-summary-clear"
+                    variant="ghost"
+                    size="icon"
+                    aria-label="清除对话"
+                    onClick={() => {
+                      stopRequest()
+                      chat.clear()
+                      setQuestion('')
+                      setReplacement(null)
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
+            </div>
+            {replacement && (
+              <div
+                role="alertdialog"
+                aria-label="替换当前对话"
+                className="space-y-2 rounded-md border border-slate-300 bg-slate-50 p-2 text-sm"
+              >
+                <p>
+                  读取“{replacement.title || replacement.url}
+                  ”并开始新对话？将替换当前正文、问答和记忆，旧对话无法恢复。
+                </p>
+                <div className="flex gap-2">
+                  <Button
+                    data-testid="web-summary-confirm-replace"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => {
+                      if (!validConfig()) return
+                      const tab = replacement
+                      setReplacement(null)
+                      setQuestion('')
+                      void chat.start(tab, config)
+                    }}
+                  >
+                    替换并开始
+                  </Button>
+                  <Button
                     variant="outline"
                     size="sm"
-                    className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
-                    onClick={() => abortControllerRef.current?.abort()}
+                    onClick={() => setReplacement(null)}
                   >
-                    <SquareStop className="h-4 w-4" />
-                    停止
+                    取消
                   </Button>
-                )}
-
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="min-w-0 flex-1 whitespace-nowrap px-2.5 text-[13px]"
-                  onClick={() => void handleCopySummary()}
-                  disabled={!summaryMarkdown.trim()}
-                >
-                  <Copy className="h-4 w-4" />
-                  {copySuccess ? '已复制' : '复制'}
-                </Button>
+                </div>
               </div>
-
-              <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white">
-                <div className="shrink-0 border-b border-slate-100 px-2.5 py-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="shrink-0 text-sm font-semibold text-slate-900">
-                      摘要结果
-                    </div>
-                    <div
-                      className="min-w-0 flex-1 truncate text-right text-[11px] leading-5 text-slate-500"
-                      title={statusText}
+            )}
+            <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200">
+              {chat.conversation && (
+                <div className="shrink-0 border-b border-slate-100 p-2 text-xs text-slate-500">
+                  <div className="flex min-w-0 gap-1">
+                    <span className="shrink-0">对话来源</span>
+                    <span
+                      className="truncate font-medium text-slate-800"
+                      title={chat.conversation.page.url}
                     >
-                      {statusText}
-                    </div>
+                      {chat.conversation.page.title}
+                    </span>
                   </div>
-                  {summarySource && (
-                    <div className="mt-0.5 flex min-w-0 items-center gap-1 text-[11px] leading-4 text-slate-500">
-                      <FileText className="h-3 w-3 shrink-0" />
-                      <span className="shrink-0">总结页面</span>
-                      <span
-                        className="truncate font-medium text-slate-700"
-                        title={summarySource.url}
-                      >
-                        {summarySource.title}
-                      </span>
-                    </div>
+                  <div className="truncate" title={chat.conversation.page.url}>
+                    {chat.conversation.page.url}
+                  </div>
+                  <p>
+                    {new Date(chat.conversation.createdAt).toLocaleTimeString()}{' '}
+                    读取 · {chat.conversation.page.charCount.toLocaleString()}{' '}
+                    字符 · 固定正文快照
+                  </p>
+                  {chat.conversation.memory && (
+                    <p>
+                      早期问答已整理为记忆，完整记录仍可查看；部分细节可能需要重述。
+                    </p>
                   )}
                 </div>
-                <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2.5 py-2">
-                  {summaryMarkdown ? (
-                    <article
-                      data-testid="web-summary-output"
-                      className="prose prose-slate max-w-none break-words text-[13px] leading-5 [overflow-wrap:anywhere] prose-headings:mb-1.5 prose-headings:text-slate-900 prose-p:my-1.5 prose-p:text-slate-700 prose-strong:text-slate-900 prose-li:my-0.5 prose-li:text-slate-700 prose-code:text-emerald-700 prose-pre:bg-slate-950 prose-pre:text-slate-100 [&_a]:break-all [&_code]:break-words [&_li]:break-words [&_p]:break-words [&_pre]:overflow-x-hidden [&_pre]:whitespace-pre-wrap [&_pre]:break-words"
-                      dangerouslySetInnerHTML={{ __html: summaryHtml }}
-                    />
-                  ) : (
-                    <div className="flex h-full min-h-full items-center justify-center rounded-lg border border-dashed border-slate-200 bg-slate-50/70 px-3 text-center text-sm leading-5 text-slate-500">
-                      点击右上角设置按钮打开联网配置抽屉，配置 endpoint / model
-                      / API Key 后，点击“开始总结”，摘要会在这里实时生成。
-                    </div>
-                  )}
-                </div>
+              )}
+              <div
+                ref={scrollRef}
+                onScroll={(event) => {
+                  const el = event.currentTarget
+                  followOutput.current =
+                    el.scrollHeight - el.scrollTop - el.clientHeight < 80
+                }}
+                className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2.5"
+                aria-label="网页对话记录"
+              >
+                {chat.conversation ? (
+                  chat.conversation.messages.map((message) => (
+                    <ChatMessage key={message.id} message={message} />
+                  ))
+                ) : (
+                  <p className="py-8 text-center text-sm text-slate-500">
+                    配置接口后开始总结，随后可以围绕网页连续提问。
+                  </p>
+                )}
               </div>
             </div>
-
-            {error && (
+            <p
+              role="status"
+              className="flex items-center gap-1 text-xs text-slate-500"
+            >
+              {busy && <LoaderCircle className="h-3 w-3 animate-spin" />}
+              {chat.status}
+            </p>
+            {chat.error && (
               <ErrorMessage
-                title="网页总结暂时不可用"
-                message={error}
-                className="border-red-200 bg-red-50/90 text-red-700"
+                title="网页对话暂时不可用"
+                message={chat.error}
+                className="max-h-32 overflow-y-auto border-red-200 bg-red-50 text-red-700"
               />
             )}
+            {lastMessage &&
+              (lastMessage.status === 'stopped' ||
+                lastMessage.status === 'error') && (
+                <Button
+                  data-testid="web-summary-retry"
+                  variant="outline"
+                  size="sm"
+                  disabled={busy || !ready}
+                  onClick={() => {
+                    if (validConfig()) void chat.send('', config, true)
+                  }}
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  重试
+                  {chat.conversation?.messages.length === 1
+                    ? '总结'
+                    : '当前问题'}
+                </Button>
+              )}
+            <form
+              className="shrink-0 space-y-1.5 border-t border-slate-100 pt-2"
+              onSubmit={(event) => {
+                event.preventDefault()
+                submitQuestion()
+              }}
+            >
+              <Label htmlFor="web-summary-question" className="sr-only">
+                针对网页提问
+              </Label>
+              <Textarea
+                id="web-summary-question"
+                data-testid="web-summary-question"
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                disabled={!canChat || !ready}
+                placeholder={
+                  canChat ? '针对这篇文章继续提问…' : '先生成总结，再开始提问'
+                }
+                className="min-h-16 max-h-32 resize-y text-sm"
+                onKeyDown={(event) => {
+                  if (
+                    event.key === 'Enter' &&
+                    !event.shiftKey &&
+                    !event.nativeEvent.isComposing &&
+                    event.keyCode !== 229
+                  ) {
+                    event.preventDefault()
+                    submitQuestion()
+                  }
+                }}
+              />
+              <div className="flex items-center gap-2">
+                <p
+                  className="min-w-0 flex-1 truncate text-[11px] text-slate-500"
+                  title={`${displayedConfig.endpoint} · ${displayedConfig.model}`}
+                >
+                  {displayedConfig.model
+                    ? `${chat.activeConfig ? '正在使用' : '下次请求'}：${displayedConfig.model} · ${displayedConfig.endpoint}`
+                    : '尚未配置接口'}
+                  <br />
+                  仅本次浏览器使用期间保留
+                </p>
+                <Button
+                  data-testid="web-summary-send"
+                  type="submit"
+                  size="sm"
+                  disabled={!ready || busy || !canChat || !question.trim()}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                  发送
+                </Button>
+              </div>
+            </form>
           </CardContent>
-
           <div
             data-testid="web-summary-config-overlay"
             className={cn(
@@ -569,6 +610,7 @@ export function App() {
           <aside
             data-testid="web-summary-config-drawer"
             aria-hidden={!isConfigOpen}
+            inert={!isConfigOpen}
             className={cn(
               'pointer-events-none absolute inset-y-0 right-0 z-30 flex w-full max-w-[360px] translate-x-full transition-transform duration-200 ease-out',
               isConfigOpen && 'pointer-events-auto translate-x-0',
@@ -580,8 +622,7 @@ export function App() {
                   <div>
                     <CardTitle className="text-sm">联网配置</CardTitle>
                     <CardDescription className="text-[12px] leading-5">
-                      仅在你点击“开始总结”时，当前网页正文才会发送到你填写的兼容
-                      OpenAI 接口。
+                      主动总结或发送问题时，正文及相关问答会发送到你指定的接口。长文阅读和对话记忆整理可能需要多次请求；保存配置和重开侧栏不会发送内容。
                     </CardDescription>
                   </div>
                   <Button

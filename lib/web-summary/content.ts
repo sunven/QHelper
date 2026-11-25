@@ -1,7 +1,5 @@
 import type { WebSummaryPageContent } from '@/types/web-summary'
 
-export const WEB_SUMMARY_MAX_CONTENT_CHARS = 16000
-
 export function normalizePageText(text: string): string {
   return text
     .replace(/\u00a0/g, ' ')
@@ -16,7 +14,6 @@ export function normalizePageText(text: string): string {
 export function extractPageContent(
   win: Window = window,
   doc: Document = document,
-  maxChars = 16000,
 ): WebSummaryPageContent {
   // Keep helpers inside this function so chrome.scripting can serialize it.
   const primarySelectors = [
@@ -110,16 +107,14 @@ export function extractPageContent(
     text: normalizeText(getElementText(doc.body)),
   }
 
-  const baseText = candidate.text
-  const truncated = baseText.length > maxChars
-  const text = truncated ? baseText.slice(0, maxChars) : baseText
+  const text = candidate.text
 
   return {
     title: doc.title || '未命名网页',
     url: win.location.href,
     content: text,
     source: candidate.source,
-    truncated,
+    truncated: false,
     charCount: text.length,
   }
 }

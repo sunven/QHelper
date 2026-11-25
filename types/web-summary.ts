@@ -43,3 +43,26 @@ export interface OpenWebSummaryResponse {
   tabId?: number
   error?: string
 }
+
+export interface WebSummaryChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  status: 'complete' | 'streaming' | 'stopped' | 'error'
+}
+
+export interface WebSummaryConversation {
+  id: string
+  windowId: number
+  tabId: number
+  page: WebSummaryPageContent
+  createdAt: number
+  messages: WebSummaryChatMessage[]
+  memory: string
+  memoryThrough: number
+}
+
+export interface WebSummaryModelMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}

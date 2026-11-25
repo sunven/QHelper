@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  extractPageContent,
-  normalizePageText,
-  WEB_SUMMARY_MAX_CONTENT_CHARS,
-} from './content'
+import { extractPageContent, normalizePageText } from './content'
 
 describe('web-summary/content', () => {
   it('normalizes noisy page text into readable paragraphs', () => {
@@ -56,13 +52,13 @@ describe('web-summary/content', () => {
     expect(result.content).toContain('普通正文')
   })
 
-  it('truncates oversized content to the dependency-free max length', () => {
-    const longText = 'a'.repeat(WEB_SUMMARY_MAX_CONTENT_CHARS + 200)
+  it('keeps the complete body including facts beyond the old limit', () => {
+    const longText = `${'a'.repeat(32000)}最后的独有事实`
     document.body.innerHTML = `<article>${longText}</article>`
 
     const result = extractPageContent(window, document)
 
-    expect(result.truncated).toBe(true)
-    expect(result.content).toHaveLength(WEB_SUMMARY_MAX_CONTENT_CHARS)
+    expect(result.truncated).toBe(false)
+    expect(result.content).toBe(longText)
   })
 })
